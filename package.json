@@ -1,0 +1,30 @@
+{
+  "name": "lavadero-el-puente",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing page de Lavadero El Puente — lavadero industrial y lavandería en Maldonado, Uruguay.",
+  "scripts": {
+    "dev": "next dev",
+    "prebuild": "node scripts/generate-assets.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "generate-assets": "node scripts/generate-assets.mjs",
+    "optimize-images": "node scripts/optimize-images.mjs"
+  },
+  "dependencies": {
+    "next": "14.2.15",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "autoprefixer": "10.4.19",
+    "postcss": "8.4.39",
+    "sharp": "0.33.4",
+    "tailwindcss": "3.4.6",
+    "typescript": "5.5.3"
+  }
+}

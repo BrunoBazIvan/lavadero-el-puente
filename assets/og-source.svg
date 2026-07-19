@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E3E6E"/>
+      <stop offset="1" stop-color="#0A2C4F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1010" cy="120" r="220" fill="#22B6C6" opacity="0.14"/>
+  <circle cx="150" cy="560" r="180" fill="#4ECEDA" opacity="0.12"/>
+  <path d="M0 560 C300 620 600 500 900 560 C1050 590 1150 560 1200 545 L1200 630 L0 630 Z" fill="#22B6C6" opacity="0.15"/>
+
+  <g transform="translate(90 250)">
+    <rect x="0" y="-70" width="88" height="88" rx="20" fill="#0E3E6E" stroke="#4ECEDA" stroke-width="3"/>
+    <g transform="translate(44 -26) scale(1.6) translate(-20 -20)">
+      <path d="M8 25 C8 17 32 17 32 25" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M8 25v3M14 25v3M20 22.5v5.5M26 25v3M32 25v3" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+      <path d="M7 31 C11 33 15 29 20 31 C25 33 29 29 33 31" fill="none" stroke="#4ECEDA" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <text x="108" y="-30" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#ffffff">Lavadero El Puente</text>
+    <text x="108" y="6" font-family="Arial, sans-serif" font-size="20" letter-spacing="3" fill="#8FE3E9">MALDONADO · PUNTA DEL ESTE</text>
+  </g>
+
+  <text x="90" y="400" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Lavadero industrial</text>
+  <text x="90" y="480" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#8FE3E9">y lavandería</text>
+  <text x="90" y="545" font-family="Arial, sans-serif" font-size="30" fill="#CBDDEF">Ropa, blancos y textiles impecables · Escribinos por WhatsApp</text>
+</svg>

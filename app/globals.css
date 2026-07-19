@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Compensa el header sticky al saltar a anclas. */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-brand-800 antialiased;
+    font-feature-settings: ' cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  /* Focus visible custom — accesible, nunca eliminado. */
+  :focus-visible {
+    outline: 3px solid theme('colors.aqua.400');
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respeta prefers-reduced-motion en todo el sitio. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-content px-5 sm:px-6 lg:px-8;
+  }
+
+  .section {
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-pill bg-aqua-50 px-3 py-1 text-sm font-semibold uppercase tracking-wide text-aqua-600;
+  }
+
+  .h1 {
+    @apply text-4xl font-bold leading-[1.05] tracking-tight text-brand-800 sm:text-5xl lg:text-6xl;
+  }
+
+  .h2 {
+    @apply text-3xl font-bold leading-tight tracking-tight text-brand-800 sm:text-4xl;
+  }
+
+  .lead {
+    @apply text-lg leading-relaxed text-brand-600 sm:text-xl;
+  }
+
+  /* Reveal on scroll (IntersectionObserver activa .is-visible). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 400ms ease-out,
+      transform 400ms ease-out;
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer utilities {
+  /* Motivo gráfico: patrón sutil de burbujas al fondo. */
+  .bubbles-bg {
+    background-image: radial-gradient(
+        circle at 20% 30%,
+        theme('colors.aqua.100') 0,
+        transparent 12%
+      ),
+      radial-gradient(circle at 80% 20%, theme('colors.aqua.100') 0, transparent 10%),
+      radial-gradient(circle at 65% 75%, theme('colors.brand.100') 0, transparent 14%);
+    background-repeat: no-repeat;
+    opacity: 0.5;
+  }
+}
