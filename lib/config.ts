@@ -27,7 +27,6 @@ export const business = {
 
   /** Número tal cual se VE y funciona al tocarlo para llamar. */
   phoneDisplay: '099 767 134',
-  /** Mismo teléfono en formato para el link tel: (con código de país, sin espacios). */
   phoneTel: '+59899767134',
 
   /** Dirección. */
