@@ -88,11 +88,17 @@ export const business = {
   },
 
   /**
-   * ⚠️ PLACEHOLDER — DOMAIN
-   * Dominio final del sitio (sin barra al final). Se usa en SEO/canonical/OG.
-   * Sugerencia: https://lavaderoelpuente.uy  o  https://lavaderoelpuente.com.uy
+   * Dominio del sitio (sin barra al final). Se usa en canonical, Open Graph,
+   * robots.txt y sitemap.xml.
+   *
+   * ⚠️ Debe ser SIEMPRE una URL que funcione de verdad: si apunta a un dominio
+   * que no existe, WhatsApp y las redes no muestran la vista previa con imagen.
+   *
+   * Hoy apunta al dominio de Vercel. Cuando se compre el dominio propio
+   * (ej: https://lavaderoelpuente.uy), cambiar esta línea y conectarlo en
+   * Vercel → Project Settings → Domains.
    */
-  domain: 'https://lavaderoelpuente.uy',
+  domain: 'https://lavadero-el-puente.vercel.app',
 
   /**
    * ⚠️ OPCIONAL — GA4
