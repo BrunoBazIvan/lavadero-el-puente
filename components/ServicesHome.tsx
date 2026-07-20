@@ -5,7 +5,7 @@ import Reveal from './Reveal';
 import { ServiceIcon, ArrowRight, WhatsAppIcon } from './icons';
 import ServiceCardLink from './ServiceCardLink';
 
-/** 5.4 — Servicios para el hogar (B2C). Grid de 6 tarjetas clickeables a WhatsApp. */
+/** 5.4 — Servicios para el hogar (B2C). Grid de tarjetas clickeables a WhatsApp. */
 export default function ServicesHome() {
   return (
     <section id="servicios" className="section scroll-mt-20">
@@ -14,8 +14,8 @@ export default function ServicesHome() {
           <span className="eyebrow mb-4">Para tu hogar</span>
           <h2 className="h2">Servicios para tu hogar</h2>
           <p className="lead mt-4">
-            Limpieza de acolchados, cortinas y alfombras en Maldonado, más ropa, planchado y
-            limpieza en seco. Tocá el servicio que necesitás y coordinamos por WhatsApp.
+            Limpieza de acolchados, cortinas y alfombras en Maldonado, más lavado de ropa,
+            planchado y secado. Tocá el servicio que necesitás y coordinamos por WhatsApp.
           </p>
         </Reveal>
 

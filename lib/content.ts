@@ -14,7 +14,7 @@ export type HomeService = {
   waSubject: string;
   /** alt sugerido para la imagen/ícono. */
   alt: string;
-  icon: 'quilt' | 'curtain' | 'rug' | 'clothes' | 'dryclean' | 'iron';
+  icon: 'quilt' | 'curtain' | 'rug' | 'clothes' | 'iron';
 };
 
 export const homeServices: HomeService[] = [
@@ -53,15 +53,6 @@ export const homeServices: HomeService[] = [
     waSubject: 'el lavado general de ropa',
     alt: 'Ropa limpia y doblada en lavandería de Maldonado',
     icon: 'clothes',
-  },
-  {
-    slug: 'limpieza-en-seco',
-    title: 'Limpieza en seco',
-    description:
-      'Limpieza en seco para prendas delicadas, trajes y textiles que no se pueden lavar con agua.',
-    waSubject: 'limpieza en seco',
-    alt: 'Prendas delicadas listas tras limpieza en seco en Maldonado',
-    icon: 'dryclean',
   },
   {
     slug: 'planchado',
@@ -109,7 +100,7 @@ export const differentiators = [
   },
   {
     title: 'Prendas delicadas',
-    body: 'Limpieza en seco y cuidado especial para acolchados, cortinas y prendas finas.',
+    body: 'Cuidado especial de acolchados, cortinas y telas finas, respetando color y textura.',
   },
   {
     title: 'De Maldonado, para Maldonado',
@@ -130,7 +121,7 @@ export const faqs: { q: string; a: string }[] = [
   },
   {
     q: '¿Cuánto demora la limpieza de un acolchado?',
-    a: 'Depende del tipo de acolchado y de la temporada. Escribinos por WhatsApp con los detalles y te damos un tiempo estimado al momento.',
+    a: 'Los acolchados tienen un tiempo mínimo de 48 horas. Según el tipo de acolchado y la temporada puede variar, así que escribinos por WhatsApp y te confirmamos la fecha de entrega.',
   },
   {
     q: '¿Trabajan con hoteles y restaurantes?',
@@ -142,7 +133,7 @@ export const faqs: { q: string; a: string }[] = [
   },
   {
     q: '¿Qué servicios ofrecen?',
-    a: 'Lavado industrial y lavandería general, acolchados y frazadas, cortinas y cortinados, alfombras y tapizados, limpieza en seco, planchado y secado de ropa.',
+    a: 'Lavado industrial y lavandería general, acolchados y frazadas, cortinas y cortinados, alfombras y tapizados, y planchado y secado de ropa.',
   },
   {
     q: '¿Cómo pido un presupuesto?',

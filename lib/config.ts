@@ -20,39 +20,33 @@ export const business = {
   legalName: 'Lavadero El Puente',
 
   /**
-   * ⚠️ PLACEHOLDER — WHATSAPP_NUMBER
-   * Número real en formato internacional, SOLO dígitos, sin +, sin espacios,
+   * WhatsApp en formato internacional, SOLO dígitos, sin +, sin espacios,
    * sin guiones. Uruguay = 598 + número sin el 0 inicial.
-   * Ejemplo: si el celular es 099 123 456  →  '59899123456'
    */
-  whatsappNumber: '59899000000',
+  whatsappNumber: '59899767134',
 
-  /**
-   * ⚠️ PLACEHOLDER — PHONE_DISPLAY
-   * Número tal cual querés que se VEA y que funcione al tocarlo para llamar.
-   */
-  phoneDisplay: '099 000 000',
+  /** Número tal cual se VE y funciona al tocarlo para llamar. */
+  phoneDisplay: '099 767 134',
   /** Mismo teléfono en formato para el link tel: (con código de país, sin espacios). */
-  phoneTel: '+59899000000',
+  phoneTel: '+59899767134',
 
   /** Dirección. */
   address: {
-    street: 'Batalla del Cerrito esq. Bergalli',
+    street: 'Batalla del Cerrito 1009 esq. Dr. Román Bergalli',
     locality: 'Maldonado',
     region: 'Maldonado',
+    postalCode: '20000',
     country: 'Uruguay',
     countryCode: 'UY',
   },
 
   /**
-   * ⚠️ PLACEHOLDER — GEO_LAT / GEO_LNG
-   * Coordenadas exactas del local. Obtenelas en Google Maps:
-   * clic derecho sobre el local → "¿Qué hay aquí?" → copiá los números.
-   * (Estos valores son aproximados al centro de Maldonado — reemplazar.)
+   * Coordenadas exactas del local, tomadas de la ficha oficial de Google
+   * Business ("Lavadero Industrial El Puente").
    */
   geo: {
-    lat: -34.9089,
-    lng: -54.9581,
+    lat: -34.9049793,
+    lng: -54.9483194,
   },
 
   /**
@@ -73,11 +67,10 @@ export const business = {
   },
 
   /**
-   * ⚠️ PLACEHOLDER — PICKUP_DELIVERY
    * ¿El lavadero hace retiro y entrega a domicilio?
-   * Poné true SOLO si es verdad: afecta el hero, el proceso y las FAQ.
+   * Afecta el hero, el proceso y las FAQ.
    */
-  pickupDelivery: false,
+  pickupDelivery: true,
 
   /**
    * ⚠️ PLACEHOLDER — YEARS_ACTIVE
@@ -110,11 +103,22 @@ export const business = {
   ga4Id: '',
 } as const;
 
-/** URL de Google Maps para "Cómo llegar" (usa las coordenadas o la dirección). */
+/**
+ * "Cómo llegar" → navegación directa a las coordenadas exactas del local.
+ * Se usan coordenadas y no texto para que no dependa de que Google
+ * geocodifique bien la dirección.
+ */
 export const mapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${business.geo.lat},${business.geo.lng}`;
 
-/** URL de embed del mapa (facade que abre el iframe al hacer clic). */
-export const mapsEmbedUrl = `https://www.google.com/maps?q=${business.geo.lat},${business.geo.lng}&hl=es&z=16&output=embed`;
+/**
+ * Embed del mapa (el facade lo inyecta al hacer clic).
+ * Es la URL oficial de la ficha de Google Business del lavadero: muestra el pin
+ * con el nombre del negocio, no un marcador genérico.
+ * ⚠️ Si algún día cambia la ficha, regenerar desde Google Maps →
+ * Compartir → Insertar un mapa → copiar el `src` del iframe.
+ */
+export const mapsEmbedUrl =
+  'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3272.058583967102!2d-54.948319399999995!3d-34.9049793!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95751b263cb4cac9%3A0x80fce7d722082d3f!2sLavadero%20Industrial%20El%20Puente!5e0!3m2!1ses!2suy!4v1784507768030!5m2!1ses!2suy';
 
 /**
  * =============================================================================

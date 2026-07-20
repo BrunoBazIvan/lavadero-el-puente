@@ -8,7 +8,7 @@ export default function AudienceSplit() {
       href: '#servicios',
       eyebrow: 'Para tu hogar',
       title: 'Traé tu acolchado hoy, llevátelo impecable',
-      body: 'Acolchados, cortinas, alfombras, frazadas, ropa y limpieza en seco.',
+      body: 'Acolchados, cortinas, alfombras, frazadas, ropa, planchado y secado.',
       className: 'bg-white border-brand-100 hover:border-aqua-300',
     },
     {

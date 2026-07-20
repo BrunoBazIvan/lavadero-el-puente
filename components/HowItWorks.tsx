@@ -23,7 +23,9 @@ export default function HowItWorks() {
     {
       n: '3',
       title: 'Te avisamos cuando está listo',
-      body: 'Retirás todo limpio, seco y prolijo, listo para usar o guardar.',
+      body: business.pickupDelivery
+        ? 'Lo retirás por el lavadero o te lo entregamos a domicilio, limpio y prolijo.'
+        : 'Retirás todo limpio, seco y prolijo, listo para usar o guardar.',
     },
   ];
 

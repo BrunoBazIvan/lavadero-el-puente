@@ -18,6 +18,7 @@ export function localBusinessJsonLd() {
       streetAddress: business.address.street,
       addressLocality: business.address.locality,
       addressRegion: business.address.region,
+      postalCode: business.address.postalCode,
       addressCountry: business.address.countryCode,
     },
     geo: {

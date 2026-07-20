@@ -17,7 +17,7 @@ export default function MapFacade({ title }: { title: string }) {
         title={title}
         src={mapsEmbedUrl}
         loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
+        referrerPolicy="strict-origin-when-cross-origin"
         className="h-full w-full border-0"
         allowFullScreen
       />
