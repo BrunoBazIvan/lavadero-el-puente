@@ -13,11 +13,11 @@
  */
 
 export const business = {
-  /** Nombre comercial. */
-  name: 'Lavadero El Puente',
+  /** Nombre comercial — IDÉNTICO al de Google Business Profile (consistencia NAP). */
+  name: 'Lavadero Industrial El Puente',
 
-  /** Descripción corta del rubro (se usa en textos y datos estructurados). */
-  legalName: 'Lavadero El Puente',
+  /** Razón/legal — se usa en textos y datos estructurados. */
+  legalName: 'Lavadero Industrial El Puente',
 
   /**
    * WhatsApp en formato internacional, SOLO dígitos, sin +, sin espacios,
@@ -72,6 +72,19 @@ export const business = {
   pickupDelivery: true,
 
   /**
+   * Zonas reales de retiro y entrega a domicilio (corredor costero este).
+   * Alimenta el `areaServed` del schema, las páginas de zona y los textos.
+   * ⚠️ No agregar zonas donde el delivery no llega de verdad.
+   */
+  deliveryZones: [
+    'Maldonado',
+    'Punta del Este',
+    'La Barra',
+    'Manantiales',
+    'José Ignacio',
+  ],
+
+  /**
    * ⚠️ PLACEHOLDER — YEARS_ACTIVE
    * Años de trayectoria reales. Si no querés mostrar una cifra, dejá null
    * y el texto de "Por qué El Puente" se adapta solo (no inventa números).
@@ -86,6 +99,15 @@ export const business = {
     instagram: '', // ej: 'https://instagram.com/lavaderoelpuente'
     facebook: '', // ej: 'https://facebook.com/lavaderoelpuente'
   },
+
+  /**
+   * Link corto para PEDIR RESEÑAS en Google.
+   * Se obtiene en el panel de Google Business Profile → "Pedir reseñas" /
+   * "Get more reviews" → copiar el enlace (formato https://g.page/r/XXXX/review).
+   * Mientras esté vacío '', el botón "Dejá tu reseña" no se muestra.
+   * Este mismo link es el que va en el QR del mostrador y en el WhatsApp post-servicio.
+   */
+  reviewLink: '',
 
   /**
    * Dominio del sitio (sin barra al final). Se usa en canonical, Open Graph,

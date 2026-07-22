@@ -1,8 +1,13 @@
+import Link from 'next/link';
 import { business, waMessages } from '@/lib/config';
+import { landingPages } from '@/lib/landingPages';
 import Logo from './Logo';
 import WhatsAppButton from './WhatsAppButton';
 import PhoneLink from './PhoneLink';
 import { PinIcon, ClockIcon } from './icons';
+
+const servicePages = landingPages.filter((p) => p.kind === 'servicio');
+const zonePages = landingPages.filter((p) => p.kind === 'zona');
 
 /** 5.10 — Footer. */
 export default function Footer() {
@@ -12,8 +17,8 @@ export default function Footer() {
   return (
     <footer className="bg-brand-700 text-brand-100">
       <div className="container-x py-14">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+          <div className="md:col-span-2 lg:col-span-1">
             <div className="[&_span]:text-white">
               <Logo />
             </div>
@@ -44,11 +49,30 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white">Secciones</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-white">Servicios</p>
             <ul className="mt-4 space-y-2.5 text-sm">
-              <li><a href="#servicios" className="hover:text-white">Servicios para el hogar</a></li>
-              <li><a href="#empresas" className="hover:text-white">Empresas</a></li>
-              <li><a href="#ubicacion" className="hover:text-white">Ubicación y horarios</a></li>
+              {servicePages.map((p) => (
+                <li key={p.slug}>
+                  <Link href={`/${p.slug}/`} className="hover:text-white">
+                    {p.breadcrumbLabel}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-white">Zonas</p>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              {zonePages.map((p) => (
+                <li key={p.slug}>
+                  <Link href={`/${p.slug}/`} className="hover:text-white">
+                    {p.breadcrumbLabel}
+                  </Link>
+                </li>
+              ))}
+              <li><a href="/#ubicacion" className="hover:text-white">Ubicación y horarios</a></li>
+              <li><Link href="/sobre-nosotros/" className="hover:text-white">Sobre nosotros</Link></li>
             </ul>
             {(social.instagram || social.facebook) && (
               <div className="mt-5 flex gap-3">

@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { waMessages } from '@/lib/config';
 import { businessSectors, businessValue } from '@/lib/content';
 import WhatsAppButton from './WhatsAppButton';
 import Reveal from './Reveal';
+import { ArrowRight } from './icons';
 
 /** 5.5 — Lavandería industrial para empresas (B2B). */
 export default function ServicesBusiness() {
@@ -32,10 +34,17 @@ export default function ServicesBusiness() {
               ))}
             </div>
 
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
               <WhatsAppButton source="b2b" message={waMessages.business} variant="primary">
                 Coordiná una cotización para tu empresa
               </WhatsAppButton>
+              <Link
+                href="/lavanderia-industrial-maldonado/"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-aqua-200 hover:text-white"
+              >
+                Ver lavandería industrial
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </Reveal>
 

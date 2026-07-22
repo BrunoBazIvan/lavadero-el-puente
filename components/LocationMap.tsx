@@ -50,6 +50,19 @@ export default function LocationMap() {
                   Escribinos por WhatsApp
                 </WhatsAppButton>
                 <DirectionsLink />
+                {business.reviewLink && (
+                  <a
+                    href={business.reviewLink}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-pill border border-brand-200 bg-white px-5 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:border-aqua-300 hover:text-brand-800"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-aqua-500" fill="currentColor" aria-hidden="true">
+                      <path d="m12 17.27 5.18 3.13-1.37-5.9 4.59-3.98-6.05-.52L12 4.5 9.65 10l-6.05.52 4.59 3.98-1.37 5.9z" />
+                    </svg>
+                    Dejá tu reseña en Google
+                  </a>
+                )}
               </div>
 
               <p className="text-sm text-brand-500">

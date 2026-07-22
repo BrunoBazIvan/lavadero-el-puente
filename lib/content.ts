@@ -8,6 +8,8 @@ import { business, waMessages } from './config';
 export type HomeService = {
   /** id corto para el tracking (source: servicio_<slug>). */
   slug: string;
+  /** Slug de la página de servicio dedicada a la que enlaza la tarjeta. */
+  pageSlug: string;
   title: string;
   description: string;
   /** Texto que se inserta en el mensaje de WhatsApp. */
@@ -20,6 +22,7 @@ export type HomeService = {
 export const homeServices: HomeService[] = [
   {
     slug: 'acolchados',
+    pageSlug: 'limpieza-de-acolchados-maldonado',
     title: 'Acolchados y frazadas',
     description:
       'Lavado profundo de acolchados, frazadas y edredones que no entran en el lavarropas de casa.',
@@ -29,6 +32,7 @@ export const homeServices: HomeService[] = [
   },
   {
     slug: 'cortinas',
+    pageSlug: 'lavado-de-cortinas-maldonado',
     title: 'Cortinas y cortinados',
     description:
       'Lavado de cortinas y cortinados de todo tipo de tela, con cuidado del color y la caída.',
@@ -38,6 +42,7 @@ export const homeServices: HomeService[] = [
   },
   {
     slug: 'alfombras',
+    pageSlug: 'limpieza-de-alfombras-maldonado',
     title: 'Alfombras y tapizados',
     description:
       'Limpieza de alfombras y tapizados: quitamos manchas, polvo y olores dejándolas como nuevas.',
@@ -47,6 +52,7 @@ export const homeServices: HomeService[] = [
   },
   {
     slug: 'ropa',
+    pageSlug: 'lavado-y-planchado-de-ropa-maldonado',
     title: 'Ropa y lavado general',
     description:
       'Lavado general de ropa por prenda o por volumen, con secado y doblado prolijo.',
@@ -56,6 +62,7 @@ export const homeServices: HomeService[] = [
   },
   {
     slug: 'planchado',
+    pageSlug: 'lavado-y-planchado-de-ropa-maldonado',
     title: 'Planchado y secado',
     description:
       'Servicio de planchado y secado de ropa para que la retires lista para usar o guardar.',
@@ -77,6 +84,37 @@ export const businessSectors = [
   'Restaurantes',
   'Edificios y cowork',
   'Clínicas y residenciales',
+];
+
+/**
+ * Empresas que ya confían en El Puente (prueba social).
+ *
+ * ⚠️ PLACEHOLDER — CLIENTES REALES
+ * Mientras esté VACÍO, la sección muestra los rubros a los que damos servicio
+ * (prueba social honesta, sin inventar nombres). Cuando tengas permiso de tus
+ * clientes, cargá acá sus nombres y — si tenés — el logo. El componente pasa
+ * solo a mostrar los logos/nombres reales.
+ *
+ *   { name: 'Hotel Costa Azul', logo: '/clientes/costa-azul.png' }
+ *
+ * El logo es opcional: si no lo ponés, se muestra el nombre en una tarjeta.
+ * Colocá las imágenes en /public/clientes/ (fondo transparente, ~200×80px).
+ */
+export type TrustedCompany = { name: string; logo?: string };
+
+export const trustedCompanies: TrustedCompany[] = [];
+
+/**
+ * Rubros que confían en El Puente. Se muestran como "muro" de prueba social
+ * cuando aún no hay logos de clientes cargados. Es contenido honesto: son los
+ * sectores a los que realmente damos servicio.
+ */
+export const trustedSectors: { label: string; icon: 'hotel' | 'apart' | 'resto' | 'building' | 'clinic' }[] = [
+  { label: 'Hoteles', icon: 'hotel' },
+  { label: 'Apart y Airbnb', icon: 'apart' },
+  { label: 'Restaurantes', icon: 'resto' },
+  { label: 'Edificios y cowork', icon: 'building' },
+  { label: 'Clínicas y residenciales', icon: 'clinic' },
 ];
 
 /** Bullets de valor B2B. */

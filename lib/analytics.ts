@@ -14,10 +14,12 @@ export type WhatsAppSource =
   | 'audience_home'
   | 'audience_business'
   | 'b2b'
+  | 'trusted'
   | 'fab'
   | 'footer'
   | 'location'
   | 'faq'
+  | 'sobre_nosotros'
   | `servicio_${string}`;
 
 function track(event: string, params: Record<string, unknown> = {}): void {

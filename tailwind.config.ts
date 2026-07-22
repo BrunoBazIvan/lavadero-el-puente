@@ -9,31 +9,35 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base off-white
+        // Base off-white (fondo neutro del sitio).
         canvas: '#FAFAF8',
-        // Azul profundo de marca (ajustar al azul del logo real)
+        // Negro Tinta del manual — textos oscuros y detalles.
+        ink: '#0D0D0D',
+        // Marca — escala construida alrededor del "Azul Profundo" #07598C (500).
         brand: {
-          50: '#EAF1F8',
-          100: '#CBDDEF',
-          200: '#9BBCDD',
-          300: '#5F8FC2',
-          400: '#2E63A0',
-          500: '#0E3E6E',
-          600: '#0B355F',
-          700: '#0A2C4F',
-          800: '#08233F',
-          900: '#061A2F',
+          50: '#EAF3F9',
+          100: '#CBE1EE',
+          200: '#9BC6DE',
+          300: '#5F9EC4',
+          400: '#2E79A8',
+          500: '#07598C', // Azul Profundo (manual)
+          600: '#064A75',
+          700: '#053A5D',
+          800: '#042B45',
+          900: '#031C2E',
         },
-        // Acento inesperado: celeste agua (hovers, detalles, motivo gráfico)
+        // Acento agua — "Celeste Agua" #43BDD9 (300) y "Azul Océano" #1F92BF (500).
         aqua: {
-          50: '#E8FAFB',
-          100: '#C4F1F4',
-          200: '#8FE3E9',
-          300: '#4ECEDA',
-          400: '#22B6C6',
-          500: '#1194A3',
-          600: '#0D7684',
+          50: '#EAF8FB',
+          100: '#C9EEF5',
+          200: '#96DEEA',
+          300: '#43BDD9', // Celeste Agua (manual)
+          400: '#28A7C7',
+          500: '#1F92BF', // Azul Océano (manual)
+          600: '#1A7A9E',
         },
+        // "Azul Eléctrico" del manual — acento puntual de alto impacto, uso muy medido.
+        electric: '#0511F2',
         // Verde WhatsApp — EXCLUSIVO para CTAs de conversión. No usar en ningún otro lado.
         whatsapp: {
           DEFAULT: '#25D366',

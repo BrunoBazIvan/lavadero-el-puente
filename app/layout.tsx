@@ -1,25 +1,28 @@
 import type { Metadata, Viewport } from 'next';
-import { Space_Grotesk, Inter } from 'next/font/google';
+import { Montserrat, Lato } from 'next/font/google';
 import './globals.css';
 import { business } from '@/lib/config';
-import { localBusinessJsonLd, faqJsonLd } from '@/lib/jsonld';
+import { localBusinessJsonLd } from '@/lib/jsonld';
 import Analytics from '@/components/Analytics';
 
-// Fuentes self-hosted por next/font (cero requests externos, cero layout shift).
-const display = Space_Grotesk({
+// Tipografías del Manual de Marca El Puente: Montserrat (títulos y destacados)
+// + Lato (texto corrido). Self-hosted por next/font (cero requests externos,
+// cero layout shift).
+const display = Montserrat({
   subsets: ['latin'],
-  weight: ['500', '700'],
+  weight: ['600', '700'],
   variable: '--font-display',
   display: 'swap',
 });
 
-const body = Inter({
+const body = Lato({
   subsets: ['latin'],
+  weight: ['400', '700'],
   variable: '--font-body',
   display: 'swap',
 });
 
-const title = 'Lavadero El Puente | Lavadero Industrial y Lavandería en Maldonado';
+const title = 'Lavandería en Maldonado | Lavadero Industrial El Puente';
 const description =
   'Lavadero industrial y lavandería en Maldonado y Punta del Este. Acolchados, cortinas, alfombras, ropa y ropa blanca para hoteles. Escribinos por WhatsApp.';
 
@@ -54,17 +57,19 @@ export const metadata: Metadata = {
     images: ['/og.png'],
   },
   robots: { index: true, follow: true },
+  manifest: '/site.webmanifest',
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
     ],
     apple: '/apple-touch-icon.png',
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0E3E6E',
+  themeColor: '#07598C',
   width: 'device-width',
   initialScale: 1,
 };
@@ -76,10 +81,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd()) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
         />
       </head>
       <body>

@@ -7,18 +7,21 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-brand-100/60 bg-canvas/85 backdrop-blur-md">
       <div className="container-x flex h-16 items-center justify-between gap-4">
-        <a href="#top" aria-label="Lavadero El Puente — inicio" className="shrink-0">
+        <a href="/#top" aria-label="Lavadero Industrial El Puente — inicio" className="shrink-0">
           <Logo />
         </a>
 
         <nav aria-label="Secciones" className="hidden items-center gap-7 md:flex">
-          <a href="#servicios" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
+          <a href="/#servicios" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
             Servicios
           </a>
-          <a href="#empresas" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
+          <a href="/#empresas" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
             Empresas
           </a>
-          <a href="#ubicacion" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
+          <a href="/sobre-nosotros/" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
+            Nosotros
+          </a>
+          <a href="/#ubicacion" className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-800">
             Ubicación
           </a>
         </nav>

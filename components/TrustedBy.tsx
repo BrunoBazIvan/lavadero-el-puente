@@ -1,0 +1,126 @@
+import { waMessages } from '@/lib/config';
+import { trustedCompanies, trustedSectors } from '@/lib/content';
+import WhatsAppButton from './WhatsAppButton';
+import Reveal from './Reveal';
+
+/**
+ * Prueba social B2B: "Empresas que ya confían en nosotros".
+ * - Si hay clientes reales cargados (lib/content → trustedCompanies), muestra
+ *   sus logos/nombres.
+ * - Si no, muestra el muro de rubros que atendemos (honesto, sin inventar).
+ */
+
+type SectorIcon = (typeof trustedSectors)[number]['icon'];
+
+function SectorGlyph({ name, className = '' }: { name: SectorIcon; className?: string }) {
+  const common = {
+    className,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.7,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  };
+  switch (name) {
+    case 'hotel':
+      return (
+        <svg {...common}>
+          <path d="M3 21h18M5 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16M15 21V9h3a1 1 0 0 1 1 1v11" />
+          <path d="M8 7h1M11 7h1M8 11h1M11 11h1M8 15h1M11 15h1" />
+        </svg>
+      );
+    case 'apart':
+      return (
+        <svg {...common}>
+          <path d="M3 21h18M4 21V9l8-5 8 5v12" />
+          <path d="M9 21v-5h6v5M9 12h.01M15 12h.01" />
+        </svg>
+      );
+    case 'resto':
+      return (
+        <svg {...common}>
+          <path d="M6 3v7a2 2 0 0 0 4 0V3M8 10v11M18 3c-1.5 0-2.5 1.6-2.5 4.5S16.5 12 18 12v9" />
+        </svg>
+      );
+    case 'building':
+      return (
+        <svg {...common}>
+          <path d="M4 21V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17M15 21V9h4a1 1 0 0 1 1 1v11M3 21h18" />
+          <path d="M7 7h1M11 7h1M7 11h1M11 11h1M7 15h1M11 15h1" />
+        </svg>
+      );
+    case 'clinic':
+      return (
+        <svg {...common}>
+          <path d="M3 21h18M5 21V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v15" />
+          <path d="M12 8v6M9 11h6" />
+        </svg>
+      );
+  }
+}
+
+export default function TrustedBy() {
+  const hasClients = trustedCompanies.length > 0;
+
+  return (
+    <section id="confian" className="scroll-mt-20 border-y border-brand-100 bg-white">
+      <div className="container-x section">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <span className="eyebrow mb-4">Empresas que confían en nosotros</span>
+          <h2 className="h2">El respaldo de quienes no pueden fallar en temporada</h2>
+          <p className="lead mt-4">
+            Hoteles, apart, restaurantes y edificios de Maldonado y Punta del Este eligen El
+            Puente para su ropa blanca y su lavandería del día a día.
+          </p>
+        </Reveal>
+
+        {hasClients ? (
+          <ul className="mt-12 grid grid-cols-2 items-center gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {trustedCompanies.map((c) => (
+              <li key={c.name}>
+                <div className="flex h-24 items-center justify-center rounded-card border border-brand-100 bg-canvas px-5 py-4 shadow-card">
+                  {c.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={c.logo}
+                      alt={c.name}
+                      className="max-h-12 w-auto max-w-full object-contain opacity-80"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-center font-display text-base font-semibold text-brand-700">
+                      {c.name}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ul className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {trustedSectors.map((s, i) => (
+              <Reveal key={s.label} as="li" delay={(i % 5) * 60}>
+                <div className="flex h-full flex-col items-center justify-center gap-3 rounded-card border border-brand-100 bg-canvas px-4 py-6 text-center shadow-card transition-colors hover:border-aqua-300">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aqua-50 text-aqua-600">
+                    <SectorGlyph name={s.icon} className="h-6 w-6" />
+                  </span>
+                  <span className="text-sm font-semibold leading-tight text-brand-700">
+                    {s.label}
+                  </span>
+                </div>
+              </Reveal>
+            ))}
+          </ul>
+        )}
+
+        <div className="mt-12 flex justify-center">
+          <WhatsAppButton source="trusted" message={waMessages.business} variant="primary">
+            Sumá tu empresa a El Puente
+          </WhatsAppButton>
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,13 +1,13 @@
 {
-  "name": "Lavadero El Puente",
+  "name": "Lavadero Industrial El Puente",
   "short_name": "El Puente",
   "description": "Lavadero industrial y lavandería en Maldonado y Punta del Este.",
   "start_url": "/",
   "display": "browser",
   "background_color": "#FAFAF8",
-  "theme_color": "#0E3E6E",
+  "theme_color": "#07598C",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
