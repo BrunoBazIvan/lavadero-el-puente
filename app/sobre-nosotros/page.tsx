@@ -43,9 +43,11 @@ export default function SobreNosotros() {
                 <span className="text-brand-500">para Maldonado</span>
               </h1>
               <p className="lead mt-7">
-                El Puente nace del agua: limpieza, frescura y confianza. Somos un lavadero
-                industrial que trabaja para familias y empresas de Maldonado y Punta del Este,
-                con maquinaria propia y trato directo, todo el año.
+                El Puente nace para resolver una necesidad concreta: mantener la ropa y la ropa
+                de cama impecables cuando Punta del Este entra en temporada y la demanda se
+                multiplica. Más de {business.yearsActive} años después, hoteles, posadas y
+                edificios de la zona —entre ellos Torres Imperiale, Edificio YOO y Posada del
+                Faro— confían en nosotros para sostener ese ritmo todo el año.
               </p>
             </div>
           </div>

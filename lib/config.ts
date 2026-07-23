@@ -85,11 +85,11 @@ export const business = {
   ],
 
   /**
-   * ⚠️ PLACEHOLDER — YEARS_ACTIVE
    * Años de trayectoria reales. Si no querés mostrar una cifra, dejá null
    * y el texto de "Por qué El Puente" se adapta solo (no inventa números).
+   * Los textos dicen "más de N años", así que poné el piso, no el número exacto.
    */
-  yearsActive: null as number | null,
+  yearsActive: 20 as number | null,
 
   /**
    * ⚠️ PLACEHOLDER — SOCIAL_LINKS

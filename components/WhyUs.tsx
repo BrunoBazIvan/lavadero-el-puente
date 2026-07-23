@@ -7,7 +7,7 @@ export default function WhyUs() {
   // Solo mostramos años de trayectoria si el dato real está cargado.
   const trayectoria =
     business.yearsActive && business.yearsActive > 0
-      ? `${business.yearsActive} años trabajando en Maldonado`
+      ? `Más de ${business.yearsActive} años trabajando en Maldonado`
       : null;
 
   return (

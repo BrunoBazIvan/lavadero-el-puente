@@ -79,25 +79,30 @@ export default function TrustedBy() {
         </Reveal>
 
         {hasClients ? (
-          <ul className="matrix mt-14 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-            {trustedCompanies.map((c) => (
-              <li key={c.name} className="matrix-cell">
-                <div className="flex h-28 items-center justify-center px-6 py-5">
+          <ul className="matrix mt-14 sm:grid-cols-2 lg:grid-cols-3">
+            {trustedCompanies.map((c, i) => (
+              <Reveal key={c.name} as="li" delay={(i % 3) * 70} className="matrix-cell">
+                <div className="flex h-full flex-col justify-between gap-8 p-7 sm:p-8">
                   {c.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={c.logo}
                       alt={c.name}
-                      className="max-h-12 w-auto max-w-full object-contain opacity-70 transition-opacity hover:opacity-100"
+                      className="max-h-12 w-auto max-w-full self-start object-contain"
                       loading="lazy"
                     />
                   ) : (
-                    <span className="text-center font-display text-base font-semibold text-brand-700">
+                    <p className="font-display text-xl font-bold leading-snug tracking-[-0.02em] text-brand-800">
                       {c.name}
-                    </span>
+                    </p>
+                  )}
+                  {c.detail && (
+                    <p className="font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-600">
+                      {c.detail}
+                    </p>
                   )}
                 </div>
-              </li>
+              </Reveal>
             ))}
           </ul>
         ) : (

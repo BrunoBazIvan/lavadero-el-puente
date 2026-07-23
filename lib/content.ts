@@ -89,20 +89,24 @@ export const businessSectors = [
 /**
  * Empresas que ya confían en El Puente (prueba social).
  *
- * ⚠️ PLACEHOLDER — CLIENTES REALES
- * Mientras esté VACÍO, la sección muestra los rubros a los que damos servicio
- * (prueba social honesta, sin inventar nombres). Cuando tengas permiso de tus
- * clientes, cargá acá sus nombres y — si tenés — el logo. El componente pasa
- * solo a mostrar los logos/nombres reales.
+ * Mientras esté VACÍO, la sección muestra los rubros a los que damos servicio.
+ * Con clientes cargados, muestra sus nombres (y logo, si lo hay).
  *
- *   { name: 'Hotel Costa Azul', logo: '/clientes/costa-azul.png' }
+ *   { name: 'Hotel Costa Azul', detail: 'Maldonado', logo: '/clientes/costa-azul.png' }
  *
- * El logo es opcional: si no lo ponés, se muestra el nombre en una tarjeta.
+ * El logo es opcional: si no lo ponés, se muestra el nombre y el detalle.
  * Colocá las imágenes en /public/clientes/ (fondo transparente, ~200×80px).
+ *
+ * ⚠️ Antes de sumar un nombre acá, confirmá que el cliente te dio permiso para
+ * usarlo públicamente: son negocios reales y aparecen como referencia tuya.
  */
-export type TrustedCompany = { name: string; logo?: string };
+export type TrustedCompany = { name: string; detail?: string; logo?: string };
 
-export const trustedCompanies: TrustedCompany[] = [];
+export const trustedCompanies: TrustedCompany[] = [
+  { name: 'Torres Imperiale', detail: 'Punta del Este' },
+  { name: 'Edificio YOO', detail: 'Punta del Este' },
+  { name: 'Posada del Faro', detail: 'José Ignacio' },
+];
 
 /**
  * Rubros que confían en El Puente. Se muestran como "muro" de prueba social

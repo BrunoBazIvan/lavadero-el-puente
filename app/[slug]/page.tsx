@@ -9,8 +9,17 @@ export function generateStaticParams() {
   return landingSlugs.map((slug) => ({ slug }));
 }
 
-/** Solo estos slugs son válidos (el resto → 404). */
-export const dynamicParams = false;
+/**
+ * Solo estos slugs son válidos: `getLandingPage` + `notFound()` (más abajo)
+ * rechazan cualquier otro, y en `output: 'export'` sólo existen los HTML que
+ * genera `generateStaticParams`, así que el resto es 404 del hosting.
+ *
+ * NO reponer `export const dynamicParams = false`: con `output: 'export'` hace
+ * que Next calcule `fallback: false` (build/utils.js), el dev server lo mapee a
+ * `fallbackMode: false` y base-server.js lance "missing generateStaticParams()"
+ * en TODA ruta dinámica en `next dev`. El build no se ve afectado, pero el
+ * desarrollo local queda roto.
+ */
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const page = getLandingPage(params.slug);
