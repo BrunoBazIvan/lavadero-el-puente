@@ -67,26 +67,28 @@ export default function TrustedBy() {
   return (
     <section id="confian" className="scroll-mt-20 border-y border-brand-100 bg-white">
       <div className="container-x section">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow mb-4">Empresas que confían en nosotros</span>
-          <h2 className="h2">El respaldo de quienes no pueden fallar en temporada</h2>
-          <p className="lead mt-4">
+        <Reveal className="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <span className="eyebrow">Empresas que confían en nosotros</span>
+            <h2 className="h2 mt-6">El respaldo de quienes no pueden fallar en temporada</h2>
+          </div>
+          <p className="text-base leading-relaxed text-brand-600 lg:col-span-5 lg:pb-2">
             Hoteles, apart, restaurantes y edificios de Maldonado y Punta del Este eligen El
             Puente para su ropa blanca y su lavandería del día a día.
           </p>
         </Reveal>
 
         {hasClients ? (
-          <ul className="mt-12 grid grid-cols-2 items-center gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className="matrix mt-14 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {trustedCompanies.map((c) => (
-              <li key={c.name}>
-                <div className="flex h-24 items-center justify-center rounded-card border border-brand-100 bg-canvas px-5 py-4 shadow-card">
+              <li key={c.name} className="matrix-cell">
+                <div className="flex h-28 items-center justify-center px-6 py-5">
                   {c.logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={c.logo}
                       alt={c.name}
-                      className="max-h-12 w-auto max-w-full object-contain opacity-80"
+                      className="max-h-12 w-auto max-w-full object-contain opacity-70 transition-opacity hover:opacity-100"
                       loading="lazy"
                     />
                   ) : (
@@ -99,14 +101,17 @@ export default function TrustedBy() {
             ))}
           </ul>
         ) : (
-          <ul className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          /* Franja de capacidades: una celda por rubro, íconos monocromos
+             sin azulejo de color. */
+          <ul className="matrix mt-14 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             {trustedSectors.map((s, i) => (
-              <Reveal key={s.label} as="li" delay={(i % 5) * 60}>
-                <div className="flex h-full flex-col items-center justify-center gap-3 rounded-card border border-brand-100 bg-canvas px-4 py-6 text-center shadow-card transition-colors hover:border-aqua-300">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-aqua-50 text-aqua-600">
-                    <SectorGlyph name={s.icon} className="h-6 w-6" />
-                  </span>
-                  <span className="text-sm font-semibold leading-tight text-brand-700">
+              <Reveal key={s.label} as="li" delay={(i % 5) * 60} className="matrix-cell">
+                <div className="group flex h-full flex-col justify-between gap-8 p-6 transition-colors duration-150 hover:bg-brand-50/60 sm:p-7">
+                  <SectorGlyph
+                    name={s.icon}
+                    className="h-8 w-8 text-brand-300 transition-colors duration-150 group-hover:text-aqua-500"
+                  />
+                  <span className="font-display text-sm font-bold leading-snug tracking-[-0.01em] text-brand-800">
                     {s.label}
                   </span>
                 </div>
@@ -115,7 +120,7 @@ export default function TrustedBy() {
           </ul>
         )}
 
-        <div className="mt-12 flex justify-center">
+        <div className="mt-12">
           <WhatsAppButton source="trusted" message={waMessages.business} variant="primary">
             Sumá tu empresa a El Puente
           </WhatsAppButton>

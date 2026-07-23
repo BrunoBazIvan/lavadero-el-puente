@@ -34,19 +34,15 @@ export default function SobreNosotros() {
       <Header />
       <main>
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-brand-100">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-b from-brand-50 via-canvas to-canvas" />
-            <div className="bubbles-bg absolute inset-0" />
-          </div>
-          <div className="container-x py-16 sm:py-20 lg:py-24">
+        <section className="border-b border-brand-100">
+          <div className="container-x py-20 sm:py-24 lg:py-28">
             <div className="max-w-3xl">
-              <span className="eyebrow mb-5">Sobre nosotros</span>
-              <h1 className="h1">
+              <span className="eyebrow">Sobre nosotros</span>
+              <h1 className="h1 mt-7">
                 Un lavadero industrial de Maldonado,{' '}
                 <span className="text-brand-500">para Maldonado</span>
               </h1>
-              <p className="lead mt-6">
+              <p className="lead mt-7">
                 El Puente nace del agua: limpieza, frescura y confianza. Somos un lavadero
                 industrial que trabaja para familias y empresas de Maldonado y Punta del Este,
                 con maquinaria propia y trato directo, todo el año.
@@ -88,33 +84,32 @@ export default function SobreNosotros() {
               </div>
             </Reveal>
 
-            {/* Tarjeta de datos del local */}
+            {/* Ficha de datos del local */}
             <Reveal delay={90}>
-              <div className="rounded-card border border-brand-100 bg-white p-7 shadow-card">
-                <p className="font-display text-lg font-bold text-brand-800">El Puente en datos</p>
-                <dl className="mt-5 space-y-4 text-sm">
-                  <div>
-                    <dt className="font-semibold text-brand-500">Dónde estamos</dt>
-                    <dd className="mt-0.5 text-brand-600">
-                      {business.address.street}, {business.address.locality}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-brand-500">Horario</dt>
-                    <dd className="mt-0.5 text-brand-600">{business.openingHours.label}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-brand-500">A quién atendemos</dt>
-                    <dd className="mt-0.5 text-brand-600">
-                      Familias y empresas de Maldonado y Punta del Este.
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="font-semibold text-brand-500">Cómo coordinamos</dt>
-                    <dd className="mt-0.5 text-brand-600">
-                      Directo por WhatsApp, sin intermediarios.
-                    </dd>
-                  </div>
+              <div className="border border-brand-100 bg-white">
+                <p className="border-b border-brand-100 px-7 py-5 font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-600">
+                  El Puente en datos
+                </p>
+                <dl className="divide-y divide-brand-100">
+                  {[
+                    {
+                      k: 'Dónde estamos',
+                      v: `${business.address.street}, ${business.address.locality}`,
+                    },
+                    { k: 'Horario', v: business.openingHours.label },
+                    {
+                      k: 'A quién atendemos',
+                      v: 'Familias y empresas de Maldonado y Punta del Este.',
+                    },
+                    { k: 'Cómo coordinamos', v: 'Directo por WhatsApp, sin intermediarios.' },
+                  ].map((row) => (
+                    <div key={row.k} className="px-7 py-5">
+                      <dt className="font-display text-[0.6875rem] font-bold uppercase tracking-technical text-brand-400">
+                        {row.k}
+                      </dt>
+                      <dd className="mt-2 text-base leading-relaxed text-brand-700">{row.v}</dd>
+                    </div>
+                  ))}
                 </dl>
               </div>
             </Reveal>
@@ -122,19 +117,23 @@ export default function SobreNosotros() {
         </section>
 
         {/* Valores (reutiliza diferenciales) */}
-        <section className="bg-brand-50/70">
+        <section className="border-y border-brand-100 bg-brand-50/60">
           <div className="container-x section">
             <Reveal className="max-w-2xl">
-              <span className="eyebrow mb-4">Lo que nos define</span>
-              <h2 className="h2">En qué podés confiar</h2>
+              <span className="eyebrow">Lo que nos define</span>
+              <h2 className="h2 mt-6">En qué podés confiar</h2>
             </Reveal>
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="matrix mt-14 sm:grid-cols-2 lg:grid-cols-4">
               {differentiators.map((d, i) => (
-                <Reveal key={d.title} delay={(i % 4) * 60}>
-                  <div className="flex h-full flex-col rounded-card border border-brand-100 bg-white p-6 shadow-card">
-                    <span className="h-1.5 w-10 rounded-full bg-aqua-400" />
-                    <h3 className="mt-4 font-display text-lg font-bold text-brand-800">{d.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-brand-600">{d.body}</p>
+                <Reveal key={d.title} delay={(i % 4) * 60} className="matrix-cell">
+                  <div className="flex h-full flex-col p-7 sm:p-8">
+                    <span className="tnum font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-500">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="mt-10 font-display text-lg font-bold leading-snug tracking-[-0.015em] text-brand-800">
+                      {d.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed text-brand-600">{d.body}</p>
                   </div>
                 </Reveal>
               ))}
@@ -143,34 +142,31 @@ export default function SobreNosotros() {
         </section>
 
         {/* CTA final */}
-        <section className="section">
-          <div className="container-x">
-            <div className="relative overflow-hidden rounded-[1.75rem] bg-brand-500 px-7 py-12 text-center text-white shadow-lift sm:px-12 sm:py-16">
-              <div aria-hidden="true" className="bubbles-bg absolute inset-0 opacity-20" />
-              <div className="relative mx-auto max-w-2xl">
-                <h2 className="font-display text-3xl font-bold sm:text-4xl">
-                  ¿Coordinamos tu próximo lavado?
-                </h2>
-                <p className="mt-4 text-lg text-brand-100">
-                  Contanos qué necesitás y te pasamos el presupuesto. Es el paso más fácil y sin
-                  compromiso.
-                </p>
-                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <WhatsAppButton
-                    source="sobre_nosotros"
-                    message={waMessages.footer}
-                    variant="primary"
-                  >
-                    Escribinos por WhatsApp
-                  </WhatsAppButton>
-                  <a
-                    href="/#servicios"
-                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-pill border border-white/30 bg-white/10 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white/20"
-                  >
-                    Ver servicios
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </div>
+        <section className="bg-brand-800 text-white">
+          <div className="container-x py-20 sm:py-24">
+            <div className="max-w-2xl">
+              <h2 className="font-display text-[2rem] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[2.5rem]">
+                ¿Coordinamos tu próximo lavado?
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-brand-100">
+                Contanos qué necesitás y te pasamos el presupuesto. Es el paso más fácil y sin
+                compromiso.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <WhatsAppButton
+                  source="sobre_nosotros"
+                  message={waMessages.footer}
+                  variant="primary"
+                >
+                  Escribinos por WhatsApp
+                </WhatsAppButton>
+                <a
+                  href="/#servicios"
+                  className="group inline-flex min-h-[44px] items-center justify-center gap-2 rounded-sharp border border-white/25 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:border-white/60"
+                >
+                  Ver servicios
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                </a>
               </div>
             </div>
           </div>

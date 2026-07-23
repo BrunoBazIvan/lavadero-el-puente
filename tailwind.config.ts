@@ -9,8 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base off-white (fondo neutro del sitio).
-        canvas: '#FAFAF8',
+        // Base papel (fondo neutro del sitio) — levemente más frío y sobrio
+        // que el off-white anterior: lee a papel técnico, no a plantilla.
+        canvas: '#F7F8F9',
         // Negro Tinta del manual — textos oscuros y detalles.
         ink: '#0D0D0D',
         // Marca — escala construida alrededor del "Azul Profundo" #07598C (500).
@@ -48,17 +49,26 @@ const config: Config = {
         display: ['var(--font-display)', 'system-ui', 'sans-serif'],
         sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
       },
+      // Radios casi rectos: lenguaje de ficha técnica / industria, no de app.
+      // `pill` se conserva SOLO para el FAB circular y el toggle del mapa.
       borderRadius: {
-        card: '1.25rem',
+        sharp: '2px',
+        card: '3px',
         pill: '999px',
       },
+      // Sombras nítidas y de bajo radio. La estructura la dan los filetes,
+      // no el desenfoque. (Sombra grande difusa = tell de plantilla IA.)
       boxShadow: {
-        card: '0 10px 30px -12px rgba(6, 26, 47, 0.18)',
-        lift: '0 20px 45px -15px rgba(6, 26, 47, 0.28)',
-        cta: '0 12px 28px -8px rgba(37, 211, 102, 0.5)',
+        card: '0 1px 2px rgba(4, 43, 69, 0.05)',
+        lift: '0 1px 2px rgba(4, 43, 69, 0.06), 0 12px 28px -20px rgba(4, 43, 69, 0.35)',
+        cta: '0 1px 2px rgba(4, 43, 69, 0.16)',
+      },
+      letterSpacing: {
+        // Etiqueta técnica en versalitas: el marcador de sección del sitio.
+        technical: '0.18em',
       },
       maxWidth: {
-        content: '72rem',
+        content: '76rem',
       },
     },
   },

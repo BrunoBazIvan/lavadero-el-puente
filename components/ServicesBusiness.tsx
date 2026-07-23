@@ -8,69 +8,62 @@ import { ArrowRight } from './icons';
 /** 5.5 — Lavandería industrial para empresas (B2B). */
 export default function ServicesBusiness() {
   return (
-    <section id="empresas" className="scroll-mt-20 bg-brand-500 text-white">
+    <section id="empresas" className="scroll-mt-20 bg-brand-800 text-white">
       <div className="container-x section">
-        <div className="grid gap-12 lg:grid-cols-2">
-          <Reveal>
-            <span className="mb-4 inline-flex items-center gap-2 rounded-pill bg-white/10 px-3 py-1 text-sm font-semibold uppercase tracking-wide text-aqua-200">
-              Para tu empresa
-            </span>
-            <h2 className="h2 text-white">
+        <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
+          <Reveal className="lg:col-span-6">
+            <span className="eyebrow eyebrow-invert">Para tu empresa</span>
+
+            <h2 className="h2 mt-6 text-white">
               Lavandería industrial para empresas de Maldonado y Punta del Este
             </h2>
-            <p className="lead mt-4 text-brand-100">
+
+            <p className="lead mt-6 text-brand-100">
               Somos el respaldo de lavandería para hoteles y empresas de Punta del Este: volumen,
               cumplimiento en temporada y ropa blanca impecable todo el año.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-2.5">
+            {/* Sectores: etiquetas rectas con filete, no píldoras. */}
+            <ul className="mt-9 flex flex-wrap gap-2">
               {businessSectors.map((sector) => (
-                <span
+                <li
                   key={sector}
-                  className="rounded-pill border border-white/20 bg-white/5 px-3.5 py-1.5 text-sm font-medium text-white"
+                  className="rounded-sharp border border-white/20 px-3 py-1.5 text-[0.8125rem] font-medium text-brand-100"
                 >
                   {sector}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="mt-10 flex flex-col flex-wrap items-start gap-x-8 gap-y-6 sm:flex-row sm:items-center">
               <WhatsAppButton source="b2b" message={waMessages.business} variant="primary">
                 Coordiná una cotización para tu empresa
               </WhatsAppButton>
               <Link
                 href="/lavanderia-industrial-maldonado/"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-aqua-200 hover:text-white"
+                className="group inline-flex items-center gap-2 whitespace-nowrap font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-200 transition-colors hover:text-white"
               >
                 Ver lavandería industrial
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-1" />
               </Link>
             </div>
           </Reveal>
 
-          <Reveal delay={90}>
-            <ul className="space-y-4">
-              {businessValue.map((v) => (
+          {/* Compromisos como filas de ficha técnica, numeradas y con filete. */}
+          <Reveal delay={90} className="lg:col-span-6">
+            <ol className="border-t border-white/15">
+              {businessValue.map((v, i) => (
                 <li
                   key={v}
-                  className="flex items-start gap-3 rounded-card bg-white/5 p-4 ring-1 ring-white/10"
+                  className="flex items-start gap-6 border-b border-white/15 py-6 lg:py-7"
                 >
-                  <svg
-                    className="mt-0.5 h-6 w-6 shrink-0 text-aqua-300"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
+                  <span className="tnum mt-1 shrink-0 font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-300">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   <span className="text-base leading-relaxed text-brand-50">{v}</span>
                 </li>
               ))}
-            </ul>
+            </ol>
           </Reveal>
         </div>
       </div>

@@ -11,21 +11,31 @@ export default function WhyUs() {
       : null;
 
   return (
-    <section className="bg-brand-50/70">
+    <section className="border-y border-brand-100 bg-brand-50/60">
       <div className="container-x section">
-        <Reveal className="max-w-2xl">
-          <span className="eyebrow mb-4">Por qué El Puente</span>
-          <h2 className="h2">Un lavadero en el que podés confiar</h2>
-          {trayectoria && <p className="lead mt-4">{trayectoria}.</p>}
+        <Reveal className="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <span className="eyebrow">Por qué El Puente</span>
+            <h2 className="h2 mt-6">Un lavadero en el que podés confiar</h2>
+          </div>
+          {trayectoria && (
+            <p className="text-base leading-relaxed text-brand-600 lg:col-span-5 lg:pb-2">
+              {trayectoria}.
+            </p>
+          )}
         </Reveal>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="matrix mt-14 sm:grid-cols-2 lg:grid-cols-4">
           {differentiators.map((d, i) => (
-            <Reveal key={d.title} delay={(i % 4) * 60}>
-              <div className="flex h-full flex-col rounded-card border border-brand-100 bg-white p-6 shadow-card">
-                <span className="h-1.5 w-10 rounded-full bg-aqua-400" />
-                <h3 className="mt-4 font-display text-lg font-bold text-brand-800">{d.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-brand-600">{d.body}</p>
+            <Reveal key={d.title} delay={(i % 4) * 60} className="matrix-cell">
+              <div className="flex h-full flex-col p-7 sm:p-8">
+                <span className="tnum font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-500">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="mt-10 font-display text-lg font-bold leading-snug tracking-[-0.015em] text-brand-800">
+                  {d.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-brand-600">{d.body}</p>
               </div>
             </Reveal>
           ))}

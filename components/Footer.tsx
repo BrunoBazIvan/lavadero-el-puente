@@ -4,10 +4,18 @@ import { landingPages } from '@/lib/landingPages';
 import Logo from './Logo';
 import WhatsAppButton from './WhatsAppButton';
 import PhoneLink from './PhoneLink';
-import { PinIcon, ClockIcon } from './icons';
 
 const servicePages = landingPages.filter((p) => p.kind === 'servicio');
 const zonePages = landingPages.filter((p) => p.kind === 'zona');
+
+/** Etiqueta de columna del footer: versalitas con tracking técnico. */
+function ColTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-300">
+      {children}
+    </p>
+  );
+}
 
 /** 5.10 — Footer. */
 export default function Footer() {
@@ -15,45 +23,41 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-brand-700 text-brand-100">
-      <div className="container-x py-14">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+    <footer className="bg-brand-900 text-brand-100">
+      <div className="container-x py-16 lg:py-20">
+        <div className="grid gap-12 border-t border-white/15 pt-12 md:grid-cols-2 lg:grid-cols-5">
           <div className="md:col-span-2 lg:col-span-1">
             <div className="[&_span]:text-white">
               <Logo />
             </div>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-200">
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-brand-200">
               Lavadero industrial y lavandería en {address.locality}. Hogar y empresas, todo el año.
             </p>
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white">Contacto</p>
-            <ul className="mt-4 space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <PinIcon className="mt-0.5 h-4 w-4 shrink-0 text-aqua-300" />
-                <span>
+            <ColTitle>Contacto</ColTitle>
+            <ul className="mt-5 space-y-3 text-sm">
+              <li>
+                <address className="not-italic leading-relaxed text-brand-200">
                   {address.street}
                   <br />
                   {address.locality}, {address.country}
-                </span>
+                </address>
               </li>
-              <li className="flex items-center gap-2">
-                <ClockIcon className="h-4 w-4 shrink-0 text-aqua-300" />
-                <span>{openingHours.label}</span>
-              </li>
+              <li className="text-brand-200">{openingHours.label}</li>
               <li>
-                <PhoneLink className="font-medium text-white hover:text-aqua-200" />
+                <PhoneLink className="font-semibold text-white transition-colors hover:text-aqua-200" />
               </li>
             </ul>
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white">Servicios</p>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ColTitle>Servicios</ColTitle>
+            <ul className="mt-5 space-y-2.5 text-sm">
               {servicePages.map((p) => (
                 <li key={p.slug}>
-                  <Link href={`/${p.slug}/`} className="hover:text-white">
+                  <Link href={`/${p.slug}/`} className="text-brand-200 transition-colors hover:text-white">
                     {p.breadcrumbLabel}
                   </Link>
                 </li>
@@ -62,27 +66,45 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white">Zonas</p>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ColTitle>Zonas</ColTitle>
+            <ul className="mt-5 space-y-2.5 text-sm">
               {zonePages.map((p) => (
                 <li key={p.slug}>
-                  <Link href={`/${p.slug}/`} className="hover:text-white">
+                  <Link href={`/${p.slug}/`} className="text-brand-200 transition-colors hover:text-white">
                     {p.breadcrumbLabel}
                   </Link>
                 </li>
               ))}
-              <li><a href="/#ubicacion" className="hover:text-white">Ubicación y horarios</a></li>
-              <li><Link href="/sobre-nosotros/" className="hover:text-white">Sobre nosotros</Link></li>
+              <li>
+                <a href="/#ubicacion" className="text-brand-200 transition-colors hover:text-white">
+                  Ubicación y horarios
+                </a>
+              </li>
+              <li>
+                <Link href="/sobre-nosotros/" className="text-brand-200 transition-colors hover:text-white">
+                  Sobre nosotros
+                </Link>
+              </li>
             </ul>
             {(social.instagram || social.facebook) && (
-              <div className="mt-5 flex gap-3">
+              <div className="mt-6 flex gap-4 text-sm">
                 {social.instagram && (
-                  <a href={social.instagram} target="_blank" rel="noopener" className="hover:text-white">
+                  <a
+                    href={social.instagram}
+                    target="_blank"
+                    rel="noopener"
+                    className="text-brand-200 transition-colors hover:text-white"
+                  >
                     Instagram
                   </a>
                 )}
                 {social.facebook && (
-                  <a href={social.facebook} target="_blank" rel="noopener" className="hover:text-white">
+                  <a
+                    href={social.facebook}
+                    target="_blank"
+                    rel="noopener"
+                    className="text-brand-200 transition-colors hover:text-white"
+                  >
                     Facebook
                   </a>
                 )}
@@ -91,13 +113,11 @@ export default function Footer() {
           </div>
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-white">
-              Pedí tu presupuesto
-            </p>
-            <p className="mt-4 text-sm text-brand-200">
+            <ColTitle>Pedí tu presupuesto</ColTitle>
+            <p className="mt-5 text-sm leading-relaxed text-brand-200">
               Escribinos y coordinamos lo que necesites.
             </p>
-            <div className="mt-4">
+            <div className="mt-5">
               <WhatsAppButton source="footer" message={waMessages.footer} variant="solid">
                 Escribinos por WhatsApp
               </WhatsAppButton>
@@ -105,7 +125,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 text-sm text-brand-300">
+        <div className="mt-14 border-t border-white/15 pt-6 text-sm text-brand-300">
           © {year} {business.name}. Todos los derechos reservados.
         </div>
       </div>

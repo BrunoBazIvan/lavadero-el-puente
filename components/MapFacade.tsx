@@ -29,13 +29,15 @@ export default function MapFacade({ title }: { title: string }) {
       type="button"
       onClick={() => setLoaded(true)}
       aria-label="Cargar mapa de Google con la ubicación del lavadero"
-      className="group relative flex h-full w-full flex-col items-center justify-center gap-3 bg-brand-50"
+      className="group relative flex h-full w-full flex-col items-center justify-center gap-4 bg-brand-50 transition-colors hover:bg-brand-100/60"
     >
-      <div className="bubbles-bg absolute inset-0 opacity-40" aria-hidden="true" />
-      <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-card transition-transform group-hover:scale-105">
-        <PinIcon className="h-7 w-7" />
+      <div className="map-grid absolute inset-0" aria-hidden="true" />
+      <span className="relative flex h-14 w-14 items-center justify-center rounded-sharp bg-brand-800 text-white">
+        <PinIcon className="h-6 w-6" />
       </span>
-      <span className="relative text-sm font-semibold text-brand-700">Ver mapa</span>
+      <span className="relative font-display text-[0.6875rem] font-bold uppercase tracking-technical text-brand-700">
+        Ver mapa
+      </span>
     </button>
   );
 }

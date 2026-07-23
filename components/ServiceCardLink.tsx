@@ -2,9 +2,12 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 /**
- * Tarjeta de servicio clickeable → página de servicio dedicada (enlazado interno
+ * Celda de servicio clickeable → página de servicio dedicada (enlazado interno
  * para SEO local). La conversión a WhatsApp vive en cada página de servicio y en
  * el CTA de la sección.
+ *
+ * Es una celda de la matriz de filetes: sin sombra, sin radio, sin flotar al
+ * hover. El estado se marca con fondo + filete inferior de acento.
  */
 export default function ServiceCardLink({
   pageSlug,
@@ -16,11 +19,7 @@ export default function ServiceCardLink({
   children: ReactNode;
 }) {
   return (
-    <Link
-      href={`/${pageSlug}/`}
-      aria-label={`Ver servicio: ${title}`}
-      className="group flex h-full flex-col rounded-card border border-brand-100 bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-aqua-200 hover:shadow-lift"
-    >
+    <Link href={`/${pageSlug}/`} aria-label={`Ver servicio: ${title}`} className="group cell-link">
       {children}
     </Link>
   );

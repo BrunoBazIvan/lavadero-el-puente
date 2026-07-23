@@ -38,12 +38,8 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
       <Header />
       <main>
         {/* Hero de la página */}
-        <section className="relative overflow-hidden border-b border-brand-100">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-b from-brand-50 via-canvas to-canvas" />
-            <div className="bubbles-bg absolute inset-0" />
-          </div>
-          <div className="container-x py-14 sm:py-16 lg:py-20">
+        <section className="border-b border-brand-100">
+          <div className="container-x py-16 sm:py-20 lg:py-24">
             {/* Breadcrumb */}
             <nav aria-label="Migas de pan" className="mb-6 text-sm">
               <ol className="flex flex-wrap items-center gap-1.5 text-brand-500">
@@ -60,17 +56,17 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
             </nav>
 
             <div className="max-w-3xl">
-              <span className="eyebrow mb-4">
+              <span className="eyebrow">
                 {page.kind === 'zona' ? 'Zona de cobertura' : 'Servicio'}
               </span>
-              <h1 className="h1">{page.h1}</h1>
-              <p className="lead mt-5">{page.intro}</p>
+              <h1 className="h1 mt-7">{page.h1}</h1>
+              <p className="lead mt-7">{page.intro}</p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <WhatsAppButton source={waSource} message={page.waMessage} variant="primary">
                   Pedí tu presupuesto por WhatsApp
                 </WhatsAppButton>
-                <PhoneLink className="min-h-[44px] justify-center rounded-pill border border-brand-200 bg-white/70 px-6 py-3 font-semibold text-brand-700 transition-colors hover:border-brand-300 hover:bg-white">
+                <PhoneLink className="min-h-[44px] justify-center rounded-sharp border border-brand-200 bg-white px-6 py-3.5 font-semibold text-brand-700 transition-colors hover:border-brand-400 hover:text-brand-800">
                   Llamar {business.phoneDisplay}
                 </PhoneLink>
               </div>
@@ -78,10 +74,12 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
           </div>
         </section>
 
-        {/* Secciones de contenido */}
+        {/* Secciones de contenido. La medida de lectura va dentro del
+            container, no sobre él: así comparte el eje izquierdo con el hero
+            en vez de centrarse por su cuenta. */}
         <section className="section">
-          <div className="container-x max-w-3xl">
-            <div className="space-y-12">
+          <div className="container-x">
+            <div className="max-w-3xl space-y-14">
               {page.sections.map((s) => (
                 <Reveal key={s.h2}>
                   <h2 className="h2">{s.h2}</h2>
@@ -119,25 +117,24 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
 
         {/* FAQ */}
         {page.faq.length > 0 && (
-          <section className="bg-brand-50/70">
+          <section className="border-y border-brand-100 bg-brand-50/60">
             <div className="container-x section">
-              <Reveal className="mx-auto max-w-3xl">
-                <h2 className="h2 text-center">Preguntas frecuentes</h2>
-                <div className="mt-8 divide-y divide-brand-100 overflow-hidden rounded-card border border-brand-100 bg-white shadow-card">
+              <Reveal className="max-w-3xl">
+                <h2 className="h2">Preguntas frecuentes</h2>
+                <div className="mt-10 border-t border-brand-200">
                   {page.faq.map((f) => (
-                    <details key={f.q} className="group px-6 py-1">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-display text-lg font-semibold text-brand-800 marker:hidden">
+                    <details key={f.q} className="group border-b border-brand-200">
+                      <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-6 font-display text-lg font-bold leading-snug tracking-[-0.015em] text-brand-800 transition-colors marker:hidden hover:text-brand-500">
                         {f.q}
                         <span
                           aria-hidden="true"
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500 transition-transform duration-200 group-open:rotate-45"
+                          className="relative mt-1.5 h-3.5 w-3.5 shrink-0 text-aqua-500"
                         >
-                          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
-                            <path d="M12 5v14M5 12h14" />
-                          </svg>
+                          <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
+                          <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current transition-transform duration-200 ease-out group-open:scale-y-0" />
                         </span>
                       </summary>
-                      <p className="pb-5 pr-10 text-base leading-relaxed text-brand-600">{f.a}</p>
+                      <p className="pb-7 pr-10 text-base leading-relaxed text-brand-600">{f.a}</p>
                     </details>
                   ))}
                 </div>
@@ -153,17 +150,16 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
               <Reveal className="max-w-2xl">
                 <h2 className="h2">Otros servicios que te pueden servir</h2>
               </Reveal>
-              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="matrix mt-12 sm:grid-cols-2 lg:grid-cols-3">
                 {related.map((r, i) => (
-                  <Reveal key={r.slug} delay={(i % 3) * 70}>
-                    <Link
-                      href={`/${r.slug}/`}
-                      className="group flex h-full flex-col justify-between gap-6 rounded-card border border-brand-100 bg-white p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-aqua-300 hover:shadow-lift"
-                    >
-                      <h3 className="font-display text-lg font-bold text-brand-800">{r.h1}</h3>
-                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600">
+                  <Reveal key={r.slug} delay={(i % 3) * 70} className="matrix-cell">
+                    <Link href={`/${r.slug}/`} className="group cell-link justify-between gap-10">
+                      <h3 className="font-display text-lg font-bold leading-snug tracking-[-0.015em] text-brand-800">
+                        {r.h1}
+                      </h3>
+                      <span className="inline-flex items-center gap-2 font-display text-[0.6875rem] font-bold uppercase tracking-technical text-brand-500">
                         Ver servicio
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-1" />
                       </span>
                     </Link>
                   </Reveal>
@@ -174,25 +170,22 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
         )}
 
         {/* CTA final */}
-        <section className="pb-16 sm:pb-20">
-          <div className="container-x">
-            <div className="relative overflow-hidden rounded-[1.75rem] bg-brand-500 px-7 py-12 text-center text-white shadow-lift sm:px-12 sm:py-14">
-              <div aria-hidden="true" className="bubbles-bg absolute inset-0 opacity-20" />
-              <div className="relative mx-auto max-w-2xl">
-                <h2 className="font-display text-2xl font-bold sm:text-3xl">
-                  Coordiná tu {page.breadcrumbLabel.toLowerCase()} hoy
-                </h2>
-                <p className="mt-3 text-lg text-brand-100">
-                  Contanos qué necesitás y te pasamos el presupuesto. Sin compromiso.
-                </p>
-                <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <WhatsAppButton source={waSource} message={page.waMessage} variant="primary">
-                    Escribinos por WhatsApp
-                  </WhatsAppButton>
-                  <PhoneLink className="min-h-[44px] justify-center rounded-pill border border-white/30 bg-white/10 px-6 py-3 font-semibold text-white transition-colors hover:bg-white/20">
-                    Llamar {business.phoneDisplay}
-                  </PhoneLink>
-                </div>
+        <section className="bg-brand-800 text-white">
+          <div className="container-x py-20 sm:py-24">
+            <div className="max-w-2xl">
+              <h2 className="font-display text-[2rem] font-bold leading-[1.05] tracking-[-0.03em] sm:text-[2.5rem]">
+                Coordiná tu {page.breadcrumbLabel.toLowerCase()} hoy
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-brand-100">
+                Contanos qué necesitás y te pasamos el presupuesto. Sin compromiso.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <WhatsAppButton source={waSource} message={page.waMessage} variant="primary">
+                  Escribinos por WhatsApp
+                </WhatsAppButton>
+                <PhoneLink className="min-h-[44px] justify-center rounded-sharp border border-white/25 px-6 py-3.5 font-semibold text-white transition-colors hover:border-white/60">
+                  Llamar {business.phoneDisplay}
+                </PhoneLink>
               </div>
             </div>
           </div>

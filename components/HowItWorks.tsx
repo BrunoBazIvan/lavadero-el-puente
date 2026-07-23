@@ -32,21 +32,29 @@ export default function HowItWorks() {
   return (
     <section className="section">
       <div className="container-x">
-        <Reveal className="max-w-2xl">
-          <span className="eyebrow mb-4">Simple y sin vueltas</span>
-          <h2 className="h2">Cómo funciona</h2>
-          <p className="lead mt-4">En tres pasos y sin salir de WhatsApp.</p>
+        <Reveal className="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <span className="eyebrow">Simple y sin vueltas</span>
+            <h2 className="h2 mt-6">Cómo funciona</h2>
+          </div>
+          <p className="text-base leading-relaxed text-brand-600 lg:col-span-5 lg:pb-2">
+            En tres pasos y sin salir de WhatsApp.
+          </p>
         </Reveal>
 
-        <ol className="mt-10 grid gap-5 md:grid-cols-3">
+        {/* Pasos: la cifra grande es el ancla visual, el filete superior marca
+            el inicio de cada columna. Sin tarjetas ni sombras. */}
+        <ol className="mt-16 grid gap-x-10 gap-y-12 md:grid-cols-3">
           {steps.map((s, i) => (
             <Reveal key={s.n} as="li" delay={i * 80}>
-              <div className="flex h-full flex-col rounded-card border border-brand-100 bg-white p-7 shadow-card">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-500 font-display text-lg font-bold text-white">
-                  {s.n}
+              <div className="flex h-full flex-col border-t-2 border-brand-800 pt-6">
+                <span className="tnum font-display text-5xl font-bold leading-none tracking-[-0.04em] text-brand-200">
+                  {String(s.n).padStart(2, '0')}
                 </span>
-                <h3 className="mt-4 font-display text-lg font-bold text-brand-800">{s.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-brand-600">{s.body}</p>
+                <h3 className="mt-7 font-display text-xl font-bold leading-snug tracking-[-0.02em] text-brand-800">
+                  {s.title}
+                </h3>
+                <p className="mt-3 text-base leading-relaxed text-brand-600">{s.body}</p>
               </div>
             </Reveal>
           ))}

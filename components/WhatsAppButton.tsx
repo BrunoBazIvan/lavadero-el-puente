@@ -11,6 +11,9 @@ type Variant = 'primary' | 'solid' | 'compact' | 'ghost';
  * Componente ÚNICO de conversión a WhatsApp.
  * Todos los caminos de conversión pasan por acá: un solo lugar para el número
  * (via buildWhatsAppUrl) y para el tracking (via trackWhatsAppClick).
+ *
+ * Geometría recta (radio 2px) y sin desplazamiento al hover: el botón se
+ * comporta como un control industrial, no como un CTA de plantilla.
  */
 export default function WhatsAppButton({
   source,
@@ -28,21 +31,19 @@ export default function WhatsAppButton({
   showIcon?: boolean;
 }) {
   const base =
-    'inline-flex items-center justify-center gap-2.5 font-semibold transition-all duration-200 focus-visible:outline-offset-4 min-h-[44px]';
+    'group/cta inline-flex items-center justify-center gap-2.5 rounded-sharp font-semibold transition-colors duration-150 focus-visible:outline-offset-4 min-h-[44px]';
 
   const variants: Record<Variant, string> = {
     // CTA grande principal (verde WhatsApp — reservado a conversión).
     primary:
-      'rounded-pill bg-whatsapp px-7 py-3.5 text-base text-white shadow-cta hover:bg-whatsapp-dark hover:-translate-y-0.5 active:translate-y-0',
+      'bg-whatsapp px-7 py-3.5 text-base text-white shadow-cta hover:bg-whatsapp-dark',
     // CTA sólido tamaño medio.
-    solid:
-      'rounded-pill bg-whatsapp px-5 py-2.5 text-sm text-white shadow-cta hover:bg-whatsapp-dark hover:-translate-y-0.5',
+    solid: 'bg-whatsapp px-5 py-2.5 text-sm text-white shadow-cta hover:bg-whatsapp-dark',
     // Botón compacto del header.
-    compact:
-      'rounded-pill bg-whatsapp px-4 py-2 text-sm text-white hover:bg-whatsapp-dark',
-    // Verde sobre fondo, con borde (para secciones oscuras invertidas).
+    compact: 'bg-whatsapp px-4 py-2 text-sm text-white hover:bg-whatsapp-dark',
+    // Verde sobre fondo claro, con filete (para secciones invertidas).
     ghost:
-      'rounded-pill border-2 border-whatsapp bg-white px-6 py-3 text-base text-whatsapp-dark hover:bg-whatsapp hover:text-white',
+      'border border-whatsapp bg-white px-6 py-3 text-base text-whatsapp-dark hover:bg-whatsapp hover:text-white',
   };
 
   return (
