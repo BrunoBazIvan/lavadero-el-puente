@@ -49,30 +49,30 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-industrial-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Lavandería industrial',
-    metaTitle: 'Lavandería Industrial en Maldonado | El Puente',
+    metaTitle: 'Lavandería industrial en Maldonado | El Puente',
     metaDescription:
       'Lavandería industrial para hoteles, apart y restaurantes de Maldonado y Punta del Este. Ropa blanca impecable y cumplimiento en temporada alta.',
     primaryKeyword: 'lavandería industrial Maldonado',
     h1: 'Lavandería industrial en Maldonado y Punta del Este',
     intro:
-      'Somos el respaldo de lavandería de hoteles, apart-hoteles, Airbnb, restaurantes, edificios y clínicas de Maldonado y Punta del Este. Maquinaria industrial propia, capacidad para volumen alto y cumplimiento cuando más lo necesitás: en plena temporada.',
+      'Lavamos la ropa blanca de hoteles, apart, Airbnb, restaurantes, edificios y clínicas de Maldonado y Punta del Este. Maquinaria industrial propia, capacidad para volumen alto y entregas en fecha también en enero.',
     sections: [
       {
         h2: 'Ropa blanca hotelera lista todo el año',
         body: [
-          'Lavamos sábanas, toallas, mantelería y ropa blanca hotelera dejándolas impecables, con el nivel de higiene y prolijidad que tu huésped espera.',
-          'Trabajamos todo el año, no solo en verano, para que tu operación no dependa de la temporada.',
+          'Lavamos sábanas, toallas y mantelería con el nivel de higiene y prolijidad que tu huésped espera al entrar a la habitación.',
+          'Y lo hacemos los doce meses, así tu operativa no depende de la temporada.',
         ],
       },
       {
         h2: 'Capacidad real para temporada alta',
         body: [
-          'Nuestros equipos de lavado industrial rinden con volumen alto sin demoras. En enero y febrero, cuando el resto colapsa, seguimos cumpliendo los plazos acordados.',
+          'Nuestros equipos de lavado industrial rinden con volumen alto sin demoras, así que en enero y febrero seguimos entregando en los plazos que acordamos.',
         ],
         bullets: [
           'Volumen alto de ropa blanca sin demoras',
-          'Continuidad de servicio los 12 meses',
-          'Facturación a empresa y trato directo con un referente',
+          'Servicio los doce meses del año',
+          'Facturamos a empresa y coordinás siempre con la misma persona',
         ],
       },
       {
@@ -108,24 +108,24 @@ export const landingPages: LandingPage[] = [
     slug: 'limpieza-de-acolchados-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Limpieza de acolchados',
-    metaTitle: 'Limpieza de Acolchados en Maldonado | El Puente',
+    metaTitle: 'Limpieza de acolchados en Maldonado | El Puente',
     metaDescription:
-      'Lavado profesional de acolchados, frazadas y edredones en Maldonado. Cuidamos cada tipo de tela. Con retiro y entrega a domicilio. Escribinos por WhatsApp.',
+      'Lavado profesional de acolchados, frazadas y edredones en Maldonado. Cuidamos cada tipo de tela. Con retiro y entrega a domicilio por WhatsApp.',
     primaryKeyword: 'limpieza de acolchados Maldonado',
     h1: 'Limpieza de acolchados y frazadas en Maldonado',
     intro:
-      'Lavado profundo de acolchados, frazadas y edredones que no entran en el lavarropas de casa. Los dejamos limpios, esponjosos y sin olores, cuidando el color y la textura de cada tela.',
+      'Lavado profundo de acolchados, frazadas y edredones que no entran en el lavarropas de casa. Te los devolvemos esponjosos, sin olor guardado y con el color intacto.',
     sections: [
       {
-        h2: 'Acolchados, frazadas y edredones como nuevos',
+        h2: 'Piezas grandes que en casa quedan a medias',
         body: [
-          'Con maquinaria industrial lavamos piezas grandes y voluminosas que en casa quedan a medias. Quitamos polvo, ácaros y olores guardados, sobre todo al salir del invierno.',
+          'La maquinaria industrial lava el volumen que un lavarropas doméstico no llega a mover, y saca el polvo y los ácaros que se acumulan durante el invierno.',
         ],
       },
       {
         h2: 'Cuidado según el tipo de tela',
         body: [
-          'Adaptamos el proceso a cada prenda: plumón, poliéster, lana o telas delicadas. Respetamos el color y la caída para que tu acolchado te dure muchas temporadas más.',
+          'El plumón, el poliéster, la lana y las telas delicadas llevan cada uno su proceso. Respetamos el color y la caída para que el acolchado te dure muchas temporadas más.',
         ],
       },
       {
@@ -161,24 +161,24 @@ export const landingPages: LandingPage[] = [
     slug: 'lavado-de-sabanas-y-juegos-de-cama',
     kind: 'servicio',
     breadcrumbLabel: 'Sábanas y juegos de cama',
-    metaTitle: 'Lavado de Sábanas y Juegos de Cama | Maldonado',
+    metaTitle: 'Lavado de sábanas y juegos de cama | Maldonado',
     metaDescription:
       'Lavado de sábanas, juegos de cama y ropa blanca en Maldonado. Blancos impecables para tu casa, apart o alojamiento. Con retiro y entrega a domicilio.',
     primaryKeyword: 'lavado de sábanas Maldonado',
     h1: 'Lavado de sábanas y juegos de cama en Maldonado',
     intro:
-      'Lavado de sábanas, fundas, colchas y juegos de cama que quedan impecables, suaves y bien planchados. Ideal para tu hogar y para quienes manejan apart, Airbnb o casas de temporada.',
+      'Lavado de sábanas, fundas, colchas y juegos de cama que vuelven suaves y bien planchados. Para tu casa y también para quien maneja un apart, un Airbnb o una casa de temporada.',
     sections: [
       {
         h2: 'Ropa blanca impecable para tu hogar',
         body: [
-          'Dejamos tus sábanas y juegos de cama limpios, frescos y prolijos, listos para usar o guardar. Un lavado profesional cuida mejor las telas y les alarga la vida.',
+          'Te devolvemos las sábanas y los juegos de cama planchados y listos para usar o guardar. De paso, un lavado profesional trata mejor la tela y le alarga la vida.',
         ],
       },
       {
         h2: 'Para apart, Airbnb y alojamientos',
         body: [
-          'Si alquilás tu propiedad, la ropa blanca hace la diferencia en la reseña del huésped. Te ayudamos a tener juegos de cama impecables entre estadía y estadía, incluso en temporada.',
+          'Si alquilás tu propiedad, sabés que el huésped nota la ropa de cama apenas entra. Te ayudamos a tener juegos limpios entre estadía y estadía, también en plena temporada.',
         ],
       },
       {
@@ -214,13 +214,13 @@ export const landingPages: LandingPage[] = [
     slug: 'lavado-de-cortinas-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Lavado de cortinas',
-    metaTitle: 'Lavado de Cortinas y Cortinados | Maldonado',
+    metaTitle: 'Lavado de cortinas y cortinados | Maldonado',
     metaDescription:
       'Lavado de cortinas y cortinados de todo tipo de tela en Maldonado, cuidando el color y la caída. Retiro y entrega a coordinar por WhatsApp.',
     primaryKeyword: 'lavado de cortinas Maldonado',
     h1: 'Lavado de cortinas y cortinados en Maldonado',
     intro:
-      'Lavado de cortinas y cortinados de todo tipo de tela, con el cuidado que necesitan para no perder el color ni la caída. Les devolvemos la frescura sin el riesgo de lavarlas en casa.',
+      'Lavado de cortinas y cortinados de todo tipo de tela, con el cuidado que hace falta para que no pierdan el color ni la caída. Sin el riesgo de meterlas en el lavarropas de casa.',
     sections: [
       {
         h2: 'Cortinas de todo tipo de tela',
@@ -263,24 +263,24 @@ export const landingPages: LandingPage[] = [
     slug: 'limpieza-de-alfombras-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Limpieza de alfombras',
-    metaTitle: 'Limpieza de Alfombras y Tapizados | Maldonado',
+    metaTitle: 'Limpieza de alfombras y tapizados | Maldonado',
     metaDescription:
-      'Limpieza de alfombras y tapizados en Maldonado: quitamos manchas, polvo y olores y las dejamos como nuevas. Con retiro y entrega. Escribinos por WhatsApp.',
+      'Limpieza de alfombras y tapizados en Maldonado. Llegamos al fondo de la fibra, donde la aspiradora no entra. Con retiro y entrega a domicilio.',
     primaryKeyword: 'limpieza de alfombras Maldonado',
     h1: 'Limpieza de alfombras y tapizados en Maldonado',
     intro:
-      'Limpieza de alfombras y tapizados que quita manchas, polvo y olores en profundidad. Recuperamos el color y la textura para que vuelvan a verse como nuevas.',
+      'Lavamos alfombras y tapizados en profundidad, hasta el fondo de la fibra. Se van las manchas y el olor guardado, y vuelve el color que tenían antes de taparse de polvo.',
     sections: [
       {
-        h2: 'Alfombras y tapizados como nuevos',
+        h2: 'Lo que la aspiradora no levanta',
         body: [
-          'Las alfombras acumulan polvo, ácaros y manchas que la aspiradora no saca. Con lavado profesional llegamos al fondo de la fibra y devolvemos la frescura a la pieza.',
+          'Una alfombra junta polvo y ácaros muy por debajo de la superficie. El lavado profesional llega a esa capa, que es la que carga el olor y apaga el color.',
         ],
       },
       {
-        h2: 'Manchas, polvo y olores',
+        h2: 'Manchas puntuales y olor guardado',
         body: [
-          'Tratamos manchas puntuales y olores guardados, cuidando la fibra y el color. El resultado es una alfombra limpia, seca y prolija, lista para volver a su lugar.',
+          'Cada mancha lleva su tratamiento según la fibra y el color de la pieza. La alfombra vuelve limpia y seca, lista para poner de nuevo en el piso.',
         ],
       },
       {
@@ -293,7 +293,7 @@ export const landingPages: LandingPage[] = [
     faq: [
       {
         q: '¿Quitan manchas y olores de la alfombra?',
-        a: 'Sí. Tratamos manchas y olores en profundidad cuidando la fibra y el color de la pieza.',
+        a: 'Sí. Contanos qué tipo de mancha es y de qué material es la alfombra, y te decimos con qué resultado podés contar antes de traerla.',
       },
       {
         q: '¿Limpian también tapizados?',
@@ -312,7 +312,7 @@ export const landingPages: LandingPage[] = [
     slug: 'lavado-y-planchado-de-ropa-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Lavado y planchado',
-    metaTitle: 'Lavado, Secado y Planchado de Ropa | Maldonado',
+    metaTitle: 'Lavado, secado y planchado de ropa | Maldonado',
     metaDescription:
       'Lavado, secado y planchado de ropa en Maldonado, por prenda o por volumen, con doblado prolijo. Retirala lista para usar. Coordiná por WhatsApp.',
     primaryKeyword: 'lavado y secado Maldonado',
@@ -329,7 +329,7 @@ export const landingPages: LandingPage[] = [
       {
         h2: 'Secado y planchado listos para usar',
         body: [
-          'Sumamos secado y planchado para que la ropa vuelva impecable y doblada. Ideal si querés ahorrar tiempo o no tenés dónde secar en casa.',
+          'Sumamos secado y planchado para que la ropa vuelva doblada y lista. Sirve sobre todo si andás corto de tiempo o no tenés dónde secar en casa.',
         ],
       },
       {
@@ -361,7 +361,7 @@ export const landingPages: LandingPage[] = [
     slug: 'retiro-y-entrega-a-domicilio-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Retiro y entrega',
-    metaTitle: 'Retiro y Entrega a Domicilio | Lavadero Maldonado',
+    metaTitle: 'Retiro y entrega a domicilio | Lavadero Maldonado',
     metaDescription:
       'Lavadero con retiro y entrega a domicilio en Maldonado, Punta del Este, La Barra, Manantiales y José Ignacio. Coordiná todo por WhatsApp.',
     primaryKeyword: 'retiro y entrega a domicilio Maldonado',
@@ -381,9 +381,9 @@ export const landingPages: LandingPage[] = [
         ],
       },
       {
-        h2: 'Todo por WhatsApp, sin vueltas',
+        h2: 'Vale para todos los servicios',
         body: [
-          'El retiro y la entrega aplican a todos nuestros servicios: ropa, acolchados, cortinas, alfombras y ropa blanca para empresas.',
+          'El retiro y la entrega funcionan igual para ropa, acolchados, cortinas, alfombras y ropa blanca de empresas.',
         ],
       },
     ],
@@ -416,7 +416,7 @@ export const landingPages: LandingPage[] = [
     primaryKeyword: 'lavandería Punta del Este',
     h1: 'Lavandería en Punta del Este',
     intro:
-      'Somos tu lavadero de confianza en Punta del Este, todo el año. Ropa, acolchados, cortinas, alfombras y ropa blanca, con retiro y entrega a domicilio para que no pierdas tiempo.',
+      'Trabajamos en Punta del Este los doce meses del año. Ropa, acolchados, cortinas, alfombras y ropa blanca, con retiro y entrega a domicilio para que no pierdas tiempo en traslados.',
     sections: [
       {
         h2: 'Tu lavadero en Punta del Este todo el año',
@@ -460,13 +460,13 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-la-barra-manantiales-jose-ignacio',
     kind: 'zona',
     breadcrumbLabel: 'La Barra · José Ignacio',
-    metaTitle: 'Lavandería en La Barra, Manantiales y J. Ignacio',
+    metaTitle: 'Lavandería en La Barra, Manantiales y José Ignacio',
     metaDescription:
-      'Lavadero con retiro y entrega en La Barra, Manantiales y José Ignacio. Ropa blanca para apart y alojamientos, más textiles del hogar. Coordiná por WhatsApp.',
+      'Lavadero con retiro y entrega en La Barra, Manantiales y José Ignacio. Ropa blanca para apart y alojamientos, más los textiles de tu casa.',
     primaryKeyword: 'lavandería La Barra',
     h1: 'Lavandería en La Barra, Manantiales y José Ignacio',
     intro:
-      'Damos servicio en todo el corredor de la costa —La Barra, Manantiales y José Ignacio— con retiro y entrega a domicilio. Ideal para casas de temporada, apart y alojamientos.',
+      'Damos servicio en todo el corredor de la costa, de La Barra a José Ignacio, con retiro y entrega a domicilio. Trabajamos mucho con casas de temporada, apart y alojamientos.',
     sections: [
       {
         h2: 'Servicio en el corredor de la costa',
@@ -475,9 +475,9 @@ export const landingPages: LandingPage[] = [
         ],
       },
       {
-        h2: 'Ideal para apart, Airbnb y casas de temporada',
+        h2: 'Para apart, Airbnb y casas de temporada',
         body: [
-          'En la zona hay mucho alquiler temporal, y la ropa blanca impecable es clave para la reseña del huésped. Te ayudamos a tener juegos de cama y toallas listos entre estadías.',
+          'En la zona hay mucho alquiler temporal, y la ropa blanca es de las primeras cosas que el huésped menciona en la reseña. Te ayudamos a tener juegos de cama y toallas listos entre estadía y estadía.',
         ],
       },
       {

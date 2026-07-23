@@ -60,18 +60,17 @@ export default function SobreNosotros() {
               <h2 className="h2">Nuestra forma de trabajar</h2>
               <div className="mt-5 space-y-4 text-lg leading-relaxed text-brand-600">
                 <p>
-                  Empezamos resolviendo lo que no entra en el lavarropas de casa —acolchados,
-                  cortinas, alfombras— y crecimos hasta ser el respaldo de lavandería de hoteles,
-                  apart y restaurantes de la zona en plena temporada.
+                  Empezamos con lo que no entra en el lavarropas de casa: acolchados, cortinas,
+                  alfombras. Con los años sumamos la ropa blanca de hoteles, apart y restaurantes
+                  de la zona, que es la que no puede fallar en enero.
                 </p>
                 <p>
-                  Trabajamos con equipos de lavado industrial que rinden con volumen alto y, al
-                  mismo tiempo, cuidan cada tipo de tela. Cada prenda vuelve limpia, seca y
-                  prolija, en el plazo que acordamos.
+                  Los equipos de lavado industrial nos permiten mover volumen alto sin maltratar
+                  la tela. Cada prenda vuelve limpia y seca, en el plazo que acordamos.
                 </p>
                 <p>
-                  No hay intermediarios: coordinás directo por WhatsApp con el lavadero. Eso hace
-                  todo más simple, más rápido y más claro para vos.
+                  No hay intermediarios. Coordinás por WhatsApp con el lavadero, y quien te
+                  responde es quien va a lavar tus cosas.
                 </p>
               </div>
 
@@ -103,7 +102,7 @@ export default function SobreNosotros() {
                       k: 'A quién atendemos',
                       v: 'Familias y empresas de Maldonado y Punta del Este.',
                     },
-                    { k: 'Cómo coordinamos', v: 'Directo por WhatsApp, sin intermediarios.' },
+                    { k: 'Cómo coordinamos', v: 'Por WhatsApp, o por teléfono si preferís.' },
                   ].map((row) => (
                     <div key={row.k} className="px-7 py-5">
                       <dt className="font-display text-[0.6875rem] font-bold uppercase tracking-technical text-brand-400">
@@ -151,8 +150,8 @@ export default function SobreNosotros() {
                 ¿Coordinamos tu próximo lavado?
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-brand-100">
-                Contanos qué necesitás y te pasamos el presupuesto. Es el paso más fácil y sin
-                compromiso.
+                Escribinos con lo que tengas para lavar y te pasamos el precio. No te
+                comprometés a nada.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <WhatsAppButton

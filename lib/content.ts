@@ -45,7 +45,7 @@ export const homeServices: HomeService[] = [
     pageSlug: 'limpieza-de-alfombras-maldonado',
     title: 'Alfombras y tapizados',
     description:
-      'Limpieza de alfombras y tapizados: quitamos manchas, polvo y olores dejándolas como nuevas.',
+      'Limpieza de alfombras y tapizados. Sacamos las manchas y el olor guardado que la aspiradora no llega a levantar.',
     waSubject: 'limpieza de alfombras y tapizados',
     alt: 'Alfombra limpia en lavadero de Maldonado y Punta del Este',
     icon: 'rug',
@@ -65,7 +65,7 @@ export const homeServices: HomeService[] = [
     pageSlug: 'lavado-y-planchado-de-ropa-maldonado',
     title: 'Planchado y secado',
     description:
-      'Servicio de planchado y secado de ropa para que la retires lista para usar o guardar.',
+      'Planchado y secado para que retires la ropa lista para usar o guardar.',
     waSubject: 'el servicio de planchado y secado',
     alt: 'Ropa planchada y lista en lavadero de Maldonado',
     icon: 'iron',
@@ -123,11 +123,11 @@ export const trustedSectors: { label: string; icon: 'hotel' | 'apart' | 'resto' 
 
 /** Bullets de valor B2B. */
 export const businessValue = [
-  'Capacidad para manejar volumen alto de ropa blanca sin demoras.',
-  'Cumplimiento en plena temporada alta, cuando más lo necesitás.',
+  'Manejamos volumen alto de ropa blanca sin demoras.',
+  'En enero y febrero entregamos en los plazos que acordamos.',
   'Ropa blanca hotelera: sábanas, toallas y mantelería impecables.',
-  'Continuidad de servicio durante todo el año, no solo en verano.',
-  'Facturación a empresa y trato directo con un referente.',
+  'Trabajamos los doce meses, no solo el verano.',
+  'Facturamos a empresa y coordinás siempre con la misma persona.',
 ];
 
 /** Diferenciales (sección "Por qué El Puente"). Sin cifras inventadas. */
@@ -142,7 +142,7 @@ export const differentiators = [
   },
   {
     title: 'Prendas delicadas',
-    body: 'Cuidado especial de acolchados, cortinas y telas finas, respetando color y textura.',
+    body: 'Acolchados, cortinas y telas finas llevan otro proceso, y les respetamos el color y la textura.',
   },
   {
     title: 'De Maldonado, para Maldonado',
@@ -179,6 +179,6 @@ export const faqs: { q: string; a: string }[] = [
   },
   {
     q: '¿Cómo pido un presupuesto?',
-    a: 'Es muy simple: tocá cualquier botón de WhatsApp de la página, contanos qué necesitás y te pasamos el presupuesto. También podés llamarnos por teléfono.',
+    a: 'Tocá cualquier botón de WhatsApp de la página, contanos qué necesitás y te pasamos el presupuesto. Si preferís, llamanos por teléfono.',
   },
 ];

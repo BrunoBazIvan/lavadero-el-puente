@@ -50,11 +50,12 @@ const config: Config = {
         sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
       },
       // Radios casi rectos: lenguaje de ficha técnica / industria, no de app.
-      // `pill` se conserva SOLO para el FAB circular y el toggle del mapa.
+      // No reponer un token tipo `pill: 999px`: la píldora es el anti-patrón
+      // que se quitó de botones y badges. Lo único redondo del sitio es el FAB
+      // de WhatsApp, que usa `rounded-full` (utilidad nativa de Tailwind).
       borderRadius: {
         sharp: '2px',
         card: '3px',
-        pill: '999px',
       },
       // Sombras nítidas y de bajo radio. La estructura la dan los filetes,
       // no el desenfoque. (Sombra grande difusa = tell de plantilla IA.)

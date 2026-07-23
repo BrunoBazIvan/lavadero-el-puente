@@ -19,8 +19,8 @@ export default function ServicesBusiness() {
             </h2>
 
             <p className="lead mt-6 text-brand-100">
-              Somos el respaldo de lavandería para hoteles y empresas de Punta del Este: volumen,
-              cumplimiento en temporada y ropa blanca impecable todo el año.
+              Hoteles y empresas de Punta del Este nos dejan su ropa blanca durante todo el año.
+              Manejamos el volumen de la temporada sin mover las fechas de entrega.
             </p>
 
             {/* Sectores: etiquetas rectas con filete, no píldoras. */}

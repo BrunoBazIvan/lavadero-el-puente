@@ -6,18 +6,18 @@ import { ArrowRight } from './icons';
 export default function Hero() {
   const cobertura = 'Maldonado y Punta del Este';
   const valor = business.pickupDelivery
-    ? 'Rápido, prolijo y con retiro y entrega a coordinar.'
-    : 'Rápido, prolijo y con trato directo.';
+    ? 'Pasamos a buscar y entregamos a domicilio, a coordinar.'
+    : 'Coordinás directo con el lavadero, sin intermediarios.';
 
   // Panel de especificación: los dos públicos, como entradas de ficha técnica.
   const publicos = [
     {
       k: 'Para tu hogar',
-      v: 'Acolchados, cortinas, alfombras y ropa como nuevos.',
+      v: 'Acolchados, cortinas, alfombras y la ropa de todos los días.',
     },
     {
       k: 'Para tu empresa',
-      v: 'Ropa blanca hotelera lista, incluso en plena temporada.',
+      v: 'Ropa blanca hotelera lista, también en plena temporada.',
     },
   ];
 

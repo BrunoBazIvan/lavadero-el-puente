@@ -11,21 +11,21 @@ export default function HowItWorks() {
     {
       n: '1',
       title: 'Escribinos por WhatsApp',
-      body: 'Contanos qué necesitás lavar. Es el paso más fácil y sin compromiso.',
+      body: 'Contanos qué necesitás lavar. No hace falta que sepas cantidades exactas.',
     },
     {
       n: '2',
       title: step2,
       body: business.pickupDelivery
-        ? 'Nos organizamos según lo que te quede mejor y arrancamos con el trabajo.'
-        : 'Coordinamos día y horario para recibir tus prendas y arrancar.',
+        ? 'Vemos qué te queda más cómodo, arreglamos día y horario, y arrancamos.'
+        : 'Arreglamos día y horario para recibir tus prendas, y arrancamos.',
     },
     {
       n: '3',
       title: 'Te avisamos cuando está listo',
       body: business.pickupDelivery
-        ? 'Lo retirás por el lavadero o te lo entregamos a domicilio, limpio y prolijo.'
-        : 'Retirás todo limpio, seco y prolijo, listo para usar o guardar.',
+        ? 'Pasás por el lavadero o te lo llevamos a domicilio, limpio y doblado.'
+        : 'Pasás por el lavadero y retirás todo limpio, seco y listo para guardar.',
     },
   ];
 
