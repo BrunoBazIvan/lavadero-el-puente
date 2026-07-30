@@ -1,0 +1,36 @@
+{
+  "name": "el-puente-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema de gestión interna de Lavadero Industrial El Puente — Maldonado, Uruguay.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/lato": "5.0.22",
+    "@fontsource/montserrat": "5.0.19",
+    "@hookform/resolvers": "3.9.0",
+    "@supabase/supabase-js": "2.45.4",
+    "@tanstack/react-query": "5.59.0",
+    "date-fns": "3.6.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-hook-form": "7.53.0",
+    "react-router-dom": "6.26.2",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@vitejs/plugin-react": "4.3.1",
+    "autoprefixer": "10.4.19",
+    "postcss": "8.4.39",
+    "tailwindcss": "3.4.6",
+    "typescript": "5.5.3",
+    "vite": "5.4.8"
+  }
+}
