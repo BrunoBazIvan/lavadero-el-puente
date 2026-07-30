@@ -221,9 +221,12 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-# El Puente: apagado. Sin esto, cualquiera con la anon key podría crearse un
-# usuario (aunque la RLS le negaría todo por no tener perfil).
-enable_signup = false
+# OJO: acá tiene que quedar en `true`. Pese al nombre, esta clave se traduce a
+# GOTRUE_EXTERNAL_EMAIL_ENABLED y apaga el proveedor de email COMPLETO: en
+# false nadie puede ni siquiera iniciar sesión ("Email logins are disabled").
+# Quien corta el registro público es el `enable_signup = false` de [auth],
+# que se traduce a GOTRUE_DISABLE_SIGNUP.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
