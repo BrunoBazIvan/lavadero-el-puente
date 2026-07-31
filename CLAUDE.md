@@ -6,6 +6,41 @@ vive en [`lib/config.ts`](./lib/config.ts) y [`lib/content.ts`](./lib/content.ts
 
 ---
 
+## El repo tiene dos apps, no una
+
+| Ruta | Qué es | Stack |
+|---|---|---|
+| `/` | La landing pública | Next.js 14, `output: 'export'` |
+| `/gestion/` | El sistema interno de mostrador (`gestion/`) | Vite + React Router + Supabase |
+
+Viven juntas para tener **un solo deploy y un solo dominio**. El truco: `next
+build` en modo export copia `public/` dentro de `out/`, así que el `prebuild`
+compila la app de Vite hacia `public/gestion/` y Next la publica sin enterarse.
+Son builds independientes — el sistema **no** es Next.js y no hay que
+convertirlo.
+
+Lo que se rompe si lo tocás sin mirar:
+
+- **`base: '/gestion/'` en `gestion/vite.config.ts`** manda sobre todo lo demás.
+  De ahí sale `import.meta.env.BASE_URL`, que usan el `basename` del
+  `BrowserRouter` (`gestion/src/App.tsx`) y el `redirectTo` del mail de
+  recuperar contraseña (`gestion/src/auth/AuthProvider.tsx`). Cambiar la URL es
+  cambiar ese `base` + el `rewrite` de `vercel.json` + el `disallow` de
+  `app/robots.ts`.
+- **El rewrite de `vercel.json`** es lo único que hace que un F5 en
+  `/gestion/ordenes` no caiga en el 404 de la landing. No se puede poner en
+  `next.config.mjs`: `rewrites` no existe con `output: 'export'`. Y no se ve
+  sirviendo `/out` a mano — eso se prueba recién en un deploy de preview.
+- **`"exclude": ["node_modules", "gestion"]` en el `tsconfig.json` de la raíz.**
+  Sin eso, el `include` con `**/*.tsx` se come `gestion/src` y `next build`
+  falla typechequeándolo con la config equivocada.
+- **`npm install` va siempre en la raíz** (npm workspaces, lockfile único).
+- Las claves de Supabase del sistema son variables `VITE_*` en `gestion/.env.local`
+  en local y en el panel de Vercel en producción. Se inyectan **en build**: si
+  faltan, la app despliega igual pero muestra la pantalla de "Falta configurar".
+
+---
+
 ## Idioma: español rioplatense (es-UY), con voseo
 
 El sitio le habla a familias y empresas de Maldonado y Punta del Este. El
@@ -125,10 +160,13 @@ eje izquierdo al resto de la página. La medida de lectura va en un div interno:
 ## Antes de dar algo por terminado
 
 ```bash
-npx tsc --noEmit
-npm run build                          # genera /out (16 páginas)
+npx tsc --noEmit                       # solo la landing: gestion está excluido
+npm run build                          # gestion + /out (16 páginas)
 npx impeccable detect components app   # anti-patrones de diseño
 ```
+
+Si tocaste el sistema de gestión, además: `npm run dev:gestion`
+(→ http://localhost:5173/gestion/). Su typecheck lo corre su propio build.
 
 Para previsualizar de verdad conviene servir `/out` (`python3 -m http.server`)
 y no fiarse solo del dev server. Ojo: correr `npm run build` con `next dev`
