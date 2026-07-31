@@ -30,7 +30,16 @@ Lo que se rompe si lo tocás sin mirar:
 - **El rewrite de `vercel.json`** es lo único que hace que un F5 en
   `/gestion/ordenes` no caiga en el 404 de la landing. No se puede poner en
   `next.config.mjs`: `rewrites` no existe con `output: 'export'`. Y no se ve
-  sirviendo `/out` a mano — eso se prueba recién en un deploy de preview.
+  sirviendo `/out` a mano — eso se prueba recién deployado.
+
+  **El `destination` va a `/gestion/`, NO a `/gestion/index.html`.** Con
+  `trailingSlash: true` Vercel mapea cada archivo por su ruta limpia y no
+  expone el `index.html`: pedir `/gestion/index.html` devuelve 404, igual que
+  `/sobre-nosotros/index.html`. Apuntado al `index.html` el rewrite matchea
+  igual, pero el destino no existe y el 404 sale lo mismo — se ve idéntico a
+  que el rewrite no estuviera funcionando. El `source` es `/gestion/(.*)` y no
+  `/gestion/:path*` por lo mismo: `trailingSlash` redirige a `/gestion/ruta/`
+  con barra final, y `:path*` no matchea eso.
 - **`"exclude": ["node_modules", "gestion"]` en el `tsconfig.json` de la raíz.**
   Sin eso, el `include` con `**/*.tsx` se come `gestion/src` y `next build`
   falla typechequeándolo con la config equivocada.
