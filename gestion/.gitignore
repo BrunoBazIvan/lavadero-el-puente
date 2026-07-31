@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+.vite
+
+# Estado local del CLI de Supabase (no es del proyecto)
+supabase/.temp
+supabase/.branches
