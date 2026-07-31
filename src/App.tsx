@@ -10,14 +10,13 @@ import { ToastProvider, useToast } from '@/components/Toaster';
 
 import Login from '@/pages/Login';
 import RecuperarPassword from '@/pages/RecuperarPassword';
-import Tablero from '@/pages/Tablero';
 import OrdenNueva from '@/pages/OrdenNueva';
+import Ordenes from '@/pages/Ordenes';
 import OrdenDetalle from '@/pages/OrdenDetalle';
+import TicketImpresion from '@/pages/TicketImpresion';
 import Clientes from '@/pages/Clientes';
 import ClienteDetalle from '@/pages/ClienteDetalle';
 import Articulos from '@/pages/Articulos';
-import Caja from '@/pages/Caja';
-import Config from '@/pages/Config';
 
 /**
  * React Query con un manejo de errores global: cualquier consulta o mutación
@@ -66,13 +65,16 @@ export default function App() {
 
               {/* Todo lo de adentro exige sesión con perfil activo. */}
               <Route element={<ProtectedRoute />}>
+                {/* El comprobante va sin el layout: es solo el papel. */}
+                <Route path="print/:ref" element={<TicketImpresion />} />
+
                 <Route element={<Layout />}>
-                  <Route index element={<Tablero />} />
-                  <Route path="ordenes/nueva" element={<OrdenNueva />} />
+                  {/* Recibir ropa es la pantalla de entrada: es lo que más se usa. */}
+                  <Route index element={<OrdenNueva />} />
+                  <Route path="ordenes" element={<Ordenes />} />
                   <Route path="ordenes/:ref" element={<OrdenDetalle />} />
                   <Route path="clientes" element={<Clientes />} />
                   <Route path="clientes/:id" element={<ClienteDetalle />} />
-                  <Route path="caja" element={<Caja />} />
                 </Route>
               </Route>
 
@@ -80,7 +82,6 @@ export default function App() {
               <Route element={<ProtectedRoute soloAdmin />}>
                 <Route element={<Layout />}>
                   <Route path="articulos" element={<Articulos />} />
-                  <Route path="config" element={<Config />} />
                 </Route>
               </Route>
 
@@ -102,7 +103,7 @@ function NoEncontrado() {
           Esta pantalla no existe
         </h1>
         <Link to="/" className="btn-primary mt-6">
-          Ir al tablero
+          Ir a recibir ropa
         </Link>
       </div>
     </div>

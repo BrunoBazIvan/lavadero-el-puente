@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { EncabezadoPagina } from '@/components/Layout';
 import { Modal } from '@/components/Modal';
 import { ClienteFormulario } from '@/components/ClienteFormulario';
-import { ChipEstado, ChipPago } from '@/components/ChipsOrden';
+import { ChipEstado } from '@/components/ChipsOrden';
 import { BloqueCargando, EstadoError, EstadoVacio, PantallaCargando, Spinner } from '@/components/Estados';
 import { useToast } from '@/components/Toaster';
 import {
@@ -13,7 +13,8 @@ import {
   useOrdenesDeCliente,
 } from '@/hooks/useClientes';
 import { mensajeDeError } from '@/lib/supabase';
-import { fecha, linkWhatsapp, moneda, telefono as formatearTelefono } from '@/lib/format';
+import { fecha, linkWhatsapp, telefono as formatearTelefono } from '@/lib/format';
+import { NOMBRE_SERVICIO } from '@/types/database';
 import type { OrdenVista } from '@/types/database';
 
 export default function ClienteDetalle() {
@@ -70,8 +71,8 @@ export default function ClienteDetalle() {
         }
         acciones={
           <>
-            <Link to={`/ordenes/nueva?cliente=${cliente.id}`} className="btn-primary">
-              + Orden nueva
+            <Link to={`/?cliente=${cliente.id}`} className="btn-primary">
+              + Recibir ropa
             </Link>
             <button type="button" className="btn-secondary" onClick={() => setEdicionAbierta(true)}>
               Editar
@@ -223,19 +224,14 @@ function HistorialOrdenes({
   onReintentar: () => void;
   clienteId: string;
 }) {
-  /**
-   * Las anuladas no suman a ningún total: no se facturaron ni se cobraron.
-   * Lo cobrado sale de los pagos, no del total de la orden, así que una orden
-   * a medio pagar no infla el número.
-   */
+  /** Las anuladas no cuentan: no llegaron a ser trabajo. */
   const resumen = useMemo(() => {
     const vivas = (ordenes ?? []).filter((o) => o.estado !== 'anulado');
     return {
       cantidad: vivas.length,
-      facturado: vivas.reduce((suma, o) => suma + Number(o.total), 0),
-      cobrado: vivas.reduce((suma, o) => suma + Number(o.pagado), 0),
-      pendiente: vivas.reduce((suma, o) => suma + Number(o.saldo), 0),
-      prendas: vivas.reduce((suma, o) => suma + Number(o.cantidad_prendas), 0),
+      // Vienen ordenadas de la más nueva a la más vieja.
+      ultima: vivas[0]?.fecha_ingreso ?? null,
+      sinRetirar: vivas.filter((o) => o.estado === 'listo').length,
     };
   }, [ordenes]);
 
@@ -248,14 +244,13 @@ function HistorialOrdenes({
       {!cargando && !error && (
         // El gap de 1px sobre fondo azul dibuja los filetes: en una grilla,
         // `divide-y` le pone borde de más a la segunda celda de la fila.
-        <dl className="grid grid-cols-2 gap-px border-b border-brand-100 bg-brand-100 sm:grid-cols-4">
+        <dl className="grid grid-cols-3 gap-px border-b border-brand-100 bg-brand-100">
           <Metrica etiqueta="Órdenes" valor={String(resumen.cantidad)} />
-          <Metrica etiqueta="Prendas" valor={String(resumen.prendas)} />
-          <Metrica etiqueta="Total gastado" valor={moneda(resumen.cobrado)} />
+          <Metrica etiqueta="Última vez" valor={resumen.ultima ? fecha(resumen.ultima) : '—'} />
           <Metrica
-            etiqueta="Saldo pendiente"
-            valor={moneda(resumen.pendiente)}
-            alerta={resumen.pendiente > 0}
+            etiqueta="Sin retirar"
+            valor={String(resumen.sinRetirar)}
+            alerta={resumen.sinRetirar > 0}
           />
         </dl>
       )}
@@ -269,8 +264,8 @@ function HistorialOrdenes({
           titulo="Todavía no trajo ropa"
           detalle="Cuando cargues su primera orden, la vas a ver acá."
           accion={
-            <Link to={`/ordenes/nueva?cliente=${clienteId}`} className="btn-primary">
-              + Orden nueva
+            <Link to={`/?cliente=${clienteId}`} className="btn-primary">
+              + Recibir ropa
             </Link>
           }
         />
@@ -283,10 +278,8 @@ function HistorialOrdenes({
               <tr className="border-b border-brand-100 text-xs uppercase tracking-wide text-slate-500">
                 <th className="px-4 py-2 font-display font-semibold">Ref</th>
                 <th className="px-4 py-2 font-display font-semibold">Ingreso</th>
-                <th className="px-4 py-2 font-display font-semibold">Prendas</th>
+                <th className="px-4 py-2 font-display font-semibold">Servicio</th>
                 <th className="px-4 py-2 font-display font-semibold">Estado</th>
-                <th className="px-4 py-2 font-display font-semibold">Pago</th>
-                <th className="px-4 py-2 text-right font-display font-semibold">Total</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-100">
@@ -301,19 +294,12 @@ function HistorialOrdenes({
                     </Link>
                   </td>
                   <td className="px-4 py-2.5 tabular text-slate-700">{fecha(o.fecha_ingreso)}</td>
-                  <td className="px-4 py-2.5 tabular text-slate-700">{o.cantidad_prendas}</td>
+                  <td className="px-4 py-2.5 text-slate-700">
+                    {NOMBRE_SERVICIO[o.servicio]}
+                    {o.envio && <span className="ml-1 text-xs text-brand-600">+ envío</span>}
+                  </td>
                   <td className="px-4 py-2.5">
                     <ChipEstado estado={o.estado} />
-                  </td>
-                  <td className="px-4 py-2.5">
-                    {o.estado === 'anulado' ? (
-                      <span className="text-slate-400">—</span>
-                    ) : (
-                      <ChipPago estado={o.estado_pago} />
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5 text-right tabular font-semibold text-ink">
-                    {moneda(o.total)}
                   </td>
                 </tr>
               ))}

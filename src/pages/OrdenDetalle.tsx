@@ -2,33 +2,20 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EncabezadoPagina } from '@/components/Layout';
 import { Modal } from '@/components/Modal';
-import { ChipEstado, ChipPago, ETIQUETA_ESTADO } from '@/components/ChipsOrden';
+import { ChipEstado, ETIQUETA_ESTADO } from '@/components/ChipsOrden';
 import { EstadoError, EstadoVacio, PantallaCargando, Spinner } from '@/components/Estados';
 import { useToast } from '@/components/Toaster';
 import { useAuth } from '@/auth/AuthProvider';
 import { useAnularOrden, useCambiarEstadoOrden, useOrden } from '@/hooks/useOrdenes';
 import { useConfiguracion } from '@/hooks/useConfiguracion';
+import { useImprimir } from '@/hooks/useImprimir';
 import { mensajeDeError } from '@/lib/supabase';
-import {
-  fecha,
-  fechaHora,
-  hora,
-  linkWhatsapp,
-  moneda,
-  telefono as formatearTelefono,
-} from '@/lib/format';
-import type { EstadoOrden, MetodoPago, OrdenCompleta } from '@/types/database';
+import { fecha, fechaHora, linkWhatsapp, telefono as formatearTelefono } from '@/lib/format';
+import { NOMBRE_SERVICIO } from '@/types/database';
+import type { EstadoOrden, OrdenCompleta } from '@/types/database';
 
-/** Estados que se cambian con el selector. Entregar va por el cobro (etapa 7). */
-const ESTADOS_MANUALES: EstadoOrden[] = ['recibido', 'en_proceso', 'listo'];
-
-const NOMBRE_METODO: Record<MetodoPago, string> = {
-  efectivo: 'Efectivo',
-  transferencia: 'Transferencia',
-  debito: 'Débito',
-  credito: 'Crédito',
-  mercado_pago: 'Mercado Pago',
-};
+/** Estados que se cambian a mano. Anular va aparte, con su confirmación. */
+const ESTADOS_MANUALES: EstadoOrden[] = ['recibido', 'en_proceso', 'listo', 'entregado'];
 
 export default function OrdenDetalle() {
   const { ref } = useParams<{ ref: string }>();
@@ -38,7 +25,9 @@ export default function OrdenDetalle() {
   const { data: orden, isPending, error, refetch } = useOrden(ref);
   const { data: config } = useConfiguracion();
   const cambiarEstado = useCambiarEstadoOrden();
+  const { imprimir } = useImprimir();
   const [anularAbierto, setAnularAbierto] = useState(false);
+  const [imprimiendo, setImprimiendo] = useState(false);
 
   if (isPending) return <PantallaCargando texto="Cargando orden…" />;
 
@@ -50,10 +39,10 @@ export default function OrdenDetalle() {
     return (
       <EstadoVacio
         titulo={`No existe la orden ${ref}`}
-        detalle="Revisá la referencia del ticket. Se escribe como EP-00001."
+        detalle="Revisá la referencia del comprobante. Se escribe como EP-00001."
         accion={
-          <Link to="/" className="btn-primary">
-            Ir al tablero
+          <Link to="/ordenes" className="btn-primary">
+            Ver todas las órdenes
           </Link>
         }
       />
@@ -61,10 +50,7 @@ export default function OrdenDetalle() {
   }
 
   const cerrada = orden.estado === 'entregado' || orden.estado === 'anulado';
-  const saldo = Number(orden.saldo);
-
-  const mensajeWhatsapp = armarMensaje(orden, config?.nombre_negocio);
-  const whatsapp = linkWhatsapp(orden.cliente.telefono, mensajeWhatsapp);
+  const whatsapp = linkWhatsapp(orden.cliente.telefono, armarMensaje(orden, config?.nombre_negocio));
 
   const cambiar = async (estado: EstadoOrden) => {
     try {
@@ -75,6 +61,15 @@ export default function OrdenDetalle() {
     }
   };
 
+  const reimprimir = async () => {
+    setImprimiendo(true);
+    try {
+      await imprimir(orden);
+    } finally {
+      setImprimiendo(false);
+    }
+  };
+
   return (
     <>
       <EncabezadoPagina
@@ -82,29 +77,24 @@ export default function OrdenDetalle() {
         detalle={`Ingresó el ${fechaHora(orden.fecha_ingreso)}`}
         acciones={
           <>
-            <button type="button" className="btn-secondary" disabled title="Se agrega en la etapa 6">
-              Reimprimir
-            </button>
+            <Link to={`/print/${orden.ref}`} className="btn-ghost">
+              Ver comprobante
+            </Link>
             <button
               type="button"
-              className="btn-primary"
-              disabled
-              title="Se agrega en la etapa 7"
+              className="btn-secondary"
+              onClick={() => void reimprimir()}
+              disabled={imprimiendo}
             >
-              Cobrar y entregar
+              {imprimiendo && <Spinner size={16} />}
+              Reimprimir
             </button>
           </>
         }
       />
 
-      <div className="mb-5 flex flex-wrap items-center gap-2">
+      <div className="mb-5">
         <ChipEstado estado={orden.estado} />
-        {orden.estado !== 'anulado' && <ChipPago estado={orden.estado_pago} />}
-        {saldo > 0 && orden.estado !== 'anulado' && (
-          <span className="text-sm text-slate-600">
-            Saldo pendiente <span className="tabular font-semibold text-alerta">{moneda(saldo)}</span>
-          </span>
-        )}
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[20rem_1fr] lg:items-start">
@@ -158,26 +148,66 @@ export default function OrdenDetalle() {
                   La orden está {ETIQUETA_ESTADO[orden.estado].toLowerCase()} y ya no se modifica.
                 </p>
               ) : (
-                <>
-                  <select
-                    id="estado"
-                    className="field"
-                    value={orden.estado}
-                    disabled={cambiarEstado.isPending}
-                    onChange={(e) => void cambiar(e.target.value as EstadoOrden)}
-                  >
-                    {ESTADOS_MANUALES.map((e) => (
-                      <option key={e} value={e}>
-                        {ETIQUETA_ESTADO[e]}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Para entregarla, usá “Cobrar y entregar”: así queda registrado el pago.
-                  </p>
-                </>
+                <select
+                  id="estado"
+                  className="field"
+                  value={orden.estado}
+                  disabled={cambiarEstado.isPending}
+                  onChange={(e) => void cambiar(e.target.value as EstadoOrden)}
+                >
+                  {ESTADOS_MANUALES.map((e) => (
+                    <option key={e} value={e}>
+                      {ETIQUETA_ESTADO[e]}
+                    </option>
+                  ))}
+                </select>
               )}
             </div>
+          </section>
+
+          {esAdmin && orden.estado !== 'anulado' && (
+            <button
+              type="button"
+              className="btn-danger w-full"
+              onClick={() => setAnularAbierto(true)}
+            >
+              Anular orden
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-5">
+          {/* ── Qué recibimos ──────────────────────────────────────────── */}
+          <section className="panel">
+            <div className="border-b border-brand-100 px-4 py-3">
+              <h2 className="eyebrow">Recibimos</h2>
+            </div>
+
+            <ul className="divide-y divide-brand-100">
+              {orden.items.map((i) => (
+                <li key={i.id} className="flex items-center gap-3 px-4 py-2.5">
+                  {i.cantidad > 1 && (
+                    <span className="tabular font-display text-base font-bold text-brand-800">
+                      {i.cantidad}
+                    </span>
+                  )}
+                  <span className="text-ink">{i.descripcion}</span>
+                </li>
+              ))}
+            </ul>
+
+            <dl className="border-t border-brand-100 px-4 py-3 text-sm">
+              <div className="flex justify-between py-0.5">
+                <dt className="text-slate-600">Servicio</dt>
+                <dd className="font-medium text-ink">{NOMBRE_SERVICIO[orden.servicio]}</dd>
+              </div>
+              <div className="flex justify-between py-0.5">
+                <dt className="text-slate-600">Envío</dt>
+                <dd className="font-medium text-ink">
+                  {orden.envio ? 'Retiro y entrega' : 'Trae y retira el cliente'}
+                </dd>
+              </div>
+            </dl>
           </section>
 
           {/* ── Notas ──────────────────────────────────────────────────── */}
@@ -187,123 +217,14 @@ export default function OrdenDetalle() {
               <p className="mt-2 whitespace-pre-line text-sm text-slate-700">{orden.notas}</p>
             </section>
           )}
-
-          {esAdmin && orden.estado !== 'anulado' && (
-            <button type="button" className="btn-danger w-full" onClick={() => setAnularAbierto(true)}>
-              Anular orden
-            </button>
-          )}
-        </div>
-
-        <div className="space-y-5">
-          {/* ── Prendas ────────────────────────────────────────────────── */}
-          <section className="panel">
-            <div className="flex items-center justify-between border-b border-brand-100 px-4 py-3">
-              <h2 className="eyebrow">Prendas</h2>
-              <span className="text-sm text-slate-600">{orden.cantidad_prendas} en total</span>
-            </div>
-
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-brand-100 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-2 font-display font-semibold">Prenda</th>
-                  <th className="w-20 px-2 py-2 text-center font-display font-semibold">Cant.</th>
-                  <th className="w-28 px-2 py-2 text-right font-display font-semibold">Precio</th>
-                  <th className="w-28 px-4 py-2 text-right font-display font-semibold">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-brand-100">
-                {orden.items.map((i) => (
-                  <tr key={i.id}>
-                    <td className="px-4 py-2 text-ink">{i.descripcion}</td>
-                    <td className="px-2 py-2 text-center tabular">{i.cantidad}</td>
-                    <td className="px-2 py-2 text-right tabular text-slate-600">
-                      {moneda(i.precio_unitario)}
-                    </td>
-                    <td className="px-4 py-2 text-right tabular font-semibold">
-                      {moneda(i.subtotal)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <dl className="border-t border-brand-100 px-4 py-3 text-sm">
-              <div className="flex justify-between py-0.5">
-                <dt className="text-slate-600">Subtotal</dt>
-                <dd className="tabular">{moneda(orden.subtotal)}</dd>
-              </div>
-              {Number(orden.descuento) > 0 && (
-                <div className="flex justify-between py-0.5">
-                  <dt className="text-slate-600">Descuento</dt>
-                  <dd className="tabular text-alerta">− {moneda(orden.descuento)}</dd>
-                </div>
-              )}
-              <div className="mt-2 flex items-baseline justify-between border-t-2 border-brand-800 pt-2">
-                <dt className="font-display text-sm font-semibold uppercase tracking-technical text-brand-800">
-                  Total
-                </dt>
-                <dd className="tabular font-display text-xl font-bold text-brand-900">
-                  {moneda(orden.total)}
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          {/* ── Pagos ──────────────────────────────────────────────────── */}
-          <section className="panel">
-            <div className="border-b border-brand-100 px-4 py-3">
-              <h2 className="eyebrow">Pagos</h2>
-            </div>
-
-            {orden.pagos.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-slate-600">
-                Todavía no se cobró nada. Se abona al retirar.
-              </p>
-            ) : (
-              <table className="w-full text-left text-sm">
-                <tbody className="divide-y divide-brand-100">
-                  {orden.pagos.map((p) => (
-                    <tr key={p.id}>
-                      <td className="px-4 py-2 tabular text-slate-600">
-                        {fecha(p.fecha)} {hora(p.fecha)}
-                      </td>
-                      <td className="px-2 py-2 text-slate-700">{NOMBRE_METODO[p.metodo]}</td>
-                      <td className="px-4 py-2 text-right tabular font-semibold">
-                        {moneda(p.monto)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="bg-brand-50">
-                    <td className="px-4 py-2 font-display font-semibold" colSpan={2}>
-                      Pagado
-                    </td>
-                    <td className="px-4 py-2 text-right tabular font-semibold">
-                      {moneda(orden.pagado)}
-                    </td>
-                  </tr>
-                  {saldo > 0 && (
-                    <tr>
-                      <td className="px-4 py-2 font-display font-semibold text-alerta" colSpan={2}>
-                        Saldo
-                      </td>
-                      <td className="px-4 py-2 text-right tabular font-semibold text-alerta">
-                        {moneda(saldo)}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </section>
         </div>
       </div>
 
       <ModalAnular orden={orden} abierto={anularAbierto} onCerrar={() => setAnularAbierto(false)} />
 
       <div className="mt-6">
-        <Link to="/" className="text-sm text-brand-600 underline underline-offset-2">
-          ← Volver al tablero
+        <Link to="/ordenes" className="text-sm text-brand-600 underline underline-offset-2">
+          ← Volver a las órdenes
         </Link>
       </div>
     </>
@@ -323,11 +244,9 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactN
 function armarMensaje(orden: OrdenCompleta, negocio: string | undefined): string {
   const nombre = orden.cliente.nombre.split(' ')[0];
   const casa = negocio ?? 'El Puente';
-  const saldo = Number(orden.saldo);
 
   if (orden.estado === 'listo') {
-    const cobro = saldo > 0 ? ` Son ${moneda(saldo)}, se abonan al retirar.` : '';
-    return `Hola ${nombre}, te escribimos de ${casa}. Tu pedido ${orden.ref} ya está pronto para retirar.${cobro} Te esperamos.`;
+    return `Hola ${nombre}, te escribimos de ${casa}. Tu pedido ${orden.ref} ya está pronto para retirar. Te esperamos.`;
   }
 
   return `Hola ${nombre}, te escribimos de ${casa} por tu pedido ${orden.ref}.`;
@@ -367,14 +286,8 @@ function ModalAnular({
   return (
     <Modal abierto={abierto} onCerrar={onCerrar} titulo={`Anular la orden ${orden.ref}`} ancho="sm">
       <p className="text-sm leading-relaxed text-slate-700">
-        La orden queda anulada y no se puede volver atrás. Sus prendas y totales dejan de contar en
-        el historial del cliente.
-        {Number(orden.pagado) > 0 && (
-          <span className="mt-2 block text-aviso">
-            Ojo: esta orden ya tiene {moneda(orden.pagado)} cobrados. El pago queda registrado en la
-            caja del día en que se hizo.
-          </span>
-        )}
+        La orden queda anulada y no se puede volver atrás. Deja de contar en el historial del
+        cliente.
       </p>
 
       <div className="mt-4">

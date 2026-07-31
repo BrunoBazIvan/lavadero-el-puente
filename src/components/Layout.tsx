@@ -10,11 +10,10 @@ interface ItemNav {
 }
 
 const NAV: ItemNav[] = [
-  { to: '/', texto: 'Tablero', end: true },
+  { to: '/', texto: 'Recibir ropa', end: true },
+  { to: '/ordenes', texto: 'Órdenes' },
   { to: '/clientes', texto: 'Clientes' },
-  { to: '/caja', texto: 'Caja' },
   { to: '/articulos', texto: 'Artículos', soloAdmin: true },
-  { to: '/config', texto: 'Configuración', soloAdmin: true },
 ];
 
 export function Layout() {
@@ -54,13 +53,6 @@ export function Layout() {
               </NavLink>
             ))}
           </nav>
-
-          <Link
-            to="/ordenes/nueva"
-            className="shrink-0 rounded-sharp border border-aqua-300 bg-aqua-300 px-4 py-2 font-display text-sm font-bold text-brand-900 transition-colors hover:border-aqua-200 hover:bg-aqua-200"
-          >
-            + Orden nueva
-          </Link>
 
           <div className="flex shrink-0 items-center gap-3 border-l border-white/15 pl-4">
             <div className="hidden text-right leading-tight sm:block">

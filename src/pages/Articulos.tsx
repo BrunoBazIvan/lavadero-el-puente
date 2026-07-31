@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,14 +7,12 @@ import { Modal } from '@/components/Modal';
 import { BloqueCargando, EstadoError, EstadoVacio, Spinner } from '@/components/Estados';
 import { useToast } from '@/components/Toaster';
 import {
-  agruparPorCategoria,
   useActualizarArticulo,
   useArticulos,
   useCrearArticulo,
   type DatosArticulo,
 } from '@/hooks/useArticulos';
 import { mensajeDeError } from '@/lib/supabase';
-import { moneda } from '@/lib/format';
 import type { Articulo } from '@/types/database';
 
 export default function Articulos() {
@@ -24,18 +22,11 @@ export default function Articulos() {
 
   const { data: articulos, isPending, error, refetch } = useArticulos(incluirInactivos);
 
-  const grupos = useMemo(() => agruparPorCategoria(articulos ?? []), [articulos]);
-  const categorias = useMemo(
-    () => [...new Set((articulos ?? []).map((a) => a.categoria).filter(Boolean))] as string[],
-    [articulos],
-  );
-  const sinPrecio = (articulos ?? []).filter((a) => a.activo && Number(a.precio_unitario) === 0);
-
   return (
     <>
       <EncabezadoPagina
         titulo="Artículos"
-        detalle="La lista de precios que se usa al cargar una orden. El precio queda congelado en cada orden, así que cambiarlo acá no toca las órdenes viejas."
+        detalle="Lo que se puede marcar al recibir la ropa. El orden es el mismo en que aparecen los botones."
         acciones={
           <button type="button" className="btn-primary" onClick={() => setAltaAbierta(true)}>
             + Artículo nuevo
@@ -43,24 +34,9 @@ export default function Articulos() {
         }
       />
 
-      {sinPrecio.length > 0 && (
-        <div className="mb-5 rounded-card border border-aviso/50 bg-white px-4 py-3">
-          <p className="font-display text-xs font-semibold uppercase tracking-technical text-aviso">
-            Faltan precios
-          </p>
-          <p className="mt-1 text-sm text-slate-700">
-            Hay <span className="font-semibold">{sinPrecio.length}</span> artículos activos en $ 0.
-            Escribí el precio en la columna y salí del campo: se guarda solo. Con Enter saltás al
-            siguiente.
-          </p>
-        </div>
-      )}
-
       <div className="panel">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-brand-100 px-4 py-3">
-          <p className="text-sm text-slate-600">
-            {articulos?.length ?? 0} artículos · {grupos.length} categorías
-          </p>
+          <p className="text-sm text-slate-600">{articulos?.length ?? 0} artículos</p>
           <label className="flex select-none items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
@@ -72,7 +48,7 @@ export default function Articulos() {
           </label>
         </div>
 
-        {isPending && <BloqueCargando texto="Cargando lista de precios…" />}
+        {isPending && <BloqueCargando texto="Cargando artículos…" />}
 
         {error ? (
           <EstadoError mensaje={mensajeDeError(error)} onReintentar={() => void refetch()} />
@@ -96,24 +72,16 @@ export default function Articulos() {
               <thead>
                 <tr className="border-b border-brand-100 text-xs uppercase tracking-wide text-slate-500">
                   <th className="px-4 py-2 font-display font-semibold">Artículo</th>
-                  <th className="w-40 px-4 py-2 text-right font-display font-semibold">Precio</th>
+                  <th className="w-40 px-4 py-2 font-display font-semibold">Se cuenta</th>
                   <th className="w-24 px-4 py-2 text-right font-display font-semibold">Orden</th>
                   <th className="w-48 px-4 py-2 text-right font-display font-semibold">Acciones</th>
                 </tr>
               </thead>
-
-              {grupos.map(([categoria, items]) => (
-                <tbody key={categoria} className="divide-y divide-brand-100">
-                  <tr className="bg-brand-50">
-                    <td colSpan={4} className="px-4 py-1.5">
-                      <span className="eyebrow">{categoria}</span>
-                    </td>
-                  </tr>
-                  {items.map((a) => (
-                    <FilaArticulo key={a.id} articulo={a} onEditar={() => setEnEdicion(a)} />
-                  ))}
-                </tbody>
-              ))}
+              <tbody className="divide-y divide-brand-100">
+                {articulos.map((a) => (
+                  <FilaArticulo key={a.id} articulo={a} onEditar={() => setEnEdicion(a)} />
+                ))}
+              </tbody>
             </table>
           </div>
         )}
@@ -123,10 +91,9 @@ export default function Articulos() {
         abierto={altaAbierta}
         onCerrar={() => setAltaAbierta(false)}
         titulo="Artículo nuevo"
-        detalle="Va a aparecer como botón en la carga de órdenes."
+        detalle="Va a aparecer como botón al recibir la ropa."
       >
         <FormularioArticulo
-          categorias={categorias}
           existentes={articulos ?? []}
           onCancelar={() => setAltaAbierta(false)}
           onGuardado={() => setAltaAbierta(false)}
@@ -137,12 +104,11 @@ export default function Articulos() {
         abierto={enEdicion !== null}
         onCerrar={() => setEnEdicion(null)}
         titulo="Editar artículo"
-        detalle="Las órdenes ya cargadas conservan el nombre y el precio que tenían."
+        detalle="Las órdenes ya cargadas conservan el nombre que tenían."
       >
         {enEdicion && (
           <FormularioArticulo
             articulo={enEdicion}
-            categorias={categorias}
             existentes={articulos ?? []}
             onCancelar={() => setEnEdicion(null)}
             onGuardado={() => setEnEdicion(null)}
@@ -153,112 +119,25 @@ export default function Articulos() {
   );
 }
 
-/* ── Fila con precio editable en el lugar ─────────────────────────────────────
- *  La tarea real de esta pantalla es cargar treinta precios de una sentada, así
- *  que el precio se edita en la propia tabla: se guarda al salir del campo y
- *  con Enter se salta al siguiente.
- * ────────────────────────────────────────────────────────────────────────── */
-
 function FilaArticulo({ articulo, onEditar }: { articulo: Articulo; onEditar: () => void }) {
   const actualizar = useActualizarArticulo();
-  const [valor, setValor] = useState(String(Number(articulo.precio_unitario)));
-  const [recienGuardado, setRecienGuardado] = useState(false);
-  const temporizador = useRef<number>();
-  /**
-   * Escape descarta. Va en un ref y no en el estado porque `blur()` dispara el
-   * guardado en el acto: un `setValor` todavía no se aplicó cuando corre
-   * `guardarPrecio`, y terminaría guardando justo lo que se quiso descartar.
-   */
-  const descartar = useRef(false);
-
-  const original = String(Number(articulo.precio_unitario));
-  const sinPrecio = Number(articulo.precio_unitario) === 0;
-
-  const guardarPrecio = async () => {
-    if (descartar.current) {
-      descartar.current = false;
-      setValor(original);
-      return;
-    }
-
-    const limpio = valor.trim().replace(',', '.');
-    const numero = Number(limpio);
-
-    if (limpio === '' || Number.isNaN(numero) || numero < 0) {
-      setValor(original); // Entrada inválida: volvemos a lo que había.
-      return;
-    }
-    if (numero === Number(articulo.precio_unitario)) return;
-
-    try {
-      await actualizar.mutateAsync({ id: articulo.id, datos: { precio_unitario: numero } });
-      setRecienGuardado(true);
-      window.clearTimeout(temporizador.current);
-      temporizador.current = window.setTimeout(() => setRecienGuardado(false), 1800);
-    } catch {
-      // El toast lo muestra el manejador global de React Query.
-      setValor(original);
-    }
-  };
-
-  /** Enter guarda y baja al precio siguiente, para cargar la lista de corrido. */
-  const alTeclado = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      descartar.current = true;
-      setValor(original);
-      e.currentTarget.blur();
-      return;
-    }
-    if (e.key !== 'Enter') return;
-
-    e.preventDefault();
-    const campos = [...document.querySelectorAll<HTMLInputElement>('input[data-precio]')];
-    const siguiente = campos[campos.indexOf(e.currentTarget) + 1];
-    e.currentTarget.blur(); // dispara el guardado
-    siguiente?.focus();
-    siguiente?.select();
-  };
 
   return (
     <tr className={articulo.activo ? '' : 'bg-slate-50 text-slate-500'}>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2.5">
         <span className={articulo.activo ? 'font-medium text-ink' : ''}>{articulo.nombre}</span>
         {!articulo.activo && (
           <span className="ml-2 chip border-slate-300 bg-slate-100 text-slate-600">Desactivado</span>
         )}
       </td>
 
-      <td className="px-4 py-2">
-        <div className="flex items-center justify-end gap-2">
-          {actualizar.isPending && <Spinner size={14} className="text-brand-500" />}
-          {recienGuardado && !actualizar.isPending && (
-            <span className="font-display text-[11px] font-semibold uppercase tracking-wide text-ok">
-              Guardado
-            </span>
-          )}
-          <span className="text-slate-400">$</span>
-          <input
-            data-precio
-            type="number"
-            min="0"
-            step="1"
-            inputMode="decimal"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            onBlur={() => void guardarPrecio()}
-            onKeyDown={alTeclado}
-            onFocus={(e) => e.currentTarget.select()}
-            aria-label={`Precio de ${articulo.nombre}`}
-            className={`w-24 rounded-sharp border border-brand-200 px-2 py-1 text-right tabular text-sm text-ink
-              focus:border-aqua-500 focus:outline-none focus:ring-1 focus:ring-aqua-500
-              ${sinPrecio ? 'bg-amber-50' : 'bg-white'}`}
-          />
-        </div>
+      <td className="px-4 py-2.5 text-slate-700">
+        {articulo.lleva_cantidad ? 'Con cantidad' : 'Solo se marca'}
       </td>
 
-      <td className="px-4 py-2 text-right tabular text-slate-500">{articulo.orden_visual}</td>
+      <td className="px-4 py-2.5 text-right tabular text-slate-500">{articulo.orden_visual}</td>
 
-      <td className="px-4 py-2">
+      <td className="px-4 py-2.5">
         <div className="flex items-center justify-end gap-1">
           <button type="button" className="btn-ghost px-3 py-1.5 text-xs" onClick={onEditar}>
             Editar
@@ -287,11 +166,8 @@ function FilaArticulo({ articulo, onEditar }: { articulo: Articulo; onEditar: ()
 
 const esquemaArticulo = z.object({
   nombre: z.string().trim().min(2, 'Escribí el nombre del artículo.'),
-  categoria: z.string().trim().optional().or(z.literal('')),
-  precio_unitario: z.coerce
-    .number({ invalid_type_error: 'Poné un número.' })
-    .min(0, 'El precio no puede ser negativo.'),
   orden_visual: z.coerce.number({ invalid_type_error: 'Poné un número.' }).int(),
+  lleva_cantidad: z.boolean(),
   activo: z.boolean(),
 });
 
@@ -299,14 +175,12 @@ type FormArticulo = z.input<typeof esquemaArticulo>;
 
 function FormularioArticulo({
   articulo,
-  categorias,
   existentes,
   onGuardado,
   onCancelar,
 }: {
   articulo?: Articulo;
-  categorias: string[];
-  /** Para calcular dónde va el artículo nuevo dentro de su categoría. */
+  /** Para calcular dónde va el artículo nuevo. */
   existentes: Articulo[];
   onGuardado: () => void;
   onCancelar: () => void;
@@ -314,6 +188,12 @@ function FormularioArticulo({
   const toast = useToast();
   const crear = useCrearArticulo();
   const actualizar = useActualizarArticulo();
+
+  /** El nuevo va al final: un 0 lo mandaría al principio de la lista. */
+  const ordenSugerido = useMemo(
+    () => Math.max(0, ...existentes.map((a) => a.orden_visual)) + 10,
+    [existentes],
+  );
 
   const {
     register,
@@ -323,38 +203,17 @@ function FormularioArticulo({
     resolver: zodResolver(esquemaArticulo),
     defaultValues: {
       nombre: articulo?.nombre ?? '',
-      categoria: articulo?.categoria ?? '',
-      precio_unitario: articulo ? Number(articulo.precio_unitario) : 0,
-      orden_visual: articulo?.orden_visual ?? 0,
+      orden_visual: articulo?.orden_visual ?? ordenSugerido,
+      lleva_cantidad: articulo?.lleva_cantidad ?? true,
       activo: articulo?.activo ?? true,
     },
   });
 
   const enviar = handleSubmit(async (valores) => {
-    const categoria = (valores.categoria as string)?.trim() || null;
-
-    /**
-     * Un artículo nuevo va al final de su categoría.
-     *
-     * Dejarlo en 0 no es neutro: como el orden de la categoría lo marca su
-     * artículo más bajo, un 0 le pasa la categoría entera al principio de la
-     * lista y del alta de órdenes.
-     */
-    let orden = Number(valores.orden_visual);
-    if (!articulo && orden === 0) {
-      const enCategoria = existentes.filter(
-        (a) => (a.categoria?.trim() || null) === categoria,
-      );
-      orden = enCategoria.length
-        ? Math.max(...enCategoria.map((a) => a.orden_visual)) + 10
-        : Math.max(0, ...existentes.map((a) => a.orden_visual)) + 10;
-    }
-
     const datos: DatosArticulo = {
       nombre: String(valores.nombre),
-      categoria,
-      precio_unitario: Number(valores.precio_unitario),
-      orden_visual: orden,
+      orden_visual: Number(valores.orden_visual),
+      lleva_cantidad: Boolean(valores.lleva_cantidad),
       activo: Boolean(valores.activo),
     };
 
@@ -364,7 +223,7 @@ function FormularioArticulo({
         toast.ok('Artículo actualizado.');
       } else {
         await crear.mutateAsync(datos);
-        toast.ok(`"${datos.nombre}" agregado a la lista.`);
+        toast.ok(`"${datos.nombre}" agregado.`);
       }
       onGuardado();
     } catch {
@@ -383,50 +242,15 @@ function FormularioArticulo({
             id="nombre"
             className={`field ${errors.nombre ? 'field-error' : ''}`}
             autoComplete="off"
+            placeholder="Frazada, cortina…"
             {...register('nombre')}
           />
           {errors.nombre && <p className="error-text">{errors.nombre.message}</p>}
         </div>
 
         <div>
-          <label className="label" htmlFor="categoria">
-            Categoría
-          </label>
-          <input
-            id="categoria"
-            list="categorias-existentes"
-            className="field"
-            autoComplete="off"
-            placeholder="Prendas, Ropa de cama…"
-            {...register('categoria')}
-          />
-          <datalist id="categorias-existentes">
-            {categorias.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
-        </div>
-
-        <div>
-          <label className="label" htmlFor="precio_unitario">
-            Precio ($)
-          </label>
-          <input
-            id="precio_unitario"
-            type="number"
-            min="0"
-            step="1"
-            className={`field text-right tabular ${errors.precio_unitario ? 'field-error' : ''}`}
-            {...register('precio_unitario')}
-          />
-          {errors.precio_unitario && (
-            <p className="error-text">{errors.precio_unitario.message}</p>
-          )}
-        </div>
-
-        <div>
           <label className="label" htmlFor="orden_visual">
-            Orden dentro de la categoría
+            Orden
           </label>
           <input
             id="orden_visual"
@@ -436,14 +260,24 @@ function FormularioArticulo({
             {...register('orden_visual')}
           />
           {errors.orden_visual && <p className="error-text">{errors.orden_visual.message}</p>}
-          <p className="mt-1 text-xs text-slate-500">
-            De menor a mayor, dejando huecos: 10, 20, 30… También decide en qué lugar va la
-            categoría, según su número más bajo.
-            {!articulo && ' En 0, el artículo se agrega al final de su categoría.'}
-          </p>
+          <p className="mt-1 text-xs text-slate-500">De menor a mayor: 10, 20, 30…</p>
         </div>
 
-        <div className="flex items-end pb-2">
+        <div className="space-y-3 pt-7">
+          <label className="flex select-none items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded-sharp border-brand-300 text-brand-800 focus:ring-aqua-500"
+              {...register('lleva_cantidad')}
+            />
+            <span>
+              Se cuenta
+              <span className="block text-xs text-slate-500">
+                Sin marcar, se marca sin número — como la ropa suelta.
+              </span>
+            </span>
+          </label>
+
           <label className="flex select-none items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
@@ -466,9 +300,4 @@ function FormularioArticulo({
       </div>
     </form>
   );
-}
-
-/** Precio formateado, por si hace falta fuera de la tabla. */
-export function PrecioArticulo({ articulo }: { articulo: Articulo }) {
-  return <span className="tabular">{moneda(articulo.precio_unitario)}</span>;
 }

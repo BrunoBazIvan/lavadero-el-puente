@@ -14,8 +14,46 @@ import type {
 
 export const clavesOrdenes = {
   una: (ref: string) => ['ordenes', 'una', ref] as const,
-  lista: ['ordenes', 'lista'] as const,
+  lista: (busqueda: string, estado: string) => ['ordenes', 'lista', busqueda, estado] as const,
 };
+
+/** Cuántos días lleva una orden lista sin que la vengan a buscar. */
+export const DIAS_SIN_RETIRAR = 7;
+
+/**
+ * Listado del mostrador.
+ *
+ * Con término de búsqueda usa la RPC `buscar()`, que ya sabe distinguir si lo
+ * que escribieron es una referencia, un teléfono o un nombre. Sin término, trae
+ * las últimas órdenes con el filtro de estado.
+ */
+export function useListaOrdenes(busqueda: string, estado: EstadoOrden | 'todos') {
+  const termino = busqueda.trim();
+
+  return useQuery({
+    queryKey: clavesOrdenes.lista(termino, estado),
+    queryFn: async (): Promise<OrdenVista[]> => {
+      if (termino.length >= 2) {
+        const { data, error } = await supabase.rpc('buscar', { termino, limite: 50 });
+        if (error) throw error;
+        const filas = (data ?? []) as OrdenVista[];
+        return estado === 'todos' ? filas : filas.filter((o) => o.estado === estado);
+      }
+
+      let q = supabase
+        .from('v_ordenes')
+        .select('*')
+        .order('fecha_ingreso', { ascending: false })
+        .limit(100);
+
+      if (estado !== 'todos') q = q.eq('estado', estado);
+
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as OrdenVista[];
+    },
+  });
+}
 
 /**
  * Una orden con todo lo necesario para el detalle y para los tickets.
@@ -24,36 +62,38 @@ export const clavesOrdenes = {
  * y las relaciones embebidas de PostgREST sobre vistas son frágiles. Cuatro
  * consultas contra índices es barato y no se rompe si mañana cambia la vista.
  */
+export async function traerOrdenCompleta(ref: string): Promise<OrdenCompleta | null> {
+  const { data: orden, error } = await supabase
+    .from('v_ordenes')
+    .select('*')
+    .eq('ref', ref)
+    .maybeSingle();
+  if (error) throw error;
+  if (!orden) return null;
+
+  const [items, pagos, cliente] = await Promise.all([
+    supabase.from('orden_items').select('*').eq('orden_id', orden.id).order('descripcion'),
+    supabase.from('pagos').select('*').eq('orden_id', orden.id).order('fecha'),
+    supabase.from('clientes').select('*').eq('id', orden.cliente_id).single(),
+  ]);
+
+  if (items.error) throw items.error;
+  if (pagos.error) throw pagos.error;
+  if (cliente.error) throw cliente.error;
+
+  return {
+    ...(orden as OrdenVista),
+    items: (items.data ?? []) as OrdenItem[],
+    pagos: (pagos.data ?? []) as Pago[],
+    cliente: cliente.data as Cliente,
+  };
+}
+
 export function useOrden(ref: string | undefined) {
   return useQuery({
     queryKey: clavesOrdenes.una(ref ?? ''),
     enabled: Boolean(ref),
-    queryFn: async (): Promise<OrdenCompleta | null> => {
-      const { data: orden, error } = await supabase
-        .from('v_ordenes')
-        .select('*')
-        .eq('ref', ref!)
-        .maybeSingle();
-      if (error) throw error;
-      if (!orden) return null;
-
-      const [items, pagos, cliente] = await Promise.all([
-        supabase.from('orden_items').select('*').eq('orden_id', orden.id).order('descripcion'),
-        supabase.from('pagos').select('*').eq('orden_id', orden.id).order('fecha'),
-        supabase.from('clientes').select('*').eq('id', orden.cliente_id).single(),
-      ]);
-
-      if (items.error) throw items.error;
-      if (pagos.error) throw pagos.error;
-      if (cliente.error) throw cliente.error;
-
-      return {
-        ...(orden as OrdenVista),
-        items: (items.data ?? []) as OrdenItem[],
-        pagos: (pagos.data ?? []) as Pago[],
-        cliente: cliente.data as Cliente,
-      };
-    },
+    queryFn: () => traerOrdenCompleta(ref!),
   });
 }
 

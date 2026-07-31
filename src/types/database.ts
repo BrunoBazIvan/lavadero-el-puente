@@ -15,6 +15,8 @@ export type MetodoPago = 'efectivo' | 'transferencia' | 'debito' | 'credito' | '
 export type RolUsuario = 'admin' | 'operador';
 export type TipoCliente = 'particular' | 'empresa';
 export type EstadoPago = 'pendiente' | 'parcial' | 'pagado';
+/** El retiro y entrega no es un servicio aparte: va en `ordenes.envio`. */
+export type ServicioOrden = 'lavado_secado' | 'solo_secado';
 
 export interface Database {
   public: {
@@ -77,14 +79,17 @@ export interface Database {
           precio_unitario: number;
           activo: boolean;
           orden_visual: number;
+          /** false = se marca sin número (la ropa suelta no se cuenta). */
+          lleva_cantidad: boolean;
         };
         Insert: {
           id?: string;
           nombre: string;
           categoria?: string | null;
-          precio_unitario: number;
+          precio_unitario?: number;
           activo?: boolean;
           orden_visual?: number;
+          lleva_cantidad?: boolean;
         };
         Update: Partial<Database['public']['Tables']['articulos']['Insert']>;
       };
@@ -95,6 +100,9 @@ export interface Database {
           ref: string;
           cliente_id: string;
           estado: EstadoOrden;
+          servicio: ServicioOrden;
+          /** Retiro y entrega a domicilio. */
+          envio: boolean;
           fecha_ingreso: string;
           fecha_retiro_estimada: string;
           fecha_entrega_real: string | null;
@@ -110,6 +118,8 @@ export interface Database {
           ref?: string;
           cliente_id: string;
           estado?: EstadoOrden;
+          servicio?: ServicioOrden;
+          envio?: boolean;
           fecha_ingreso?: string;
           fecha_retiro_estimada: string;
           fecha_entrega_real?: string | null;
@@ -218,15 +228,20 @@ export interface CrearOrdenPayload {
   cliente_id: string;
   /** ISO `aaaa-mm-dd`. */
   fecha_retiro_estimada: string;
-  descuento?: number;
+  servicio: ServicioOrden;
+  envio: boolean;
   notas?: string | null;
   items: {
     articulo_id?: string | null;
     descripcion: string;
     cantidad: number;
-    precio_unitario: number;
   }[];
 }
+
+export const NOMBRE_SERVICIO: Record<ServicioOrden, string> = {
+  lavado_secado: 'Lavado y secado',
+  solo_secado: 'Solo secado',
+};
 
 // ── Alias cómodos para el resto de la app ───────────────────────────────────
 export type Profile = Database['public']['Tables']['profiles']['Row'];

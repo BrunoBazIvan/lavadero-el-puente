@@ -1,28 +1,23 @@
 -- =============================================================================
 --  EL PUENTE — datos iniciales
---  Correr DESPUÉS de 0001_init.sql, en el SQL Editor de Supabase.
+--  Correr DESPUÉS de las migraciones, en el SQL Editor de Supabase.
 -- =============================================================================
 --
---  ⚠️  LOS PRECIOS ESTÁN EN 0 A PROPÓSITO.
+--  Al recibir la ropa no se cuenta prenda por prenda: se anota si es ropa o
+--  acolchados, y de cuántas plazas. Por eso son tres opciones y no treinta.
 --
---  No inventé ninguno. Los nombres de los artículos salen de los servicios que
---  el lavadero ya publica en su landing (acolchados, cortinas, alfombras, ropa
---  general, planchado); los importes los tenés que cargar vos.
+--  Para agregar otra (una frazada, una cortina) no hace falta tocar este
+--  archivo: se hace desde la pantalla de Artículos.
 --
---  Dos formas de completarlos:
---    a) Editando este archivo antes de correrlo (columna `precio`).
---    b) Corriéndolo así y cargando los precios desde la pantalla /articulos.
---
---  Para ver qué falta, en cualquier momento:
---      select categoria, nombre from articulos where precio_unitario = 0 order by 1,2;
---
---  Revisá también qué artículos sobran o faltan: esta lista es un punto de
---  partida razonable, no la lista real del mostrador.
+--  Los precios quedan en 0 a propósito. El cobro no se maneja desde el sistema
+--  todavía; la columna existe para cuando se decida hacerlo.
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
 -- Configuración del negocio
---  Los datos de contacto vienen de la landing (lib/config.ts). Si cambian allá,
+--  Sale impresa en el comprobante. No hay pantalla para editarla: se cambia
+--  desde el SQL Editor o desde Supabase Studio (tabla `configuracion`).
+--  Los datos de contacto vienen de la landing (lib/config.ts); si cambian allá,
 --  cambialos acá también — son dos sistemas separados a propósito.
 -- -----------------------------------------------------------------------------
 
@@ -36,63 +31,18 @@ insert into public.configuracion (clave, valor) values
 on conflict (clave) do nothing;
 
 -- -----------------------------------------------------------------------------
--- Lista de precios
+-- Qué se puede recibir
+--  `lleva_cantidad = false` es lo que hace que la ropa se marque sin número.
+--  `orden_visual` define en qué orden aparecen los botones en el alta.
 -- -----------------------------------------------------------------------------
 
---  `orden_visual` ordena dos cosas a la vez: los artículos dentro de su
---  categoría, y las categorías entre sí (cada una arranca en un centenar
---  distinto, y el orden del grupo lo da su artículo más bajo). Por eso las
---  prendas van primero y los servicios al final: es lo que más y lo que menos
---  se toca en el mostrador. Para reordenar, cambiá estos números desde la
---  pantalla de artículos.
-insert into public.articulos (nombre, categoria, precio_unitario, orden_visual)
-select nombre, categoria, precio, orden
+insert into public.articulos (nombre, categoria, precio_unitario, orden_visual, lleva_cantidad)
+select nombre, null, 0, orden, cuenta
 from (values
-  -- ── Prendas ────────────────────────────────────────────────── precio ── orden
-  ('Camisa',                    'Prendas',        0::numeric,  10),
-  ('Remera',                    'Prendas',        0::numeric,  20),
-  ('Pantalón',                  'Prendas',        0::numeric,  30),
-  ('Buzo',                      'Prendas',        0::numeric,  40),
-  ('Campera',                   'Prendas',        0::numeric,  50),
-  ('Campera de abrigo',         'Prendas',        0::numeric,  60),
-  ('Vestido',                   'Prendas',        0::numeric,  70),
-  ('Pollera',                   'Prendas',        0::numeric,  80),
-  ('Saco',                      'Prendas',        0::numeric,  90),
-  ('Traje (2 piezas)',          'Prendas',        0::numeric, 100),
-
-  -- ── Ropa de cama ──────────────────────────────────────────────────────────
-  ('Acolchado 1 plaza',         'Ropa de cama',   0::numeric, 210),
-  ('Acolchado 2 plazas',        'Ropa de cama',   0::numeric, 220),
-  ('Acolchado king',            'Ropa de cama',   0::numeric, 230),
-  ('Frazada 1 plaza',           'Ropa de cama',   0::numeric, 240),
-  ('Frazada 2 plazas',          'Ropa de cama',   0::numeric, 250),
-  ('Cubrecama',                 'Ropa de cama',   0::numeric, 260),
-  ('Juego de sábanas 1 plaza',  'Ropa de cama',   0::numeric, 270),
-  ('Juego de sábanas 2 plazas', 'Ropa de cama',   0::numeric, 280),
-  ('Almohada',                  'Ropa de cama',   0::numeric, 290),
-  ('Toalla',                    'Ropa de cama',   0::numeric, 300),
-  ('Toallón',                   'Ropa de cama',   0::numeric, 310),
-
-  -- ── Hogar ─────────────────────────────────────────────────────────────────
-  ('Cortina (por m²)',          'Hogar',          0::numeric, 410),
-  ('Cortina blackout (por m²)', 'Hogar',          0::numeric, 420),
-  ('Alfombra (por m²)',         'Hogar',          0::numeric, 430),
-  ('Funda de sillón',           'Hogar',          0::numeric, 440),
-  ('Tapizado de silla',         'Hogar',          0::numeric, 450),
-
-  -- ── Servicios ─────────────────────────────────────────────────────────────
-  ('Lavado general (por kg)',   'Servicios',      0::numeric, 610),
-  ('Planchado (por prenda)',    'Servicios',      0::numeric, 620),
-  ('Secado (por kg)',           'Servicios',      0::numeric, 630),
-  ('Retiro y entrega',          'Servicios',      0::numeric, 640)
-) as t(nombre, categoria, precio, orden)
+  ('Ropa',               10, false),
+  ('Acolchado 1 plaza',  20, true),
+  ('Acolchado 2 plazas', 30, true)
+) as t(nombre, orden, cuenta)
 where not exists (
   select 1 from public.articulos a where a.nombre = t.nombre
 );
-
--- -----------------------------------------------------------------------------
--- Verificación
--- -----------------------------------------------------------------------------
---  select categoria, count(*) filter (where precio_unitario = 0) as sin_precio,
---         count(*) as total
---  from articulos group by categoria order by 1;
