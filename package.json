@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "description": "Landing page de Lavadero El Puente — lavadero industrial y lavandería en Maldonado, Uruguay.",
+  "workspaces": [
+    "gestion"
+  ],
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/generate-assets.mjs",
+    "dev:gestion": "npm run dev --workspace gestion",
+    "prebuild": "node scripts/generate-assets.mjs && npm run build --workspace gestion",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

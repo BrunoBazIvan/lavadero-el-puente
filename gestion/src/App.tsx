@@ -57,7 +57,9 @@ export default function App() {
   return (
     <ToastProvider>
       <QueryProvider>
-        <BrowserRouter>
+        {/* La app cuelga de /gestion/, no de la raíz del dominio: sin el
+            basename todos los Link apuntarían a la landing. */}
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AuthProvider>
             <Routes>
               <Route path="/login" element={<Login />} />

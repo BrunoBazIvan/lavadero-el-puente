@@ -140,7 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const recordarPassword = useCallback(async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/recuperar`,
+      // `BASE_URL` ya viene con la barra final ('/gestion/'). Sin esto el mail
+      // llevaría a la raíz del dominio, que es la landing.
+      redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}recuperar`,
     });
     if (error) throw error;
   }, []);

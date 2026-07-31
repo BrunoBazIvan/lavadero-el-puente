@@ -19,5 +19,9 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  // `gestion` queda fuera del include de arriba (`**/*.tsx`): es un proyecto
+  // Vite con su propia config —jsx react-jsx, alias `@` a su `src`, tipos de
+  // `import.meta.env`— y `next build` lo rompería. Su typecheck lo hace su
+  // propio build (`tsc --noEmit` con gestion/tsconfig.json).
+  "exclude": ["node_modules", "gestion"]
 }

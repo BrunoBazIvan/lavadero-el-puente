@@ -5,7 +5,8 @@ export const dynamic = 'force-static';
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: '*', allow: '/' },
+    // /gestion/ es la herramienta interna de mostrador: nada que indexar ahí.
+    rules: { userAgent: '*', allow: '/', disallow: '/gestion/' },
     sitemap: `${business.domain}/sitemap.xml`,
     host: business.domain,
   };

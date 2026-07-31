@@ -18,6 +18,9 @@
 /public/favicon.ico
 /public/images/
 
+# build del sistema de gestión (lo genera el prebuild, ver gestion/vite.config.ts)
+/public/gestion/
+
 # misc
 .DS_Store
 *.pem
