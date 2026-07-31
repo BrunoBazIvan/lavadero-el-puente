@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/gestion/(.*)",
-      "destination": "/gestion/index.html"
+      "destination": "/gestion/"
     }
   ]
 }
