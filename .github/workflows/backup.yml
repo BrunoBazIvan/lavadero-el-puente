@@ -1,0 +1,125 @@
+# Backup diario de la base del sistema de gestión.
+#
+# Supabase Free no hace backups automáticos: si alguien borra algo por error, no
+# hay de dónde volver. Esto lo cubre.
+#
+# Los dumps NO van a este repo: llevan nombres, teléfonos y direcciones de
+# clientes reales. Van a `el-puente-backups`, que es privado.
+#
+# Cómo restaurar: gestion/supabase/RESTAURAR.md
+#
+# Secrets que necesita (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL    Supabase → Project Settings → Database → Session pooler.
+#                      El pooler y no la conexión directa: GitHub Actions sale
+#                      por IPv4 y la directa hoy es solo IPv6.
+#   BACKUP_REPO_TOKEN  Un PAT con permiso de escritura sobre el repo de backups.
+
+name: Backup de la base
+
+on:
+  schedule:
+    # 06:00 UTC = 03:00 en Uruguay. El lavadero está cerrado.
+    - cron: '0 6 * * *'
+  # Para poder pedir uno a demanda antes de tocar algo delicado.
+  workflow_dispatch:
+
+# Dos backups pisándose escribirían el mismo commit y uno perdería.
+concurrency:
+  group: backup-base
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Traer el repo de backups
+        uses: actions/checkout@v4
+        with:
+          repository: BrunoBazIvan/el-puente-backups
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          path: backups
+
+      # El CLI trae su propio pg_dump, de la versión que le corresponde al
+      # Postgres de Supabase. El pg_dump que viene en ubuntu-latest es de otra
+      # versión y se planta con "server version mismatch".
+      - name: Instalar el CLI de Supabase
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Volcar la base
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          DIR="backups/dumps/$(date -u +%Y-%m-%d)"
+          mkdir -p "$DIR"
+
+          # Los tres archivos que pide una restauración completa, en el orden
+          # en que se aplican después.
+          supabase db dump --db-url "$DB_URL" -f "$DIR/roles.sql"  --role-only
+          supabase db dump --db-url "$DB_URL" -f "$DIR/schema.sql"
+          supabase db dump --db-url "$DB_URL" -f "$DIR/data.sql"   --data-only
+
+          echo "DIR=$DIR" >> "$GITHUB_ENV"
+
+      # Un dump vacío que se commitea todos los días es peor que no tener
+      # backup: parece que estás cubierto y no lo estás. Si esto falla, GitHub
+      # te manda el mail de workflow fallido.
+      - name: Verificar que el dump sirve
+        run: |
+          set -euo pipefail
+          for f in roles schema data; do
+            if [ ! -s "$DIR/$f.sql" ]; then
+              echo "::error::$f.sql salió vacío. El backup de hoy no sirve."
+              exit 1
+            fi
+          done
+
+          if ! grep -q "CREATE TABLE" "$DIR/schema.sql"; then
+            echo "::error::schema.sql no tiene ni una tabla."
+            exit 1
+          fi
+
+          # Las tablas que tienen que existir sí o sí. Si un día el dump sale
+          # sin `clientes`, algo cambió y hay que enterarse ese día.
+          for t in clientes ordenes orden_items articulos configuracion profiles; do
+            if ! grep -q "CREATE TABLE.*\.$t\b" "$DIR/schema.sql"; then
+              echo "::error::falta la tabla $t en el dump."
+              exit 1
+            fi
+          done
+
+          echo "Dump OK:"
+          du -h "$DIR"/*.sql
+
+      # Retención de 30 días. Se compara por el nombre de la carpeta y no por
+      # fecha de archivo: en un checkout limpio todos los archivos son de hoy.
+      - name: Borrar los backups de más de 30 días
+        run: |
+          set -euo pipefail
+          LIMITE=$(date -u -d '30 days ago' +%Y-%m-%d)
+          for d in backups/dumps/*/; do
+            [ -d "$d" ] || continue
+            NOMBRE=$(basename "$d")
+            if [[ "$NOMBRE" < "$LIMITE" ]]; then
+              echo "Borrando $NOMBRE"
+              rm -rf "$d"
+            fi
+          done
+
+      - name: Guardar
+        working-directory: backups
+        run: |
+          set -euo pipefail
+          git config user.name  "backup-bot"
+          git config user.email "actions@github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "Sin cambios respecto al último backup."
+            exit 0
+          fi
+          git commit -m "Backup $(date -u +%Y-%m-%d)"
+          git push

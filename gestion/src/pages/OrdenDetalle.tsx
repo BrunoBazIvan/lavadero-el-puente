@@ -50,6 +50,15 @@ export default function OrdenDetalle() {
   }
 
   const cerrada = orden.estado === 'entregado' || orden.estado === 'anulado';
+
+  /**
+   * Quién puede anular, calcado de lo que impone `guard_orden_update` en la
+   * base: cualquiera del mostrador mientras la ropa siga acá, y solo un admin
+   * una vez que la orden se entregó. Si acá fuéramos más permisivos que la
+   * base, el botón existiría para terminar en un error de Postgres.
+   */
+  const puedeAnular =
+    orden.estado !== 'anulado' && (esAdmin || orden.estado !== 'entregado');
   const whatsapp = linkWhatsapp(orden.cliente.telefono, armarMensaje(orden, config?.nombre_negocio));
 
   const cambiar = async (estado: EstadoOrden) => {
@@ -165,7 +174,7 @@ export default function OrdenDetalle() {
             </div>
           </section>
 
-          {esAdmin && orden.estado !== 'anulado' && (
+          {puedeAnular && (
             <button
               type="button"
               className="btn-danger w-full"
