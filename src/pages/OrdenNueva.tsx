@@ -235,7 +235,7 @@ export default function OrdenNueva() {
         <section className="panel p-4">
           <h2 className="eyebrow mb-3">3 · Servicio</h2>
 
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             {(Object.keys(NOMBRE_SERVICIO) as ServicioOrden[]).map((s) => (
               <button
                 key={s}

@@ -9,7 +9,7 @@ const POR_DEFECTO: Configuracion = {
   direccion: '',
   telefono_whatsapp: '',
   leyenda_ticket: '',
-  dias_entrega_default: '2',
+  dias_entrega_default: '1',
   ancho_ticket_mm: '80',
 };
 
@@ -29,11 +29,14 @@ export function useConfiguracion() {
   });
 }
 
-/** Días de entrega por defecto, ya como número usable. */
+/**
+ * Días de entrega por defecto, ya como número usable.
+ * Hoy es 1: la ropa se promete para el día siguiente.
+ */
 export function useDiasEntrega(): number {
   const { data } = useConfiguracion();
   const dias = Number(data?.dias_entrega_default);
-  return Number.isFinite(dias) && dias >= 0 ? dias : 2;
+  return Number.isFinite(dias) && dias >= 0 ? dias : 1;
 }
 
 export function useGuardarConfiguracion() {

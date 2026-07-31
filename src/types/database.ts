@@ -16,7 +16,7 @@ export type RolUsuario = 'admin' | 'operador';
 export type TipoCliente = 'particular' | 'empresa';
 export type EstadoPago = 'pendiente' | 'parcial' | 'pagado';
 /** El retiro y entrega no es un servicio aparte: va en `ordenes.envio`. */
-export type ServicioOrden = 'lavado_secado' | 'solo_secado';
+export type ServicioOrden = 'lavado_secado' | 'con_plancha' | 'solo_secado';
 
 export interface Database {
   public: {
@@ -238,8 +238,10 @@ export interface CrearOrdenPayload {
   }[];
 }
 
+/** El orden es el de los botones al recibir: de lo más pedido a lo menos. */
 export const NOMBRE_SERVICIO: Record<ServicioOrden, string> = {
   lavado_secado: 'Lavado y secado',
+  con_plancha: 'Con plancha',
   solo_secado: 'Solo secado',
 };
 
