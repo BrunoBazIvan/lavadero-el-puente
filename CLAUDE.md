@@ -40,6 +40,11 @@ Lo que se rompe si lo tocás sin mirar:
   que el rewrite no estuviera funcionando. El `source` es `/gestion/(.*)` y no
   `/gestion/:path*` por lo mismo: `trailingSlash` redirige a `/gestion/ruta/`
   con barra final, y `:path*` no matchea eso.
+
+  Lo mismo vale para **cualquier `.html` suelto en `public/`**: se sirve por su
+  ruta limpia, no por la que tiene extensión. Por eso el archivo de
+  verificación de Google Search Console (`public/google*.html`) necesita su
+  propio rewrite: Google pide la URL con `.html` exacta y esa devuelve 404.
 - **`"exclude": ["node_modules", "gestion"]` en el `tsconfig.json` de la raíz.**
   Sin eso, el `include` con `**/*.tsx` se come `gestion/src` y `next build`
   falla typechequeándolo con la config equivocada.

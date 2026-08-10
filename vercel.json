@@ -4,6 +4,10 @@
     {
       "source": "/gestion/(.*)",
       "destination": "/gestion/"
+    },
+    {
+      "source": "/google6053df368887b3c1.html",
+      "destination": "/google6053df368887b3c1/"
     }
   ]
 }
