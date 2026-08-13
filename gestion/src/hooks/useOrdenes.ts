@@ -18,7 +18,14 @@ export const clavesOrdenes = {
   lista: (busqueda: string, estado: string) => ['ordenes', 'lista', busqueda, estado] as const,
 };
 
-/** Cuántos días lleva una orden lista sin que la vengan a buscar. */
+/**
+ * Cuántos días lleva una orden lista sin que la vengan a buscar.
+ *
+ * Es el mismo plazo que sale impreso en el comprobante (la clave
+ * `leyenda_responsabilidad` de `configuracion`). Si cambia uno, cambiá el
+ * otro: el aviso del mostrador y lo que firmó el cliente tienen que decir lo
+ * mismo el día que haya que discutir una bolsa vieja.
+ */
 export const DIAS_SIN_RETIRAR = 7;
 
 /**

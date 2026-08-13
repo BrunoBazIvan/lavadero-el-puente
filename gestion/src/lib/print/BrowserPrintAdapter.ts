@@ -1,5 +1,5 @@
 import type { PrintAdapter, TicketPayload } from '@/lib/print/PrintAdapter';
-import { armarComprobante } from '@/lib/print/ticketCliente';
+import { armarComprobante } from '@/lib/print/ticket';
 
 /**
  * Imprime desde el navegador, con un iframe oculto y CSS de 80 mm.
@@ -21,7 +21,10 @@ export class BrowserPrintAdapter implements PrintAdapter {
       marco.style.right = '0';
       marco.style.bottom = '0';
       marco.style.width = '80mm';
-      marco.style.height = '200mm';
+      // Alto de sobra para los dos papeles: el navegador pagina el documento
+      // entero y no solo lo que entra acá, pero con el iframe corto Chrome
+      // relayoutea al imprimir y ya cortó mal algún renglón.
+      marco.style.height = '400mm';
       marco.style.border = '0';
       marco.style.opacity = '0';
       marco.style.pointerEvents = 'none';

@@ -51,8 +51,15 @@ Lo que escribas acá **no sale impreso** en el comprobante del cliente.
 
 ### Guardar
 
-**Guardar e imprimir comprobante**. El papel sale solo. Se lo das al cliente:
-es lo que trae cuando viene a buscar la ropa.
+**Guardar e imprimir comprobante**. Salen **dos papeles**, uno atrás del otro:
+
+1. **El del cliente** — con el logo, todo lo que recibimos y las condiciones.
+   Es lo que trae cuando viene a buscar la ropa.
+2. **La copia del lavadero** — dice `COPIA LAVADERO` y trae solo la
+   referencia, el nombre y el teléfono. Ese va **con la bolsa**: es lo que
+   mirás cuando hay que ubicar una bolsa o llamar al cliente.
+
+Si sale uno solo, la impresora cortó de más: la copia sigue en el rollo.
 
 ---
 
@@ -99,7 +106,13 @@ que quedó debiendo.
 ### Si perdió el comprobante
 
 Buscala por teléfono o por nombre. Desde el detalle de la orden podés
-**reimprimir** el comprobante.
+**reimprimir** el comprobante. Vuelven a salir los dos papeles.
+
+### Si viene a los dos meses
+
+El comprobante dice que guardamos las prendas **7 días** desde que le
+avisamos que están listas, y que pasado ese plazo el lavadero no se hace
+responsable. Está impreso ahí para poder mostrárselo.
 
 ---
 

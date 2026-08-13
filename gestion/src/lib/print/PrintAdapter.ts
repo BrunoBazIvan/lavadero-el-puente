@@ -2,9 +2,11 @@ import type { OrdenCompleta } from '@/types/database';
 import type { Configuracion } from '@/hooks/useConfiguracion';
 
 /**
- * Qué se imprime. Hoy hay un solo papel: el comprobante que se lleva el
- * cliente. Si mañana aparece la etiqueta para la bolsa o el recibo de pago,
- * se suman acá como variantes de `tipo` y el resto de la app no se entera.
+ * Qué se imprime. Hoy hay un solo trabajo, `comprobante`, que saca los dos
+ * papeles de una recepción: el del cliente y la copia que queda con la bolsa.
+ * Van juntos y no como dos tipos separados porque nunca se imprime uno sin el
+ * otro. Si mañana aparece el recibo de pago, se suma acá como variante de
+ * `tipo` y el resto de la app no se entera.
  */
 export type TicketPayload = {
   tipo: 'comprobante';

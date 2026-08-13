@@ -26,6 +26,8 @@ insert into public.configuracion (clave, valor) values
   ('direccion',             'Batalla del Cerrito 1009 esq. Dr. Román Bergalli, Maldonado'),
   ('telefono_whatsapp',     '59899767134'),
   ('leyenda_ticket',        'Presentá este comprobante para retirar tus prendas.'),
+  ('leyenda_responsabilidad',
+   'Guardamos las prendas 7 días desde que te avisamos que están listas. Pasado ese plazo el lavadero no se hace responsable.'),
   ('dias_entrega_default',  '1'),
   ('ancho_ticket_mm',       '80')
 on conflict (clave) do nothing;

@@ -1,13 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EstadoError, EstadoVacio, PantallaCargando } from '@/components/Estados';
 import { useOrden } from '@/hooks/useOrdenes';
 import { useConfiguracion } from '@/hooks/useConfiguracion';
-import { armarComprobante } from '@/lib/print/ticketCliente';
+import { armarComprobante } from '@/lib/print/ticket';
 import { mensajeDeError } from '@/lib/supabase';
 
 /**
- * Vista del comprobante solo, sin la interfaz de la app.
+ * Vista de los comprobantes solos, sin la interfaz de la app.
  *
  * Sirve para dos cosas: probar cómo cortan los renglones sin gastar rollo, y
  * reimprimir desde otra máquina entrando directo a /print/EP-00123.
@@ -15,6 +15,9 @@ import { mensajeDeError } from '@/lib/supabase';
 export default function TicketImpresion() {
   const { ref } = useParams<{ ref: string }>();
   const marco = useRef<HTMLIFrameElement>(null);
+  // El alto lo dicta el contenido: entre los ítems de la orden y el talón del
+  // lavadero, un alto fijo o recorta el papel o deja medio metro en blanco.
+  const [alto, setAlto] = useState(200);
 
   const { data: orden, isPending, error, refetch } = useOrden(ref);
   const { data: config } = useConfiguracion();
@@ -62,7 +65,12 @@ export default function TicketImpresion() {
           ref={marco}
           title={`Comprobante ${orden.ref}`}
           srcDoc={armarComprobante(orden, config)}
-          className="h-[150mm] w-[80mm] border-0 bg-white"
+          onLoad={() => {
+            const doc = marco.current?.contentDocument;
+            if (doc) setAlto(doc.documentElement.scrollHeight + 8);
+          }}
+          style={{ height: `${alto}px` }}
+          className="w-[80mm] border-0 bg-white"
         />
       </div>
     </div>

@@ -1,10 +1,20 @@
 import type { OrdenCompleta } from '@/types/database';
 import { NOMBRE_SERVICIO } from '@/types/database';
 import type { Configuracion } from '@/hooks/useConfiguracion';
+import { LOGO_TICKET } from '@/lib/print/logoTicket';
 import { fecha, fechaHora, moneda, telefono as formatearTelefono } from '@/lib/format';
 
 /**
- * Comprobante de recepción — el único papel que sale hoy.
+ * Los dos papeles que salen al recibir una orden:
+ *
+ *  1. El comprobante del cliente, con todo lo que recibimos y las condiciones.
+ *  2. El talón del lavadero, que va con la bolsa: referencia, nombre y
+ *     teléfono, nada más. Es el papel que se mira cuando alguien llama o
+ *     cuando hay que ubicar una bolsa sin cliente delante.
+ *
+ * Salen en un solo documento, separados por un salto de página, y no en dos
+ * llamadas a `print()`: con `--kiosk-printing` la segunda llamada compite con
+ * el trabajo que todavía está saliendo y a veces se pierde.
  *
  * Se arma como texto monoespaciado dentro de un HTML mínimo, no con
  * componentes: es lo más parecido a lo que escupe la térmica, se ve tal cual
@@ -13,7 +23,7 @@ import { fecha, fechaHora, moneda, telefono as formatearTelefono } from '@/lib/f
  * Reglas de la impresora térmica:
  *  · Blanco y negro puro. Nada de grises, sombras ni degradados.
  *  · Separadores con guiones, no con `border`: el borde a veces sale corrido.
- *  · Al final, un bloque en blanco para que el papel avance antes del corte.
+ *  · Al final de cada papel, un bloque en blanco para que avance antes del corte.
  */
 
 /** Ancho útil en caracteres para 80 mm con fuente monoespaciada de 12 px. */
@@ -69,9 +79,23 @@ function lineasRecibido(orden: OrdenCompleta): string[] {
   );
 }
 
-export function armarComprobante(orden: OrdenCompleta, config: Configuracion): string {
+/** Nombre y teléfono, el bloque que se repite en los dos papeles. */
+function bloqueContacto(orden: OrdenCompleta, aviso?: string): string {
+  const tel = orden.cliente.telefono
+    ? formatearTelefono(orden.cliente.telefono)
+    : 'Sin teléfono';
+
+  return `<div class="contacto">
+  <div class="nombre">${escapar(orden.cliente.nombre)}</div>
+  <div class="tel">${escapar(tel)}</div>
+  ${aviso ? `<div class="aviso">${escapar(aviso)}</div>` : ''}
+</div>`;
+}
+
+/* ── Papel 1: el del cliente ─────────────────────────────────────────────── */
+
+function papelCliente(orden: OrdenCompleta, config: Configuracion): string {
   const negocio = config.nombre_negocio || 'El Puente';
-  const anchoPapel = Number(config.ancho_ticket_mm) || 80;
 
   const cuerpo: string[] = [];
 
@@ -115,7 +139,62 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
   secciones.push(fechas.join('\n'));
   if (notas.length) secciones.push(notas.join('\n'));
 
+  // ── Condiciones de guarda ─────────────────────────────────────────────────
+  // El plazo va en `configuracion` y no acá: si el lavadero decide guardar 15
+  // días en vez de 7, se cambia el texto en la base y sale en el próximo papel.
+  const guarda = config.leyenda_responsabilidad?.trim();
+  const bloqueGuarda = guarda
+    ? `<pre>${separador()}</pre>
+<pre class="destacado">${escapar(envolver(guarda).join('\n'))}</pre>`
+    : '';
+
   const leyenda = config.leyenda_ticket || 'Presentá este comprobante para retirar tus prendas.';
+
+  return `<div class="papel">
+<img class="logo" src="${LOGO_TICKET}" alt="">
+<pre>${escapar(cuerpo.join('\n'))}</pre>
+<pre>${separador()}</pre>
+<div class="ref">${escapar(orden.ref)}</div>
+<pre>${separador()}</pre>
+${bloqueContacto(orden, 'Revisá que el teléfono esté bien')}
+<pre>${separador()}</pre>
+<pre>${escapar(secciones.join(`\n${separador()}\n`))}</pre>
+<pre>${separador()}</pre>
+<div class="retiro"><span>RETIRO ESTIMADO</span>${escapar(fecha(orden.fecha_retiro_estimada))}</div>
+${bloqueGuarda}
+<pre>${separador()}</pre>
+<pre class="leyenda">${escapar(envolver(leyenda).join('\n'))}</pre>
+<pre class="leyenda">¡Gracias!</pre>
+<div class="corte"></div>
+</div>`;
+}
+
+/* ── Papel 2: el del lavadero ────────────────────────────────────────────── */
+
+/**
+ * El talón que se queda acá, enganchado a la bolsa.
+ *
+ * Va sin logo, sin ítems y sin precios a propósito: no lo lee un cliente, lo
+ * lee alguien del mostrador buscando una bolsa entre veinte. Cuanto menos
+ * texto tenga, más rápido se encuentra lo que importa.
+ */
+function papelLavadero(orden: OrdenCompleta): string {
+  // El `respiro` de arriba no es adorno: el padding del body solo vale para la
+  // primera página, así que sin él este talón arranca pegado al corte.
+  return `<div class="papel">
+<div class="respiro"></div>
+<pre class="destacado">${centrar('COPIA LAVADERO')}</pre>
+<pre>${separador()}</pre>
+<div class="ref">${escapar(orden.ref)}</div>
+<pre>${separador()}</pre>
+${bloqueContacto(orden)}
+<pre>${separador()}</pre>
+<div class="corte"></div>
+</div>`;
+}
+
+export function armarComprobante(orden: OrdenCompleta, config: Configuracion): string {
+  const anchoPapel = Number(config.ancho_ticket_mm) || 80;
 
   return `<!doctype html>
 <html lang="es-UY">
@@ -141,7 +220,23 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
     -webkit-font-smoothing: none;
   }
 
+  /* El salto va antes del segundo papel y no después del primero: puesto como
+     page-break-after en el último, Chrome agrega una página vacía al final y
+     la térmica escupe un pedazo de rollo en blanco cada vez. */
+  .papel + .papel { page-break-before: always; break-before: page; }
+
   pre { margin: 0; font: inherit; white-space: pre-wrap; word-break: break-word; }
+
+  /* 176 px pintados en 22 mm son 1:1 en un cabezal de 203 dpi. El pixelated
+     evita que el navegador interpole y devuelva los grises que la térmica no
+     sabe imprimir. */
+  .logo {
+    display: block;
+    width: 22mm;
+    height: auto;
+    margin: 0 auto 1mm;
+    image-rendering: pixelated;
+  }
 
   .ref {
     margin: 1mm 0;
@@ -168,34 +263,23 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
 
   .leyenda { text-align: center; }
 
-  /* Avance de papel antes del corte. */
+  /* Las condiciones de guarda. En negrita porque es lo que se señala cuando
+     alguien viene a buscar la ropa un mes después. */
+  .destacado { font-weight: bold; }
+
+  /* Avance de papel antes del corte, y aire después del corte anterior. */
   .corte { height: 10mm; }
+  .respiro { height: 4mm; }
 
   @media screen {
     body { width: var(--util); box-shadow: 0 0 0 1px #ccc; padding: 4mm 0; }
+    .papel + .papel { margin-top: 6mm; border-top: 1px dashed #999; padding-top: 4mm; }
   }
 </style>
 </head>
 <body>
-<pre>${escapar(cuerpo.join('\n'))}</pre>
-<pre>${separador()}</pre>
-<div class="ref">${escapar(orden.ref)}</div>
-<pre>${separador()}</pre>
-<div class="contacto">
-  <div class="nombre">${escapar(orden.cliente.nombre)}</div>
-  <div class="tel">${escapar(
-    orden.cliente.telefono ? formatearTelefono(orden.cliente.telefono) : 'Sin teléfono',
-  )}</div>
-  <div class="aviso">Revisá que el teléfono esté bien</div>
-</div>
-<pre>${separador()}</pre>
-<pre>${escapar(secciones.join(`\n${separador()}\n`))}</pre>
-<pre>${separador()}</pre>
-<div class="retiro"><span>RETIRO ESTIMADO</span>${escapar(fecha(orden.fecha_retiro_estimada))}</div>
-<pre>${separador()}</pre>
-<pre class="leyenda">${escapar(envolver(leyenda).join('\n'))}</pre>
-<pre class="leyenda">¡Gracias!</pre>
-<div class="corte"></div>
+${papelCliente(orden, config)}
+${papelLavadero(orden)}
 </body>
 </html>`;
 }

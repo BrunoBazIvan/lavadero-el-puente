@@ -9,6 +9,11 @@ const POR_DEFECTO: Configuracion = {
   direccion: '',
   telefono_whatsapp: '',
   leyenda_ticket: '',
+  // Condiciones de guarda, al pie del comprobante del cliente. El plazo vive
+  // acá y no en el código del ticket: si mañana se guardan 15 días, se cambia
+  // esta fila en la base y sale en el próximo papel.
+  leyenda_responsabilidad:
+    'Guardamos las prendas 7 días desde que te avisamos que están listas. Pasado ese plazo el lavadero no se hace responsable.',
   dias_entrega_default: '1',
   ancho_ticket_mm: '80',
 };
