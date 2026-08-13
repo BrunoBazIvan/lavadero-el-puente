@@ -55,6 +55,27 @@ Lo que se rompe si lo tocás sin mirar:
 
 ---
 
+## La plata, en el sistema de gestión
+
+El total de una orden sale de **`ordenes.monto`** (migración `0004_cobro.sql`),
+no de los precios de los ítems: la 0002 dejó `precio_unitario` en 0 a propósito
+porque la ropa no se cuenta prenda por prenda, y lo que se cobra es una bolsa.
+Si algún día vuelven los precios por artículo, los dos únicos lugares donde se
+decide el total son `orden_totales()` y `v_ordenes`.
+
+- **El monto se carga al pasar la orden a `listo`**, y la base lo exige
+  (`guard_orden_update`). Por eso la UI manda estado y monto en el **mismo**
+  `update`: separados, el primero se rechaza.
+- **Entregar va por la RPC `entregar_orden`**, que cobra y entrega en una sola
+  transacción. El orden de adentro —monto, después pago, después estado— está
+  atado a los guards: `guard_pago` rechaza un pago mayor al total, y
+  `guard_orden_update` no deja entregar con saldo abierto. No es reordenable.
+- **Entregar debiendo es solo de admin**, como ya era. La UI apaga el botón y
+  lo explica, en vez de dejar que el mostrador choque contra un error de
+  Postgres que no puede resolver.
+
+---
+
 ## Idioma: español rioplatense (es-UY), con voseo
 
 El sitio le habla a familias y empresas de Maldonado y Punta del Este. El

@@ -5,6 +5,7 @@ import type {
   Cliente,
   CrearOrdenPayload,
   EstadoOrden,
+  MetodoPago,
   Orden,
   OrdenCompleta,
   OrdenItem,
@@ -118,18 +119,110 @@ export function useCrearOrden() {
   });
 }
 
+/**
+ * Cambio de estado. El monto viaja en el mismo `update` que el estado —y no en
+ * dos consultas— porque la base exige que una orden marcada "lista" ya tenga
+ * precio: separados, el primer paso quedaría rechazado.
+ */
 export function useCambiarEstadoOrden() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, estado }: { id: string; estado: EstadoOrden }): Promise<Orden> => {
+    mutationFn: async ({
+      id,
+      estado,
+      monto,
+    }: {
+      id: string;
+      estado: EstadoOrden;
+      monto?: number;
+    }): Promise<Orden> => {
       const { data, error } = await supabase
         .from('ordenes')
-        .update({ estado })
+        .update(monto === undefined ? { estado } : { estado, monto })
         .eq('id', id)
         .select()
         .single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
+/** Corregir el precio de una orden que ya lo tenía. */
+export function useGuardarMonto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, monto }: { id: string; monto: number }): Promise<Orden> => {
+      const { data, error } = await supabase
+        .from('ordenes')
+        .update({ monto })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
+/** Un cobro suelto: una seña, o el resto de una orden que quedó a medias. */
+export function useRegistrarPago() {
+  const qc = useQueryClient();
+  const { profile } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      ordenId,
+      monto,
+      metodo,
+    }: {
+      ordenId: string;
+      monto: number;
+      metodo: MetodoPago;
+    }): Promise<Pago> => {
+      const { data, error } = await supabase
+        .from('pagos')
+        .insert({ orden_id: ordenId, monto, metodo, recibido_por: profile?.id ?? null })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
+/**
+ * Entrega. Va por RPC porque cobrar y entregar tienen que entrar juntos: si la
+ * entrega fallara después de insertar el pago, la orden quedaría cobrada y sin
+ * entregar, que es justo el descuadre que nadie quiere encontrar al cerrar.
+ */
+export function useEntregarOrden() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      monto,
+      cobro,
+      metodo,
+    }: {
+      id: string;
+      /** Solo si la orden llegó a la entrega sin precio cargado. */
+      monto?: number;
+      /** Cuánto se cobra ahora. Sin esto, la orden se entrega debiendo. */
+      cobro?: number;
+      metodo?: MetodoPago;
+    }): Promise<Orden> => {
+      const { data, error } = await supabase.rpc('entregar_orden', {
+        p_orden_id: id,
+        p_monto: monto ?? null,
+        p_cobro: cobro ?? null,
+        p_metodo: metodo ?? null,
+      });
+      if (error) throw error;
+      return data as Orden;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
   });

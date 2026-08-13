@@ -56,12 +56,35 @@ es lo que trae cuando viene a buscar la ropa.
 
 ---
 
+## Cuando la ropa está pronta
+
+Abrí la orden y cambiá el estado a **Lista para retirar**. Te va a pedir el
+**monto**: cuánto sale esa orden, ya pesada. Sin monto no la deja marcar lista,
+justamente porque es el único momento tranquilo para ponerle precio.
+
+El botón de **WhatsApp** arma solo el mensaje avisándole al cliente que puede
+venir, y le dice cuánto tiene que traer.
+
+Si te equivocaste con el precio, en el panel **Cobro** tenés **Corregir el
+monto**, mientras la orden no esté entregada.
+
+---
+
 ## Cuando el cliente viene a retirar
 
 1. Andá a **Órdenes**
 2. Buscá por **la referencia del comprobante** (`EP-00001`), o por teléfono, o
    por nombre
 3. Abrí la orden y cambiá el estado a **Entregada**
+4. Te pregunta **si quedó pagada**:
+   - **Sí, la cobré ahora** → elegí cómo pagó (efectivo, transferencia, débito,
+     crédito, Mercado Pago) y listo
+   - **No, queda debiendo** → la orden se entrega con saldo abierto. Esto lo
+     puede hacer **solo un admin**: si sos operador, cobrá antes de entregar o
+     avisale a Bruno
+
+Si el cliente deja una **seña** antes de retirar, usá **Registrar un cobro** en
+el panel Cobro. Podés cobrar una parte y el resto queda como saldo.
 
 Los estados van así:
 
@@ -69,6 +92,9 @@ Los estados van así:
 
 Marcá **Lista para retirar** apenas la ropa esté pronta. Eso hace que aparezca
 en el contador de arriba y que el cliente pueda venir tranquilo.
+
+En la lista de **Órdenes** se ve el monto de cada una y, abajo del importe, lo
+que quedó debiendo.
 
 ### Si perdió el comprobante
 

@@ -106,6 +106,12 @@ export interface Database {
           fecha_ingreso: string;
           fecha_retiro_estimada: string;
           fecha_entrega_real: string | null;
+          /**
+           * Lo que se cobra por la orden entera, cargado al marcarla lista.
+           * Null mientras todavía no tiene precio. Los totales salen de acá,
+           * no de los precios de los ítems (ver migración 0004).
+           */
+          monto: number | null;
           descuento: number;
           notas: string | null;
           created_by: string | null;
@@ -123,6 +129,7 @@ export interface Database {
           fecha_ingreso?: string;
           fecha_retiro_estimada: string;
           fecha_entrega_real?: string | null;
+          monto?: number | null;
           descuento?: number;
           notas?: string | null;
           created_by?: string | null;
@@ -210,6 +217,18 @@ export interface Database {
         Args: { p_orden_id: string };
         Returns: { subtotal: number; total: number; pagado: number; saldo: number }[];
       };
+      /** Cobra (si hay algo que cobrar) y entrega, en una sola transacción. */
+      entregar_orden: {
+        Args: {
+          p_orden_id: string;
+          /** Solo si la orden todavía no tenía monto. */
+          p_monto?: number | null;
+          /** Cuánto se cobra en este momento. Null o 0 = no se cobró nada. */
+          p_cobro?: number | null;
+          p_metodo?: MetodoPago | null;
+        };
+        Returns: Database['public']['Tables']['ordenes']['Row'];
+      };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
     };
@@ -244,6 +263,17 @@ export const NOMBRE_SERVICIO: Record<ServicioOrden, string> = {
   con_plancha: 'Con plancha',
   solo_secado: 'Solo secado',
 };
+
+/** El orden es el de uso en el mostrador: el efectivo primero. */
+export const NOMBRE_METODO_PAGO: Record<MetodoPago, string> = {
+  efectivo: 'Efectivo',
+  transferencia: 'Transferencia',
+  debito: 'Débito',
+  credito: 'Crédito',
+  mercado_pago: 'Mercado Pago',
+};
+
+export const METODOS_PAGO = Object.keys(NOMBRE_METODO_PAGO) as MetodoPago[];
 
 // ── Alias cómodos para el resto de la app ───────────────────────────────────
 export type Profile = Database['public']['Tables']['profiles']['Row'];

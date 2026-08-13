@@ -1,7 +1,7 @@
 import type { OrdenCompleta } from '@/types/database';
 import { NOMBRE_SERVICIO } from '@/types/database';
 import type { Configuracion } from '@/hooks/useConfiguracion';
-import { fecha, fechaHora, telefono as formatearTelefono } from '@/lib/format';
+import { fecha, fechaHora, moneda, telefono as formatearTelefono } from '@/lib/format';
 
 /**
  * Comprobante de recepción — el único papel que sale hoy.
@@ -27,6 +27,12 @@ function centrar(texto: string): string {
   const sobra = COLUMNAS - texto.length;
   if (sobra <= 0) return texto;
   return ' '.repeat(Math.floor(sobra / 2)) + texto;
+}
+
+/** Etiqueta a la izquierda, importe pegado al margen derecho del papel. */
+function renglonImporte(etiqueta: string, importe: string): string {
+  const sobra = COLUMNAS - etiqueta.length - importe.length;
+  return sobra > 0 ? etiqueta + ' '.repeat(sobra) + importe : `${etiqueta} ${importe}`;
 }
 
 function escapar(texto: string): string {
@@ -87,6 +93,17 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
   recibido.push(`Servicio: ${NOMBRE_SERVICIO[orden.servicio]}`);
   if (orden.envio) recibido.push('Envío:    Retiro y entrega');
 
+  // ── Cobro ─────────────────────────────────────────────────────────────────
+  // Al recibir la ropa todavía no hay precio, así que este bloque no sale en el
+  // comprobante que se le da al cliente: aparece recién en la reimpresión, con
+  // la orden ya lista y con monto cargado.
+  const cobro: string[] = [];
+  if (orden.monto !== null) {
+    cobro.push(renglonImporte('TOTAL', moneda(orden.total)));
+    if (orden.pagado > 0) cobro.push(renglonImporte('Pagado', moneda(orden.pagado)));
+    if (orden.saldo > 0) cobro.push(renglonImporte('A pagar', moneda(orden.saldo)));
+  }
+
   // ── Fechas ────────────────────────────────────────────────────────────────
   const fechas = [`Ingreso: ${fechaHora(orden.fecha_ingreso)}`];
 
@@ -94,6 +111,7 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
   const notas = orden.notas ? ['Notas:', ...envolver(orden.notas).map((l) => ` ${l}`)] : [];
 
   secciones.push(recibido.join('\n'));
+  if (cobro.length) secciones.push(cobro.join('\n'));
   secciones.push(fechas.join('\n'));
   if (notas.length) secciones.push(notas.join('\n'));
 

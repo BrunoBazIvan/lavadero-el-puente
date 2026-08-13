@@ -4,7 +4,7 @@ import { ChipEstado, ETIQUETA_ESTADO } from '@/components/ChipsOrden';
 import { BloqueCargando, EstadoError, EstadoVacio } from '@/components/Estados';
 import { DIAS_SIN_RETIRAR, useListaOrdenes } from '@/hooks/useOrdenes';
 import { useDebounce } from '@/hooks/useDebounce';
-import { diasDesde, fecha, telefono as formatearTelefono } from '@/lib/format';
+import { diasDesde, fecha, moneda, telefono as formatearTelefono } from '@/lib/format';
 import { mensajeDeError } from '@/lib/supabase';
 import { NOMBRE_SERVICIO } from '@/types/database';
 import type { EstadoOrden } from '@/types/database';
@@ -140,6 +140,7 @@ export default function Ordenes() {
                   <th className="px-4 py-2 font-display font-semibold">Recibido</th>
                   <th className="px-4 py-2 font-display font-semibold">Servicio</th>
                   <th className="px-4 py-2 font-display font-semibold">Retiro</th>
+                  <th className="px-4 py-2 text-right font-display font-semibold">Monto</th>
                   <th className="px-4 py-2 font-display font-semibold">Estado</th>
                 </tr>
               </thead>
@@ -164,6 +165,20 @@ export default function Ordenes() {
                     </td>
                     <td className="px-4 py-2.5 tabular text-slate-700">
                       {fecha(o.fecha_retiro_estimada)}
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      {o.monto === null ? (
+                        <span className="text-slate-400">—</span>
+                      ) : (
+                        <>
+                          <span className="tabular font-medium text-ink">{moneda(o.total)}</span>
+                          {o.saldo > 0 && o.estado !== 'anulado' && (
+                            <span className="tabular block text-xs text-aviso">
+                              debe {moneda(o.saldo)}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </td>
                     <td className="px-4 py-2.5">
                       <ChipEstado estado={o.estado} />
