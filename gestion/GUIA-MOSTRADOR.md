@@ -10,9 +10,33 @@ para nada.
 
 ---
 
+## Lo primero que ves al entrar
+
+Arriba de todo, abajo del menú, hay una **fila de números**. Es lo que hay
+pendiente en el lavadero ahora mismo:
+
+- **Sin empezar** — ropa que entró y todavía no se tocó
+- **En proceso** — se está lavando
+- **Listas para retirar** — prontas, esperando que venga el cliente
+- **Sin retirar hace +7 días** — aparece en naranja solo cuando hay. Esas hay
+  que llamarlas.
+
+Cada número es un botón: lo tocás y te abre la lista de esas órdenes. Está en
+todas las pantallas, así que no hace falta ir a buscarlo.
+
+Si dice *"No hay ropa pendiente en el lavadero"*, está todo entregado.
+
+---
+
 ## Recibir ropa
 
-Es la pantalla que se abre al entrar. Se completa de arriba hacia abajo.
+Es la pantalla que se abre al entrar. Se completa de arriba hacia abajo: cada
+paso tiene su **cuadradito numerado**, que se pone **verde** cuando ese paso ya
+está listo.
+
+Abajo de todo hay una barra que no se va nunca de la pantalla: te dice **qué
+falta** y tiene el botón de guardar. No hace falta bajar hasta el fondo para
+terminar.
 
 ### 1 · Cliente
 
@@ -63,14 +87,34 @@ Si sale uno solo, la impresora cortó de más: la copia sigue en el rollo.
 
 ---
 
+## La orden por dentro
+
+Cuando abrís una orden, arriba de todo ves **por dónde va**: Recibida → En
+proceso → Lista → Entregada. El paso donde está ahora queda pintado de azul y
+los que ya pasaron tienen un tilde verde.
+
+Abajo de eso hay un **recuadro azul con una pregunta y un botón verde grande**.
+Ese botón es siempre lo que toca hacer ahora — no hay que buscar nada más:
+
+| Si la orden está… | El botón dice |
+|---|---|
+| Recibida | Empezar a lavar |
+| En proceso | Marcar lista para retirar |
+| Lista | El cliente se la llevó |
+
+Si una orden quedó en el estado equivocado, abajo del todo hay **"¿Quedó en el
+estado equivocado?"**: ahí la podés mover a mano para adelante o para atrás.
+
+---
+
 ## Cuando la ropa está pronta
 
-Abrí la orden y cambiá el estado a **Lista para retirar**. Te va a pedir el
-**monto**: cuánto sale esa orden, ya pesada. Sin monto no la deja marcar lista,
-justamente porque es el único momento tranquilo para ponerle precio.
+Abrí la orden y tocá **Marcar lista para retirar**. Te va a pedir el **monto**:
+cuánto sale esa orden, ya pesada. Sin monto no la deja marcar lista, justamente
+porque es el único momento tranquilo para ponerle precio.
 
-El botón de **WhatsApp** arma solo el mensaje avisándole al cliente que puede
-venir, y le dice cuánto tiene que traer.
+El botón de **WhatsApp** —al lado del verde— arma solo el mensaje avisándole al
+cliente que puede venir, y le dice cuánto tiene que traer.
 
 Si te equivocaste con el precio, en el panel **Cobro** tenés **Corregir el
 monto**, mientras la orden no esté entregada.
@@ -79,10 +123,10 @@ monto**, mientras la orden no esté entregada.
 
 ## Cuando el cliente viene a retirar
 
-1. Andá a **Órdenes**
+1. Andá a **Órdenes** (o tocá el número de **Listas para retirar** de arriba)
 2. Buscá por **la referencia del comprobante** (`EP-00001`), o por teléfono, o
    por nombre
-3. Abrí la orden y cambiá el estado a **Entregada**
+3. Abrí la orden y tocá **El cliente se la llevó**
 4. Te pregunta **si quedó pagada**:
    - **Sí, la cobré ahora** → elegí cómo pagó (efectivo, transferencia, débito,
      crédito, Mercado Pago) y listo
@@ -92,10 +136,6 @@ monto**, mientras la orden no esté entregada.
 
 Si el cliente deja una **seña** antes de retirar, usá **Registrar un cobro** en
 el panel Cobro. Podés cobrar una parte y el resto queda como saldo.
-
-Los estados van así:
-
-**Recibida** → **En proceso** → **Lista para retirar** → **Entregada**
 
 Marcá **Lista para retirar** apenas la ropa esté pronta. Eso hace que aparezca
 en el contador de arriba y que el cliente pueda venir tranquilo.
@@ -118,9 +158,12 @@ responsable. Está impreso ahí para poder mostrárselo.
 
 ## Órdenes que nadie viene a buscar
 
-En **Órdenes**, arriba de todo, aparece un aviso amarillo cuando hay ropa lista
-hace **más de 7 días**. Llamá o mandá un WhatsApp — desde el detalle de la
-orden hay un botón que arma el mensaje solo.
+Cuando hay ropa lista hace **más de 7 días**, aparece **Sin retirar hace +7
+días** en naranja en la fila de números de arriba. Tocalo y te abre justo esas
+órdenes.
+
+Llamá o mandá un WhatsApp — al abrir cada una, el recuadro azul te avisa hace
+cuántos días está esperando y tenés el botón que arma el mensaje solo.
 
 ---
 

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Modal } from '@/components/Modal';
 import { ClienteFormulario } from '@/components/ClienteFormulario';
 import { Spinner } from '@/components/Estados';
+import { IconoBuscar, IconoCheck, IconoMas } from '@/components/Iconos';
 import { useClientes } from '@/hooks/useClientes';
 import { useDebounce } from '@/hooks/useDebounce';
 import { telefono as formatearTelefono } from '@/lib/format';
@@ -56,13 +57,20 @@ export function BuscadorCliente({
 
   if (seleccionado) {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-card border border-brand-200 bg-brand-50 px-4 py-3">
-        <div>
-          <p className="font-display text-base font-bold text-brand-900">{seleccionado.nombre}</p>
-          <p className="text-sm text-slate-600">
-            {seleccionado.telefono ? formatearTelefono(seleccionado.telefono) : 'Sin teléfono'}
-            {seleccionado.tipo === 'empresa' ? ' · Empresa' : ''}
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-ok bg-green-50 px-4 py-3.5">
+        <div className="flex items-center gap-3">
+          <IconoCheck size={22} className="shrink-0 text-ok" />
+          <div>
+            <p className="font-display text-lg font-bold leading-tight text-brand-900">
+              {seleccionado.nombre}
+            </p>
+            <p className="text-[0.9375rem] text-slate-600">
+              <span className="tabular">
+                {seleccionado.telefono ? formatearTelefono(seleccionado.telefono) : 'Sin teléfono'}
+              </span>
+              {seleccionado.tipo === 'empresa' ? ' · Empresa' : ''}
+            </p>
+          </div>
         </div>
         <button
           type="button"
@@ -73,7 +81,7 @@ export function BuscadorCliente({
             window.setTimeout(() => campo.current?.focus(), 0);
           }}
         >
-          Cambiar
+          Es otro cliente
         </button>
       </div>
     );
@@ -81,6 +89,10 @@ export function BuscadorCliente({
 
   return (
     <div className="relative">
+      <IconoBuscar
+        size={22}
+        className="pointer-events-none absolute left-3.5 top-7 -translate-y-1/2 text-slate-400"
+      />
       <input
         ref={campo}
         type="search"
@@ -93,10 +105,10 @@ export function BuscadorCliente({
         }}
         onFocus={() => setAbierto(true)}
         onKeyDown={alTeclado}
-        placeholder="Buscar por nombre o teléfono…"
+        placeholder="Nombre o teléfono, con dos letras alcanza…"
         aria-label="Buscar cliente"
         id="buscador-cliente"
-        className="field text-lg"
+        className="field h-14 pl-12 text-lg"
       />
 
       {abierto && busqueda.trim().length >= 2 && (
@@ -113,28 +125,40 @@ export function BuscadorCliente({
               type="button"
               onMouseEnter={() => setResaltado(i)}
               onClick={() => elegir(c)}
-              className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors ${
-                i === resaltado ? 'bg-brand-50' : 'bg-white'
+              className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors ${
+                i === resaltado ? 'bg-aqua-50' : 'bg-white'
               }`}
             >
-              <span className="font-medium text-ink">{c.nombre}</span>
-              <span className="tabular text-sm text-slate-500">
+              <span className="font-display text-[1.0625rem] font-semibold text-ink">
+                {c.nombre}
+              </span>
+              <span className="tabular text-[0.9375rem] text-slate-500">
                 {c.telefono ? formatearTelefono(c.telefono) : '—'}
               </span>
             </button>
           ))}
 
           {!isFetching && resultados.length === 0 && (
-            <p className="px-4 py-3 text-sm text-slate-600">Ningún cliente con ese dato.</p>
+            <p className="px-4 py-3 text-[0.9375rem] text-slate-600">Ningún cliente con ese dato.</p>
           )}
 
           <button
             type="button"
             onClick={() => setAltaAbierta(true)}
-            className="w-full border-t border-brand-100 bg-white px-4 py-2.5 text-left font-display text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+            className="flex w-full items-center gap-2 border-t border-brand-100 bg-white px-4 py-3 text-left font-display text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
-            + Dar de alta a “{texto.trim()}”
+            <IconoMas size={18} className="shrink-0" />
+            Dar de alta a “{texto.trim()}”
           </button>
+
+          {/* Se opera con una mano en el teclado y la otra en la bolsa. */}
+          <p className="flex items-center gap-1.5 border-t border-brand-100 bg-brand-50 px-4 py-2 text-xs text-slate-500">
+            <span className="tecla">↑</span>
+            <span className="tecla">↓</span>
+            para moverte
+            <span className="tecla ml-1.5">Enter</span>
+            para elegir
+          </p>
         </div>
       )}
 

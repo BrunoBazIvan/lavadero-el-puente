@@ -159,6 +159,42 @@ volver atrás sin querer.
 **Color:** las escalas `brand`/`aqua` salen del manual de marca. El verde
 `whatsapp` es **exclusivo de los CTA de conversión**; no usarlo para nada más.
 
+### En el sistema de gestión, además
+
+Mismos tokens que la landing, pero el usuario no es un visitante: es alguien
+del mostrador, **no técnico**, con un cliente esperando enfrente. Lo que se
+rediseñó a propósito y no hay que deshacer:
+
+- **Cuerpo a 16px, botones y campos de 44px de alto mínimo.** Todo el sistema
+  estaba en `text-sm`. Se lee de pie y con apuro: la densidad se gana con el
+  espaciado, no achicando la letra.
+- **Una sola acción primaria por pantalla.** En el detalle de orden es el
+  bloque azul `ProximoPaso`, con el botón verde grande. El resto es
+  información. Si aparecen dos primarias, no hay ninguna.
+- **Nada de `<select>` para acciones.** Avanzar una orden era elegir una opción
+  de un desplegable metido en el panel de fechas — invisible hasta abrirlo.
+  Ahora el estado se *ve* (`LineaEstado`) y se *avanza* con un botón que dice
+  lo que va a pasar en palabras del mostrador: "El cliente se la llevó", no
+  "Entregada". Mover una orden hacia atrás existe, pero va plegado al final.
+- **El copy pregunta, no etiqueta.** "¿De quién es la ropa?" en vez de
+  "Cliente"; "¿Qué le hacemos?" en vez de "Servicio".
+- **Los íconos son propios** (`components/Iconos.tsx`, trazo 1.75 con uniones
+  en punta) y **nunca van solos**: siempre acompañan a un texto. No agregar una
+  librería de íconos — la PC del mostrador tiene que renderizar sin internet,
+  igual que con las tipografías auto-hospedadas.
+- **La barra de pendientes del encabezado es fija y está en todas las
+  pantallas.** Responde "¿qué quedó pendiente?" sin navegar. Sus celdas son
+  links a `/ordenes?estado=…`, por eso **el filtro de Órdenes vive en la URL** y
+  no en un `useState`.
+- **Al cargar no se muestran ceros.** Un cero falso hace que alguien dé por
+  cerrado el día. Mientras no hay dato, la barra reserva su altura y no dice
+  nada.
+
+Si tocás el flujo de una orden, actualizá también
+[`gestion/GUIA-MOSTRADOR.md`](./gestion/GUIA-MOSTRADOR.md): esa guía se imprime
+y queda al lado de la computadora, y describiendo botones que ya no existen
+hace más daño que no estar.
+
 **Tipografía:** Montserrat (títulos) + Lato (cuerpo), del manual. Cargadas con
 `next/font`, nunca por `<link>`.
 

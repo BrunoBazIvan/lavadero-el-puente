@@ -16,7 +16,10 @@
   }
 
   body {
-    @apply bg-canvas font-sans text-ink;
+    /* 16px de base, no 14: esto se lee de pie, con el cliente esperando y a
+       veces con la luz del local de frente. La densidad se gana con el
+       espaciado, no achicando la letra. */
+    @apply bg-canvas font-sans text-base leading-normal text-ink;
   }
 
   h1,
@@ -28,7 +31,7 @@
 
   /* Foco visible siempre: se opera mucho con teclado. */
   :focus-visible {
-    @apply outline-none ring-2 ring-aqua-500 ring-offset-1 ring-offset-canvas;
+    @apply outline-none ring-2 ring-aqua-500 ring-offset-2 ring-offset-canvas;
   }
 
   /* Los números tabulares alinean columnas de importes. */
@@ -39,17 +42,19 @@
 
 @layer components {
   /* ── Botones ─────────────────────────────────────────────────────────────
-     Grandes: se tocan con dedos, a veces con las manos ocupadas. */
+     Altura mínima de 44px en todos: es el tamaño en el que no se falla el
+     clic con apuro. La jerarquía es real y se respeta — en cada pantalla hay
+     UNA acción primaria, y las demás son secundarias o fantasma. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-sharp border px-4 py-2.5
-           font-display text-sm font-semibold transition-colors
-           disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-[2.75rem] items-center justify-center gap-2 rounded-sharp border px-4
+           font-display text-[0.9375rem] font-semibold leading-none transition-colors
+           disabled:cursor-not-allowed disabled:opacity-45;
   }
   .btn-primary {
-    @apply btn border-brand-800 bg-brand-800 text-white hover:bg-brand-900 hover:border-brand-900;
+    @apply btn border-brand-800 bg-brand-800 text-white hover:border-brand-900 hover:bg-brand-900;
   }
   .btn-secondary {
-    @apply btn border-brand-200 bg-white text-brand-800 hover:border-brand-400 hover:bg-brand-50;
+    @apply btn border-brand-300 bg-white text-brand-800 hover:border-brand-500 hover:bg-brand-50;
   }
   .btn-ghost {
     @apply btn border-transparent bg-transparent text-brand-700 hover:bg-brand-50;
@@ -57,13 +62,23 @@
   .btn-danger {
     @apply btn border-alerta bg-white text-alerta hover:bg-red-50;
   }
+  /* Verde solo para confirmar que algo salió adelante: marcar lista, entregar.
+     No es el verde de WhatsApp de la landing — ese es de conversión y no entra
+     acá salvo en el botón que efectivamente abre WhatsApp. */
+  .btn-ok {
+    @apply btn border-ok bg-ok text-white hover:border-green-800 hover:bg-green-800;
+  }
   .btn-lg {
-    @apply px-6 py-3.5 text-base;
+    @apply min-h-[3.25rem] px-6 text-base;
+  }
+  /* La acción principal de la pantalla. Va sola: si hay dos, no hay ninguna. */
+  .btn-xl {
+    @apply min-h-[4rem] px-7 text-lg;
   }
 
   /* ── Campos ───────────────────────────────────────────────────────────── */
   .field {
-    @apply block w-full rounded-sharp border border-brand-200 bg-white px-3 py-2.5
+    @apply block min-h-[2.75rem] w-full rounded-sharp border border-brand-300 bg-white px-3 py-2.5
            text-base text-ink placeholder:text-slate-400
            focus:border-aqua-500 focus:outline-none focus:ring-1 focus:ring-aqua-500
            disabled:bg-slate-50 disabled:text-slate-500;
@@ -72,23 +87,70 @@
     @apply border-alerta focus:border-alerta focus:ring-alerta;
   }
   .label {
-    @apply mb-1.5 block font-display text-xs font-semibold uppercase tracking-technical text-brand-700;
+    @apply mb-1.5 block font-display text-[0.8125rem] font-semibold uppercase tracking-technical text-brand-700;
   }
   .error-text {
-    @apply mt-1 text-sm text-alerta;
+    @apply mt-1.5 flex items-start gap-1.5 text-[0.9375rem] font-semibold text-alerta;
+  }
+  /* Debajo de un campo: qué pasa si lo completo así. Nunca repite la etiqueta. */
+  .ayuda {
+    @apply mt-1.5 text-sm leading-snug text-slate-500;
+  }
+  /* Casilla y radio grandes: los de 16px se erran con el mouse. */
+  .casilla {
+    @apply h-5 w-5 shrink-0 rounded-sharp border-brand-400 text-brand-800 focus:ring-aqua-500;
   }
 
   /* ── Superficies ──────────────────────────────────────────────────────── */
   .panel {
     @apply rounded-card border border-brand-100 bg-white shadow-card;
   }
+  /* Barra superior de un panel: título a la izquierda, controles a la derecha. */
+  .panel-cabezal {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-brand-100 px-4 py-3;
+  }
   .eyebrow {
-    @apply font-display text-xs font-semibold uppercase tracking-technical text-brand-600;
+    @apply flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-technical text-brand-600;
+  }
+
+  /* ── Tablas ──────────────────────────────────────────────────────────────
+     Filas altas y clicables enteras. El encabezado va sobre fondo tenue para
+     que se lea como encabezado y no como una fila más de datos. */
+  .encabezado-tabla {
+    @apply border-b border-brand-200 bg-brand-50 text-left font-display text-[0.6875rem]
+           font-bold uppercase tracking-technical text-brand-700;
+  }
+  .encabezado-tabla th {
+    @apply px-4 py-2.5;
+  }
+  .fila {
+    @apply cursor-pointer transition-colors hover:bg-aqua-50;
+  }
+  .celda {
+    @apply px-4 py-3.5 align-middle;
   }
 
   /* ── Chips de estado ──────────────────────────────────────────────────── */
   .chip {
-    @apply inline-flex items-center rounded-sharp border px-2 py-0.5
+    @apply inline-flex items-center gap-1.5 rounded-sharp border px-2.5 py-1
            font-display text-xs font-semibold uppercase tracking-wide;
+  }
+  .chip-lg {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  /* ── Marcadores de paso ───────────────────────────────────────────────────
+     El cuadradito numerado de "Recibir ropa". Da el orden de lectura sin que
+     haya que buscar el número dentro de un título. */
+  .paso-numero {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-sharp
+           font-display text-lg font-bold leading-none;
+  }
+
+  /* Tecla del teclado, para las pistas de atajos. */
+  .tecla {
+    @apply inline-flex min-w-[1.5rem] items-center justify-center rounded-sharp border
+           border-brand-200 bg-brand-50 px-1.5 py-0.5 font-display text-[11px]
+           font-semibold leading-none text-brand-700;
   }
 }

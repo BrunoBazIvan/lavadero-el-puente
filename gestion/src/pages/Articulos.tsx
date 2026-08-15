@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { EncabezadoPagina } from '@/components/Layout';
 import { Modal } from '@/components/Modal';
 import { BloqueCargando, EstadoError, EstadoVacio, Spinner } from '@/components/Estados';
+import { IconoEditar, IconoMas } from '@/components/Iconos';
 import { useToast } from '@/components/Toaster';
 import {
   useActualizarArticulo,
@@ -29,7 +30,8 @@ export default function Articulos() {
         detalle="Lo que se puede marcar al recibir la ropa. El orden es el mismo en que aparecen los botones."
         acciones={
           <button type="button" className="btn-primary" onClick={() => setAltaAbierta(true)}>
-            + Artículo nuevo
+            <IconoMas size={19} />
+            Artículo nuevo
           </button>
         }
       />
@@ -40,7 +42,7 @@ export default function Articulos() {
           <label className="flex select-none items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded-sharp border-brand-300 text-brand-800 focus:ring-aqua-500"
+              className="casilla"
               checked={incluirInactivos}
               onChange={(e) => setIncluirInactivos(e.target.checked)}
             />
@@ -68,13 +70,13 @@ export default function Articulos() {
 
         {articulos && articulos.length > 0 && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-brand-100 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-2 font-display font-semibold">Artículo</th>
-                  <th className="w-40 px-4 py-2 font-display font-semibold">Se cuenta</th>
-                  <th className="w-24 px-4 py-2 text-right font-display font-semibold">Orden</th>
-                  <th className="w-48 px-4 py-2 text-right font-display font-semibold">Acciones</th>
+                <tr className="encabezado-tabla">
+                  <th>Artículo</th>
+                  <th className="w-40">Se cuenta</th>
+                  <th className="w-24 text-right">Orden</th>
+                  <th className="w-48 text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-100">
@@ -124,27 +126,32 @@ function FilaArticulo({ articulo, onEditar }: { articulo: Articulo; onEditar: ()
 
   return (
     <tr className={articulo.activo ? '' : 'bg-slate-50 text-slate-500'}>
-      <td className="px-4 py-2.5">
-        <span className={articulo.activo ? 'font-medium text-ink' : ''}>{articulo.nombre}</span>
+      <td className="celda">
+        <span
+          className={`font-display text-[1.0625rem] ${articulo.activo ? 'font-semibold text-ink' : ''}`}
+        >
+          {articulo.nombre}
+        </span>
         {!articulo.activo && (
           <span className="ml-2 chip border-slate-300 bg-slate-100 text-slate-600">Desactivado</span>
         )}
       </td>
 
-      <td className="px-4 py-2.5 text-slate-700">
+      <td className="celda text-slate-700">
         {articulo.lleva_cantidad ? 'Con cantidad' : 'Solo se marca'}
       </td>
 
-      <td className="px-4 py-2.5 text-right tabular text-slate-500">{articulo.orden_visual}</td>
+      <td className="celda text-right tabular text-slate-500">{articulo.orden_visual}</td>
 
-      <td className="px-4 py-2.5">
+      <td className="celda">
         <div className="flex items-center justify-end gap-1">
-          <button type="button" className="btn-ghost px-3 py-1.5 text-xs" onClick={onEditar}>
+          <button type="button" className="btn-ghost px-3 text-sm" onClick={onEditar}>
+            <IconoEditar size={16} />
             Editar
           </button>
           <button
             type="button"
-            className="btn-ghost px-3 py-1.5 text-xs"
+            className="btn-ghost px-3 text-sm"
             disabled={actualizar.isPending}
             onClick={() =>
               void actualizar
@@ -267,7 +274,7 @@ function FormularioArticulo({
           <label className="flex select-none items-start gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded-sharp border-brand-300 text-brand-800 focus:ring-aqua-500"
+              className="casilla mt-0.5"
               {...register('lleva_cantidad')}
             />
             <span>
@@ -281,7 +288,7 @@ function FormularioArticulo({
           <label className="flex select-none items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded-sharp border-brand-300 text-brand-800 focus:ring-aqua-500"
+              className="casilla"
               {...register('activo')}
             />
             Activo

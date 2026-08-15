@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
+import { IconoAlerta, IconoCheck, IconoX } from '@/components/Iconos';
 import { mensajeDeError } from '@/lib/supabase';
 
 type TipoToast = 'ok' | 'error' | 'aviso';
@@ -57,7 +58,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={api}>
       {children}
       <div
-        className="pointer-events-none fixed bottom-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2"
+        className="pointer-events-none fixed bottom-4 right-4 z-50 flex w-full max-w-md flex-col gap-2"
         role="status"
         aria-live="polite"
       >
@@ -89,27 +90,38 @@ const COLOR_ETIQUETA: Record<TipoToast, string> = {
   error: 'text-alerta',
 };
 
+const ICONO: Record<TipoToast, ComponentType<{ size?: number; className?: string }>> = {
+  ok: IconoCheck,
+  aviso: IconoAlerta,
+  error: IconoAlerta,
+};
+
 function TarjetaToast({ toast, onCerrar }: { toast: Toast; onCerrar: () => void }) {
+  const Icono = ICONO[toast.tipo];
+
   return (
     <div
-      className={`pointer-events-auto rounded-card border px-4 py-3 shadow-modal ${ESTILO[toast.tipo]}`}
+      className={`pointer-events-auto rounded-card border px-4 py-3.5 shadow-modal ${ESTILO[toast.tipo]}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p
-            className={`font-display text-xs font-semibold uppercase tracking-technical ${COLOR_ETIQUETA[toast.tipo]}`}
-          >
-            {ETIQUETA[toast.tipo]}
-          </p>
-          <p className="mt-1 text-sm leading-snug">{toast.texto}</p>
+        <div className="flex items-start gap-2.5">
+          <Icono size={20} className={`mt-0.5 shrink-0 ${COLOR_ETIQUETA[toast.tipo]}`} />
+          <div>
+            <p
+              className={`font-display text-xs font-semibold uppercase tracking-technical ${COLOR_ETIQUETA[toast.tipo]}`}
+            >
+              {ETIQUETA[toast.tipo]}
+            </p>
+            <p className="mt-1 text-[0.9375rem] leading-snug">{toast.texto}</p>
+          </div>
         </div>
         <button
           type="button"
           onClick={onCerrar}
-          className="-mr-1 -mt-1 shrink-0 rounded-sharp px-2 py-1 text-lg leading-none text-slate-400 hover:bg-slate-100 hover:text-ink"
+          className="-mr-1 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-sharp text-slate-400 hover:bg-slate-100 hover:text-ink"
           aria-label="Cerrar aviso"
         >
-          ×
+          <IconoX size={18} />
         </button>
       </div>
     </div>

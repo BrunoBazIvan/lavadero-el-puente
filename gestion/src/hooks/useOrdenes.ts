@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/auth/AuthProvider';
+import { diasDesde } from '@/lib/format';
 import type {
   Cliente,
   CrearOrdenPayload,
@@ -59,6 +60,52 @@ export function useListaOrdenes(busqueda: string, estado: EstadoOrden | 'todos')
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as OrdenVista[];
+    },
+  });
+}
+
+/** Lo que hay para hacer ahora mismo. Alimenta la barra fija del encabezado. */
+export interface ResumenPendientes {
+  recibido: number;
+  en_proceso: number;
+  listo: number;
+  /** Listas hace más de `DIAS_SIN_RETIRAR` días: nadie las vino a buscar. */
+  olvidadas: number;
+}
+
+/**
+ * El estado del día, siempre a la vista.
+ *
+ * Trae solo dos columnas de las órdenes abiertas y cuenta acá: son decenas de
+ * filas flaquísimas, y hacerlo en el cliente evita cuatro `count` contra la
+ * base cada vez que alguien cambia de pantalla.
+ *
+ * Se refresca al volver a la ventana: la PC del mostrador queda abierta todo
+ * el día y la otra persona del turno carga órdenes desde su propia sesión.
+ */
+export function useResumenPendientes() {
+  return useQuery({
+    queryKey: ['ordenes', 'resumen'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 120_000,
+    queryFn: async (): Promise<ResumenPendientes> => {
+      const { data, error } = await supabase
+        .from('v_ordenes')
+        .select('estado, fecha_retiro_estimada')
+        .in('estado', ['recibido', 'en_proceso', 'listo']);
+      if (error) throw error;
+
+      const filas = (data ?? []) as Pick<OrdenVista, 'estado' | 'fecha_retiro_estimada'>[];
+      const cuenta = (estado: EstadoOrden) => filas.filter((o) => o.estado === estado).length;
+
+      return {
+        recibido: cuenta('recibido'),
+        en_proceso: cuenta('en_proceso'),
+        listo: cuenta('listo'),
+        olvidadas: filas.filter(
+          (o) => o.estado === 'listo' && (diasDesde(o.fecha_retiro_estimada) ?? 0) > DIAS_SIN_RETIRAR,
+        ).length,
+      };
     },
   });
 }

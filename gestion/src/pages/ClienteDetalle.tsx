@@ -4,7 +4,8 @@ import { EncabezadoPagina } from '@/components/Layout';
 import { Modal } from '@/components/Modal';
 import { ClienteFormulario } from '@/components/ClienteFormulario';
 import { ChipEstado } from '@/components/ChipsOrden';
-import { BloqueCargando, EstadoError, EstadoVacio, PantallaCargando, Spinner } from '@/components/Estados';
+import { BloqueCargando, EstadoError, EstadoVacio, Spinner } from '@/components/Estados';
+import { IconoEditar, IconoRecibir, IconoWhatsapp } from '@/components/Iconos';
 import { useToast } from '@/components/Toaster';
 import {
   TOPE_ORDENES,
@@ -28,23 +29,35 @@ export default function ClienteDetalle() {
   const ordenes = useOrdenesDeCliente(id);
   const cambiarActivo = useCambiarActivoCliente();
 
-  if (isPending) return <PantallaCargando texto="Cargando ficha…" />;
+  if (isPending) {
+    return (
+      <div className="panel">
+        <BloqueCargando texto="Cargando ficha…" />
+      </div>
+    );
+  }
 
   if (error) {
-    return <EstadoError mensaje={mensajeDeError(error)} onReintentar={() => void refetch()} />;
+    return (
+      <div className="panel">
+        <EstadoError mensaje={mensajeDeError(error)} onReintentar={() => void refetch()} />
+      </div>
+    );
   }
 
   if (!cliente) {
     return (
-      <EstadoVacio
-        titulo="Este cliente no existe"
-        detalle="Puede que lo hayan borrado o que el link esté mal."
-        accion={
-          <Link to="/clientes" className="btn-primary">
-            Ver todos los clientes
-          </Link>
-        }
-      />
+      <div className="panel">
+        <EstadoVacio
+          titulo="Este cliente no existe"
+          detalle="Puede que lo hayan borrado o que el link esté mal."
+          accion={
+            <Link to="/clientes" className="btn-primary">
+              Ver todos los clientes
+            </Link>
+          }
+        />
+      </div>
     );
   }
 
@@ -63,6 +76,7 @@ export default function ClienteDetalle() {
   return (
     <>
       <EncabezadoPagina
+        volver={{ a: '/clientes', texto: 'Volver a clientes' }}
         titulo={cliente.nombre}
         detalle={
           cliente.tipo === 'empresa'
@@ -71,10 +85,12 @@ export default function ClienteDetalle() {
         }
         acciones={
           <>
-            <Link to={`/?cliente=${cliente.id}`} className="btn-primary">
-              + Recibir ropa
+            <Link to={`/?cliente=${cliente.id}`} className="btn-primary btn-lg">
+              <IconoRecibir size={19} />
+              Recibir ropa
             </Link>
             <button type="button" className="btn-secondary" onClick={() => setEdicionAbierta(true)}>
+              <IconoEditar size={18} />
               Editar
             </button>
           </>
@@ -118,6 +134,7 @@ export default function ClienteDetalle() {
                 rel="noopener noreferrer"
                 className="btn-secondary mt-4 w-full"
               >
+                <IconoWhatsapp size={18} />
                 Escribirle por WhatsApp
               </a>
             )}
@@ -188,12 +205,6 @@ export default function ClienteDetalle() {
           </button>
         </div>
       </Modal>
-
-      <div className="mt-6">
-        <Link to="/clientes" className="text-sm text-brand-600 underline underline-offset-2">
-          ← Volver a clientes
-        </Link>
-      </div>
     </>
   );
 }
@@ -273,32 +284,32 @@ function HistorialOrdenes({
 
       {ordenes && ordenes.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-brand-100 text-xs uppercase tracking-wide text-slate-500">
-                <th className="px-4 py-2 font-display font-semibold">Ref</th>
-                <th className="px-4 py-2 font-display font-semibold">Ingreso</th>
-                <th className="px-4 py-2 font-display font-semibold">Servicio</th>
-                <th className="px-4 py-2 font-display font-semibold">Estado</th>
+              <tr className="encabezado-tabla">
+                <th>Comprobante</th>
+                <th>Ingreso</th>
+                <th>Servicio</th>
+                <th>Estado</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-brand-100">
               {ordenes.map((o) => (
-                <tr key={o.id} className="transition-colors hover:bg-brand-50">
-                  <td className="px-4 py-2.5">
+                <tr key={o.id} className="transition-colors hover:bg-aqua-50">
+                  <td className="celda">
                     <Link
                       to={`/ordenes/${o.ref}`}
-                      className="font-mono font-semibold text-brand-800 hover:underline"
+                      className="font-mono text-[1.0625rem] font-bold text-brand-800 hover:underline"
                     >
                       {o.ref}
                     </Link>
                   </td>
-                  <td className="px-4 py-2.5 tabular text-slate-700">{fecha(o.fecha_ingreso)}</td>
-                  <td className="px-4 py-2.5 text-slate-700">
+                  <td className="celda tabular text-slate-700">{fecha(o.fecha_ingreso)}</td>
+                  <td className="celda text-slate-700">
                     {NOMBRE_SERVICIO[o.servicio]}
-                    {o.envio && <span className="ml-1 text-xs text-brand-600">+ envío</span>}
+                    {o.envio && <span className="block text-sm text-brand-600">+ envío</span>}
                   </td>
-                  <td className="px-4 py-2.5">
+                  <td className="celda">
                     <ChipEstado estado={o.estado} />
                   </td>
                 </tr>
@@ -307,7 +318,7 @@ function HistorialOrdenes({
           </table>
 
           {ordenes.length === TOPE_ORDENES && (
-            <p className="border-t border-brand-100 px-4 py-2 text-xs text-slate-500">
+            <p className="border-t border-brand-100 px-4 py-2.5 text-sm text-slate-500">
               Se muestran las últimas {TOPE_ORDENES} órdenes. Los totales de arriba solo cuentan
               esas.
             </p>

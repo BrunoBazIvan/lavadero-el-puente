@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BuscadorCliente } from '@/components/BuscadorCliente';
 import { BloqueCargando, EstadoError, Spinner } from '@/components/Estados';
+import {
+  IconoAlerta,
+  IconoCheck,
+  IconoImprimir,
+  IconoMas,
+  IconoMenos,
+} from '@/components/Iconos';
 import { useToast } from '@/components/Toaster';
 import { useArticulos } from '@/hooks/useArticulos';
 import { useCliente } from '@/hooks/useClientes';
@@ -9,6 +17,7 @@ import { useCrearOrden, traerOrdenCompleta } from '@/hooks/useOrdenes';
 import { useDiasEntrega } from '@/hooks/useConfiguracion';
 import { useImprimir } from '@/hooks/useImprimir';
 import { aValorInput, esDomingo, fechaRetiroEstimada, hoyInput } from '@/lib/fechas';
+import { fechaLarga } from '@/lib/format';
 import { mensajeDeError } from '@/lib/supabase';
 import { NOMBRE_SERVICIO } from '@/types/database';
 import type { Articulo, Cliente, ServicioOrden } from '@/types/database';
@@ -111,7 +120,6 @@ export default function OrdenNueva() {
           cantidad: recibido[a.id],
         })),
       });
-
     } catch {
       // El toast lo muestra el manejador global de React Query.
       return;
@@ -131,7 +139,9 @@ export default function OrdenNueva() {
       const completa = await traerOrdenCompleta(orden.ref);
       if (completa) void imprimir(completa);
     } catch {
-      toast.aviso(`La orden ${orden.ref} se guardó, pero no salió el comprobante. Reimprimilo desde el detalle.`);
+      toast.aviso(
+        `La orden ${orden.ref} se guardó, pero no salió el comprobante. Reimprimilo desde el detalle.`,
+      );
     }
 
     navigate(`/ordenes/${orden.ref}`);
@@ -139,22 +149,31 @@ export default function OrdenNueva() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-5 font-display text-2xl font-bold text-brand-900">Recibir ropa</h1>
+      <h1 className="font-display text-3xl font-bold leading-tight text-brand-900">
+        Recibir ropa
+      </h1>
+      <p className="mb-6 mt-1.5 text-[0.9375rem] text-slate-600">
+        Se completa de arriba hacia abajo. Al guardar salen los dos comprobantes: el del cliente y
+        la copia que va con la bolsa.
+      </p>
 
       <div className="space-y-4">
-        {/* ── 1. Cliente ─────────────────────────────────────────────────── */}
-        <section className="panel p-4">
-          <h2 className="eyebrow mb-3">1 · Cliente</h2>
+        <Paso numero={1} titulo="¿De quién es la ropa?" completo={cliente !== null}>
           <BuscadorCliente seleccionado={cliente} onSeleccionar={setCliente} />
           {intentoGuardar && !cliente && (
-            <p className="error-text">Elegí un cliente o dalo de alta.</p>
+            <p className="error-text">
+              <IconoAlerta size={16} className="mt-0.5 shrink-0" />
+              Elegí un cliente de la lista, o dalo de alta.
+            </p>
           )}
-        </section>
+        </Paso>
 
-        {/* ── 2. Qué recibimos ───────────────────────────────────────────── */}
-        <section className="panel p-4">
-          <h2 className="eyebrow mb-3">2 · Qué recibimos</h2>
-
+        <Paso
+          numero={2}
+          titulo="¿Qué estás recibiendo?"
+          detalle="La ropa suelta se marca sin contar. Los acolchados llevan cantidad."
+          completo={seleccionados.length > 0}
+        >
           {articulos.isPending && <BloqueCargando texto="Cargando opciones…" />}
 
           {articulos.error ? (
@@ -173,35 +192,41 @@ export default function OrdenNueva() {
                 <div
                   key={a.id}
                   className={`rounded-card border p-3 transition-colors ${
-                    activo ? 'border-brand-800 bg-brand-50' : 'border-brand-200 bg-white'
+                    activo ? 'border-brand-800 bg-brand-50' : 'border-brand-300 bg-white'
                   }`}
                 >
                   <button
                     type="button"
                     onClick={() => marcar(a)}
                     aria-pressed={activo}
-                    className="w-full text-left"
+                    className="flex w-full items-start gap-2 text-left"
                   >
-                    <span className="font-display text-base font-semibold leading-tight text-ink">
-                      {a.nombre}
-                    </span>
                     {!a.lleva_cantidad && (
-                      <span className="mt-0.5 block text-xs text-slate-500">
-                        {activo ? 'Marcada' : 'Tocá para marcar'}
+                      <span
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-sharp border ${
+                          activo
+                            ? 'border-ok bg-ok text-white'
+                            : 'border-brand-300 bg-white text-transparent'
+                        }`}
+                      >
+                        <IconoCheck size={16} />
                       </span>
                     )}
+                    <span className="font-display text-[1.0625rem] font-semibold leading-tight text-ink">
+                      {a.nombre}
+                    </span>
                   </button>
 
                   {a.lleva_cantidad && (
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-3 flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => sumar(a, -1)}
                         disabled={cantidad === 0}
                         aria-label={`Quitar un ${a.nombre}`}
-                        className="h-9 w-9 rounded-sharp border border-brand-200 bg-white font-bold text-brand-700 hover:bg-brand-50 disabled:opacity-40"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sharp border border-brand-300 bg-white text-brand-800 transition-colors hover:bg-brand-50 disabled:opacity-40"
                       >
-                        −
+                        <IconoMenos size={20} />
                       </button>
                       <input
                         type="number"
@@ -209,15 +234,15 @@ export default function OrdenNueva() {
                         value={cantidad}
                         onChange={(e) => fijarCantidad(a, Number(e.target.value) || 0)}
                         aria-label={`Cantidad de ${a.nombre}`}
-                        className="w-14 rounded-sharp border border-brand-200 px-2 py-1.5 text-center tabular"
+                        className="field tabular h-11 w-full px-1 text-center text-xl font-bold"
                       />
                       <button
                         type="button"
                         onClick={() => sumar(a, 1)}
                         aria-label={`Sumar un ${a.nombre}`}
-                        className="h-9 w-9 rounded-sharp border border-brand-200 bg-white font-bold text-brand-700 hover:bg-brand-50"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sharp border border-brand-300 bg-white text-brand-800 transition-colors hover:bg-brand-50"
                       >
-                        +
+                        <IconoMas size={20} />
                       </button>
                     </div>
                   )}
@@ -227,14 +252,14 @@ export default function OrdenNueva() {
           </div>
 
           {intentoGuardar && seleccionados.length === 0 && (
-            <p className="error-text">Marcá al menos una cosa.</p>
+            <p className="error-text">
+              <IconoAlerta size={16} className="mt-0.5 shrink-0" />
+              Marcá al menos una cosa de las de arriba.
+            </p>
           )}
-        </section>
+        </Paso>
 
-        {/* ── 3. Servicio ────────────────────────────────────────────────── */}
-        <section className="panel p-4">
-          <h2 className="eyebrow mb-3">3 · Servicio</h2>
-
+        <Paso numero={3} titulo="¿Qué le hacemos?" completo>
           <div className="grid gap-2 sm:grid-cols-3">
             {(Object.keys(NOMBRE_SERVICIO) as ServicioOrden[]).map((s) => (
               <button
@@ -242,10 +267,10 @@ export default function OrdenNueva() {
                 type="button"
                 onClick={() => setServicio(s)}
                 aria-pressed={servicio === s}
-                className={`rounded-card border px-4 py-3 text-left font-display text-base font-semibold transition-colors ${
+                className={`rounded-card border px-4 py-4 text-left font-display text-[1.0625rem] font-semibold transition-colors ${
                   servicio === s
                     ? 'border-brand-800 bg-brand-800 text-white'
-                    : 'border-brand-200 bg-white text-ink hover:bg-brand-50'
+                    : 'border-brand-300 bg-white text-ink hover:bg-brand-50'
                 }`}
               >
                 {NOMBRE_SERVICIO[s]}
@@ -257,20 +282,26 @@ export default function OrdenNueva() {
             type="button"
             onClick={() => setEnvio((v) => !v)}
             aria-pressed={envio}
-            className={`mt-2 w-full rounded-card border px-4 py-3 text-left font-display text-base font-semibold transition-colors ${
+            className={`mt-2 flex w-full items-center gap-3 rounded-card border px-4 py-4 text-left font-display text-[1.0625rem] font-semibold transition-colors ${
               envio
                 ? 'border-brand-800 bg-brand-50 text-brand-900'
                 : 'border-dashed border-brand-300 bg-white text-brand-700 hover:bg-brand-50'
             }`}
           >
-            {envio ? '✓ Con envío · retiro y entrega' : '+ Envío (retiro y entrega)'}
+            <span
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-sharp border ${
+                envio ? 'border-ok bg-ok text-white' : 'border-brand-300 bg-white text-transparent'
+              }`}
+            >
+              <IconoCheck size={16} />
+            </span>
+            Envío: lo retiramos y lo entregamos a domicilio
           </button>
-        </section>
+        </Paso>
 
-        {/* ── 4. Retiro ──────────────────────────────────────────────────── */}
-        <section className="panel p-4">
+        <Paso numero={4} titulo="¿Para cuándo?" completo={Boolean(fechaRetiro)}>
           <label className="label" htmlFor="fecha-retiro">
-            4 · Retiro estimado
+            Retiro estimado
           </label>
           <input
             id="fecha-retiro"
@@ -281,17 +312,31 @@ export default function OrdenNueva() {
               setFechaTocada(true);
               setFechaRetiro(e.target.value);
             }}
-            className="field tabular sm:max-w-xs"
+            className="field tabular h-12 text-lg sm:max-w-xs"
           />
-          {fechaRetiro && esDomingo(fechaRetiro) && (
-            <p className="mt-1 text-sm text-aviso">Ese día es domingo y el lavadero está cerrado.</p>
+          {fechaRetiro && (
+            <p className="ayuda">
+              {esDomingo(fechaRetiro) ? (
+                <span className="flex items-start gap-1.5 font-semibold text-aviso">
+                  <IconoAlerta size={16} className="mt-0.5 shrink-0" />
+                  Ese día es domingo y el lavadero está cerrado. Te deja igual, por si es a
+                  propósito.
+                </span>
+              ) : (
+                <>Sale el {fechaLarga(fechaRetiro)}.</>
+              )}
+            </p>
           )}
-        </section>
+        </Paso>
 
-        {/* ── 5. Notas ───────────────────────────────────────────────────── */}
-        <section className="panel p-4">
-          <label className="label" htmlFor="notas">
-            5 · Notas
+        <Paso
+          numero={5}
+          titulo="¿Algo para tener en cuenta?"
+          detalle="Opcional. Esto no sale impreso en el comprobante del cliente."
+          completo
+        >
+          <label className="sr-only" htmlFor="notas">
+            Notas
           </label>
           <textarea
             id="notas"
@@ -301,26 +346,119 @@ export default function OrdenNueva() {
             placeholder="Manchas, prendas delicadas, instrucciones especiales…"
             className="field resize-y"
           />
-        </section>
+        </Paso>
+      </div>
 
-        {intentoGuardar && problemas.length > 0 && (
-          <ul className="rounded-card border border-alerta/50 bg-white px-4 py-3">
-            {problemas.map((p) => (
-              <li key={p} className="text-sm text-alerta">
-                {p}
-              </li>
-            ))}
-          </ul>
-        )}
+      <BarraGuardar
+        cliente={cliente}
+        cantidadItems={seleccionados.length}
+        problemas={problemas}
+        mostrarProblemas={intentoGuardar}
+        guardando={crear.isPending}
+        onGuardar={() => void guardar()}
+      />
+    </div>
+  );
+}
+
+/* ── Piezas ───────────────────────────────────────────────────────────────── */
+
+/**
+ * Un paso del formulario, con su cuadradito numerado.
+ *
+ * El número estaba antes dentro del título ("2 · Qué recibimos"), donde se
+ * leía como parte del texto. Afuera y en un bloque de color da el orden de
+ * lectura de un vistazo, y al completarse se pone verde: se ve cuánto falta
+ * sin tener que releer todo.
+ */
+function Paso({
+  numero,
+  titulo,
+  detalle,
+  completo = false,
+  children,
+}: {
+  numero: number;
+  titulo: string;
+  detalle?: string;
+  completo?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <section className="panel">
+      <div className="flex items-center gap-3 border-b border-brand-100 px-4 py-3.5">
+        <span className={`paso-numero ${completo ? 'bg-ok text-white' : 'bg-brand-800 text-white'}`}>
+          {completo ? <IconoCheck size={20} /> : numero}
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-bold leading-tight text-brand-900">{titulo}</h2>
+          {detalle && <p className="mt-0.5 text-sm leading-snug text-slate-500">{detalle}</p>}
+        </div>
+      </div>
+      <div className="p-4">{children}</div>
+    </section>
+  );
+}
+
+/**
+ * La barra de guardar, pegada al pie de la ventana.
+ *
+ * El botón estaba al final del formulario: con cinco pasos abiertos había que
+ * bajar hasta el fondo para terminar, y lo que faltaba se sabía recién después
+ * de apretar. Acá el botón no se va nunca de la pantalla y lo que falta se dice
+ * antes.
+ *
+ * Va `sticky` y no `fixed` a propósito: así ocupa su lugar en el flujo y los
+ * avisos de abajo a la derecha no le caen encima.
+ */
+function BarraGuardar({
+  cliente,
+  cantidadItems,
+  problemas,
+  mostrarProblemas,
+  guardando,
+  onGuardar,
+}: {
+  cliente: Cliente | null;
+  cantidadItems: number;
+  problemas: string[];
+  mostrarProblemas: boolean;
+  guardando: boolean;
+  onGuardar: () => void;
+}) {
+  const listo = problemas.length === 0;
+
+  return (
+    <div className="sticky bottom-0 z-20 mt-4 rounded-card border border-brand-200 bg-white shadow-modal">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3">
+        <div className="min-w-0 flex-1">
+          {listo ? (
+            <p className="flex items-center gap-2 text-[0.9375rem] text-ink">
+              <IconoCheck size={18} className="shrink-0 text-ok" />
+              <span className="truncate">
+                <span className="font-semibold">{cliente?.nombre}</span> ·{' '}
+                {cantidadItems === 1 ? '1 cosa' : `${cantidadItems} cosas`}
+              </span>
+            </p>
+          ) : (
+            <p
+              className={`text-[0.9375rem] leading-snug ${
+                mostrarProblemas ? 'font-semibold text-alerta' : 'text-slate-500'
+              }`}
+            >
+              Falta: {problemas.map((p) => p.replace(/\.$/, '').toLowerCase()).join(' · ')}
+            </p>
+          )}
+        </div>
 
         <button
           type="button"
-          onClick={() => void guardar()}
-          disabled={crear.isPending}
-          className="btn-primary btn-lg w-full"
+          onClick={onGuardar}
+          disabled={guardando}
+          className="btn-primary btn-lg shrink-0"
         >
-          {crear.isPending && <Spinner size={16} />}
-          {crear.isPending ? 'Guardando…' : 'Guardar e imprimir comprobante'}
+          {guardando ? <Spinner size={18} /> : <IconoImprimir size={18} />}
+          {guardando ? 'Guardando…' : 'Guardar e imprimir'}
         </button>
       </div>
     </div>

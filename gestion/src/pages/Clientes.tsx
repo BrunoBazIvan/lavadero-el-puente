@@ -4,6 +4,7 @@ import { EncabezadoPagina } from '@/components/Layout';
 import { Modal } from '@/components/Modal';
 import { ClienteFormulario } from '@/components/ClienteFormulario';
 import { BloqueCargando, EstadoError, EstadoVacio } from '@/components/Estados';
+import { IconoBuscar, IconoMas } from '@/components/Iconos';
 import { useClientes } from '@/hooks/useClientes';
 import { useDebounce } from '@/hooks/useDebounce';
 import { mensajeDeError } from '@/lib/supabase';
@@ -22,34 +23,44 @@ export default function Clientes() {
     <>
       <EncabezadoPagina
         titulo="Clientes"
+        detalle="Buscá por nombre o por los últimos números del teléfono."
         acciones={
-          <button type="button" className="btn-primary" onClick={() => setAltaAbierta(true)}>
-            + Cliente nuevo
+          <button
+            type="button"
+            className="btn-primary btn-lg"
+            onClick={() => setAltaAbierta(true)}
+          >
+            <IconoMas size={19} />
+            Cliente nuevo
           </button>
         }
       />
 
       <div className="panel">
-        <div className="flex flex-wrap items-center gap-4 border-b border-brand-100 px-4 py-3">
-          <div className="min-w-[16rem] flex-1">
+        <div className="flex flex-wrap items-center gap-4 border-b border-brand-100 px-4 py-4">
+          <div className="relative min-w-[18rem] flex-1">
             <label className="sr-only" htmlFor="buscar-cliente">
               Buscar cliente
             </label>
+            <IconoBuscar
+              size={22}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
             <input
               id="buscar-cliente"
               type="search"
               autoFocus
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por nombre o teléfono…"
-              className="field"
+              placeholder="Nombre o teléfono…"
+              className="field h-14 pl-12 text-lg"
             />
           </div>
 
-          <label className="flex select-none items-center gap-2 text-sm text-slate-700">
+          <label className="flex select-none items-center gap-2.5 text-[0.9375rem] text-slate-700">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded-sharp border-brand-300 text-brand-800 focus:ring-aqua-500"
+              className="casilla"
               checked={incluirInactivos}
               onChange={(e) => setIncluirInactivos(e.target.checked)}
             />
@@ -71,7 +82,8 @@ export default function Clientes() {
             }
             accion={
               <button type="button" className="btn-primary" onClick={() => setAltaAbierta(true)}>
-                + Cliente nuevo
+                <IconoMas size={19} />
+                Cliente nuevo
               </button>
             }
           />
@@ -79,27 +91,23 @@ export default function Clientes() {
 
         {clientes && clientes.length > 0 && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-brand-100 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-4 py-2 font-display font-semibold">Nombre</th>
-                  <th className="px-4 py-2 font-display font-semibold">Teléfono</th>
-                  <th className="px-4 py-2 font-display font-semibold">Tipo</th>
-                  <th className="px-4 py-2 font-display font-semibold">Dirección</th>
+                <tr className="encabezado-tabla">
+                  <th>Nombre</th>
+                  <th>Teléfono</th>
+                  <th>Tipo</th>
+                  <th>Dirección</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-100">
                 {clientes.map((c) => (
-                  <tr
-                    key={c.id}
-                    onClick={() => navigate(`/clientes/${c.id}`)}
-                    className="cursor-pointer transition-colors hover:bg-brand-50"
-                  >
-                    <td className="px-4 py-2.5">
+                  <tr key={c.id} onClick={() => navigate(`/clientes/${c.id}`)} className="fila">
+                    <td className="celda">
                       <Link
                         to={`/clientes/${c.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-semibold text-brand-800 hover:underline"
+                        className="font-display text-[1.0625rem] font-semibold text-brand-800 hover:underline"
                       >
                         {c.nombre}
                       </Link>
@@ -109,23 +117,23 @@ export default function Clientes() {
                         </span>
                       )}
                       {c.razon_social && (
-                        <span className="ml-2 text-xs text-slate-500">{c.razon_social}</span>
+                        <span className="block text-sm text-slate-500">{c.razon_social}</span>
                       )}
                     </td>
-                    <td className="px-4 py-2.5 tabular text-slate-700">
+                    <td className="celda tabular text-slate-700">
                       {c.telefono ? formatearTelefono(c.telefono) : '—'}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-700">
+                    <td className="celda text-slate-700">
                       {c.tipo === 'empresa' ? 'Empresa' : 'Particular'}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600">{c.direccion ?? '—'}</td>
+                    <td className="celda text-slate-600">{c.direccion ?? '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             {clientes.length === 200 && (
-              <p className="border-t border-brand-100 px-4 py-2 text-xs text-slate-500">
+              <p className="border-t border-brand-100 px-4 py-2.5 text-sm text-slate-500">
                 Se muestran los primeros 200. Afiná la búsqueda para ver el resto.
               </p>
             )}
