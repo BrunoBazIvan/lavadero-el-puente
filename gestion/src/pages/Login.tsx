@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,21 +6,24 @@ import { useAuth } from '@/auth/AuthProvider';
 import { useToast } from '@/components/Toaster';
 import { PantallaCargando, Spinner } from '@/components/Estados';
 
+/**
+ * No se pide email: acá se entra con un usuario a secas ("rocio"). El dominio
+ * interno se lo pega `emailDeUsuario()` antes de hablar con Supabase — mirá
+ * `lib/usuarios.ts`. Lo único que se valida es que no venga vacío ni con
+ * espacios; el resto lo dice la base, que es la que sabe.
+ */
 const esquemaIngreso = z.object({
-  email: z.string().min(1, 'Escribí tu email.').email('Ese email no parece válido.'),
+  usuario: z
+    .string()
+    .min(1, 'Escribí tu usuario.')
+    .refine((v) => !/\s/.test(v.trim()), 'El usuario va en una sola palabra, sin espacios.'),
   password: z.string().min(1, 'Escribí tu contraseña.'),
 });
 type FormIngreso = z.infer<typeof esquemaIngreso>;
 
-const esquemaRecordar = z.object({
-  email: z.string().min(1, 'Escribí tu email.').email('Ese email no parece válido.'),
-});
-type FormRecordar = z.infer<typeof esquemaRecordar>;
-
 export default function Login() {
   const { session, profile, cargando, motivoSalida, recuperandoPassword } = useAuth();
   const location = useLocation();
-  const [modo, setModo] = useState<'ingreso' | 'recordar'>('ingreso');
 
   if (cargando) return <PantallaCargando />;
   if (recuperandoPassword) return <Navigate to="/recuperar" replace />;
@@ -54,11 +56,7 @@ export default function Login() {
           )}
 
           <div className="panel p-6">
-            {modo === 'ingreso' ? (
-              <FormularioIngreso onOlvide={() => setModo('recordar')} />
-            ) : (
-              <FormularioRecordar onVolver={() => setModo('ingreso')} />
-            )}
+            <FormularioIngreso />
           </div>
 
           <p className="mt-6 text-center text-xs leading-relaxed text-brand-200">
@@ -72,7 +70,7 @@ export default function Login() {
   );
 }
 
-function FormularioIngreso({ onOlvide }: { onOlvide: () => void }) {
+function FormularioIngreso() {
   const { ingresar } = useAuth();
   const toast = useToast();
   const {
@@ -81,9 +79,9 @@ function FormularioIngreso({ onOlvide }: { onOlvide: () => void }) {
     formState: { errors, isSubmitting },
   } = useForm<FormIngreso>({ resolver: zodResolver(esquemaIngreso) });
 
-  const enviar = handleSubmit(async ({ email, password }) => {
+  const enviar = handleSubmit(async ({ usuario, password }) => {
     try {
-      await ingresar(email, password);
+      await ingresar(usuario, password);
     } catch (error) {
       toast.error(error);
     }
@@ -94,18 +92,24 @@ function FormularioIngreso({ onOlvide }: { onOlvide: () => void }) {
       <h1 className="mb-5 font-display text-2xl font-bold text-brand-900">Entrar</h1>
 
       <div className="mb-4">
-        <label className="label" htmlFor="email">
-          Email
+        <label className="label" htmlFor="usuario">
+          Usuario
         </label>
         <input
-          id="email"
-          type="email"
+          id="usuario"
+          type="text"
+          // `username` igual que antes: así el navegador sigue ofreciendo lo
+          // que ya tenía guardado en esa computadora.
           autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           autoFocus
-          className={`field ${errors.email ? 'field-error' : ''}`}
-          {...register('email')}
+          placeholder="mostrador"
+          className={`field ${errors.usuario ? 'field-error' : ''}`}
+          {...register('usuario')}
         />
-        {errors.email && <p className="error-text">{errors.email.message}</p>}
+        {errors.usuario && <p className="error-text">{errors.usuario.message}</p>}
       </div>
 
       <div className="mb-6">
@@ -127,83 +131,13 @@ function FormularioIngreso({ onOlvide }: { onOlvide: () => void }) {
         {isSubmitting ? 'Entrando…' : 'Entrar'}
       </button>
 
-      <button
-        type="button"
-        onClick={onOlvide}
-        className="mt-4 w-full text-center text-sm text-brand-600 underline underline-offset-2 hover:text-brand-800"
-      >
-        Olvidé mi contraseña
-      </button>
-    </form>
-  );
-}
-
-function FormularioRecordar({ onVolver }: { onVolver: () => void }) {
-  const { recordarPassword } = useAuth();
-  const toast = useToast();
-  const [enviado, setEnviado] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormRecordar>({ resolver: zodResolver(esquemaRecordar) });
-
-  const enviar = handleSubmit(async ({ email }) => {
-    try {
-      await recordarPassword(email);
-      setEnviado(true);
-    } catch (error) {
-      toast.error(error);
-    }
-  });
-
-  if (enviado) {
-    return (
-      <div>
-        <h1 className="mb-3 font-display text-2xl font-bold text-brand-900">Revisá tu correo</h1>
-        <p className="text-sm leading-relaxed text-slate-700">
-          Si ese email tiene una cuenta, te llega un link para poner una contraseña nueva. Puede
-          tardar unos minutos y a veces cae en correo no deseado.
-        </p>
-        <button type="button" onClick={onVolver} className="btn-secondary mt-5 w-full">
-          Volver
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={enviar} noValidate>
-      <h1 className="mb-2 font-display text-2xl font-bold text-brand-900">Recuperar contraseña</h1>
-      <p className="mb-5 text-sm text-slate-600">Te mandamos un link para cambiarla.</p>
-
-      <div className="mb-6">
-        <label className="label" htmlFor="email-recordar">
-          Email
-        </label>
-        <input
-          id="email-recordar"
-          type="email"
-          autoComplete="username"
-          autoFocus
-          className={`field ${errors.email ? 'field-error' : ''}`}
-          {...register('email')}
-        />
-        {errors.email && <p className="error-text">{errors.email.message}</p>}
-      </div>
-
-      <button type="submit" className="btn-primary btn-lg w-full" disabled={isSubmitting}>
-        {isSubmitting && <Spinner size={16} />}
-        {isSubmitting ? 'Enviando…' : 'Enviar link'}
-      </button>
-
-      <button
-        type="button"
-        onClick={onVolver}
-        className="mt-4 w-full text-center text-sm text-brand-600 underline underline-offset-2 hover:text-brand-800"
-      >
-        Volver
-      </button>
+      {/* Antes acá había un "Olvidé mi contraseña" que mandaba un mail. Las
+          cuentas del mostrador no tienen casilla, así que ese mail no llegaba
+          a ningún lado: un botón que no puede funcionar es peor que ninguno.
+          La contraseña la repone un admin. */}
+      <p className="mt-5 border-t border-brand-100 pt-4 text-center text-sm leading-relaxed text-slate-600">
+        Si te olvidaste la contraseña, pedile a un admin que te ponga una nueva.
+      </p>
     </form>
   );
 }

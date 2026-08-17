@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'react-router-dom';
+import { LinkCliente } from '@/components/LinkCliente';
 import { Spinner } from '@/components/Estados';
 import { useToast } from '@/components/Toaster';
 import {
@@ -159,12 +159,13 @@ export function ClienteFormulario({
               {duplicados.map((c, i) => (
                 <span key={c.id}>
                   {i > 0 && ', '}
-                  <Link
-                    to={`/clientes/${c.id}`}
-                    className="font-semibold underline underline-offset-2"
+                  <LinkCliente
+                    id={c.id}
+                    className="font-semibold"
+                    claseLink="underline underline-offset-2"
                   >
                     {c.nombre}
-                  </Link>
+                  </LinkCliente>
                 </span>
               ))}
               .

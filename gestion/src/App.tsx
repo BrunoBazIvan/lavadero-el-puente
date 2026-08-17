@@ -75,14 +75,23 @@ export default function App() {
                   <Route index element={<OrdenNueva />} />
                   <Route path="ordenes" element={<Ordenes />} />
                   <Route path="ordenes/:ref" element={<OrdenDetalle />} />
-                  <Route path="clientes" element={<Clientes />} />
-                  <Route path="clientes/:id" element={<ClienteDetalle />} />
                 </Route>
               </Route>
 
-              {/* Solo admin. La RLS lo bloquea igual del lado de la base. */}
+              {/* Los legajos son de admin: el mostrador trabaja sobre la orden
+                  que tiene enfrente, no sobre el padrón de clientes ni sobre la
+                  lista de artículos. Elegir un cliente y marcar qué se recibe
+                  siguen estando adentro de "Recibir ropa" — lo que se corta acá
+                  es navegar el archivo entero.
+
+                  Ojo: esto es partición de navegación, no de datos. La RLS
+                  sigue dejando a un operador leer `clientes` y `articulos`
+                  (los necesita para recibir ropa), así que no es una barrera
+                  contra alguien que sepa hablarle a la base. */}
               <Route element={<ProtectedRoute soloAdmin />}>
                 <Route element={<Layout />}>
+                  <Route path="clientes" element={<Clientes />} />
+                  <Route path="clientes/:id" element={<ClienteDetalle />} />
                   <Route path="articulos" element={<Articulos />} />
                 </Route>
               </Route>

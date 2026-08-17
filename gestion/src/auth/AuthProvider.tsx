@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { emailDeUsuario } from '@/lib/usuarios';
 import type { Profile } from '@/types/database';
 
 interface AuthState {
@@ -13,9 +14,9 @@ interface AuthState {
   /** true mientras Supabase tiene una sesión de recuperación de contraseña. */
   recuperandoPassword: boolean;
   esAdmin: boolean;
-  ingresar: (email: string, password: string) => Promise<void>;
+  /** El usuario tal cual se escribe en la pantalla de entrada: "rocio", sin arroba. */
+  ingresar: (usuario: string, password: string) => Promise<void>;
   salir: () => Promise<void>;
-  recordarPassword: (email: string) => Promise<void>;
   cambiarPassword: (password: string) => Promise<void>;
   limpiarMotivoSalida: () => void;
 }
@@ -122,10 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, [aplicarSesion]);
 
-  const ingresar = useCallback(async (email: string, password: string) => {
+  const ingresar = useCallback(async (usuario: string, password: string) => {
     setMotivoSalida(null);
     const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: emailDeUsuario(usuario),
       password,
     });
     if (error) throw error;
@@ -136,15 +137,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setRecuperandoPassword(false);
-  }, []);
-
-  const recordarPassword = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      // `BASE_URL` ya viene con la barra final ('/gestion/'). Sin esto el mail
-      // llevaría a la raíz del dominio, que es la landing.
-      redirectTo: `${window.location.origin}${import.meta.env.BASE_URL}recuperar`,
-    });
-    if (error) throw error;
   }, []);
 
   const cambiarPassword = useCallback(
@@ -168,21 +160,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       esAdmin: profile?.rol === 'admin',
       ingresar,
       salir,
-      recordarPassword,
       cambiarPassword,
       limpiarMotivoSalida: () => setMotivoSalida(null),
     }),
-    [
-      session,
-      profile,
-      cargando,
-      motivoSalida,
-      recuperandoPassword,
-      ingresar,
-      salir,
-      recordarPassword,
-      cambiarPassword,
-    ],
+    [session, profile, cargando, motivoSalida, recuperandoPassword, ingresar, salir, cambiarPassword],
   );
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;

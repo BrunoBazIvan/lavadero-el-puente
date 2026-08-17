@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EncabezadoPagina } from '@/components/Layout';
+import { LinkCliente } from '@/components/LinkCliente';
 import { Modal } from '@/components/Modal';
 import { ChipPago, ETIQUETA_ESTADO, LineaEstado } from '@/components/ChipsOrden';
 import { BloqueCargando, EstadoError, EstadoVacio, Spinner } from '@/components/Estados';
@@ -178,12 +179,13 @@ export default function OrdenDetalle() {
           {/* ── Cliente ────────────────────────────────────────────────── */}
           <section className="panel p-4">
             <h2 className="eyebrow">Cliente</h2>
-            <Link
-              to={`/clientes/${orden.cliente.id}`}
-              className="mt-2 block font-display text-xl font-bold text-brand-800 hover:underline"
+            <LinkCliente
+              id={orden.cliente.id}
+              className="mt-2 block font-display text-xl font-bold text-brand-800"
+              claseLink="hover:underline"
             >
               {orden.cliente.nombre}
-            </Link>
+            </LinkCliente>
             <p className="mt-1 flex items-center gap-2 text-[0.9375rem] text-slate-600">
               <IconoTelefono size={16} className="shrink-0 text-slate-400" />
               <span className="tabular">

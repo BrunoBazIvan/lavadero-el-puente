@@ -22,11 +22,12 @@ convertirlo.
 Lo que se rompe si lo tocás sin mirar:
 
 - **`base: '/gestion/'` en `gestion/vite.config.ts`** manda sobre todo lo demás.
-  De ahí sale `import.meta.env.BASE_URL`, que usan el `basename` del
-  `BrowserRouter` (`gestion/src/App.tsx`) y el `redirectTo` del mail de
-  recuperar contraseña (`gestion/src/auth/AuthProvider.tsx`). Cambiar la URL es
-  cambiar ese `base` + el `rewrite` de `vercel.json` + el `disallow` de
-  `app/robots.ts`.
+  De ahí sale `import.meta.env.BASE_URL`, que usa el `basename` del
+  `BrowserRouter` (`gestion/src/App.tsx`). Cambiar la URL es cambiar ese `base`
+  + el `rewrite` de `vercel.json` + el `disallow` de `app/robots.ts`. Y, fuera
+  del repo, la **Site URL / Redirect URLs** del panel de Auth de Supabase: de
+  ahí sale adónde cae un link de recuperar contraseña mandado a mano desde el
+  dashboard, que es lo único que puede llegar a `/gestion/recuperar`.
 - **El rewrite de `vercel.json`** es lo único que hace que un F5 en
   `/gestion/ordenes` no caiga en el 404 de la landing. No se puede poner en
   `next.config.mjs`: `rewrites` no existe con `output: 'export'`. Y no se ve
@@ -189,6 +190,61 @@ rediseñó a propósito y no hay que deshacer:
 - **Al cargar no se muestran ceros.** Un cero falso hace que alguien dé por
   cerrado el día. Mientras no hay dato, la barra reserva su altura y no dice
   nada.
+
+### Qué ve cada rol
+
+Las cuentas se dan de alta a mano en el dashboard de Supabase: el
+procedimiento, el cambio de rol y la baja están en
+[`gestion/supabase/USUARIOS.md`](./gestion/supabase/USUARIOS.md).
+
+**El mostrador entra con un usuario, no con un email.** Nadie ahí tiene
+casilla, y escribir una dirección entera con un cliente esperando es tiempo
+perdido. Pero Supabase Auth exige formato de email para el login con
+contraseña, así que la cuenta se llama `mostrador` y por debajo viaja como
+`mostrador@interno.lavaderoelpuente.com`: subdominio propio y sin MX, elegido
+por encima de un `.local` inventado, que es un TLD reservado por RFC 6762 para
+otra cosa. La conversión vive en un solo lugar,
+[`gestion/src/lib/usuarios.ts`](./gestion/src/lib/usuarios.ts).
+
+**Los admins, en cambio, entran con su email de verdad**, y eso es a propósito:
+una cuenta interna no puede recuperar su contraseña sola, así que si todas
+fueran internas quien administra queda como único punto de falla del sistema.
+Los dos formatos conviven en el mismo campo porque `emailDeUsuario()` deja
+pasar tal cual lo que ya trae arroba — eso también es lo que mantiene vivas las
+cuentas viejas, creadas cuando el identificador era el email.
+
+De ahí se desprende lo que **no** hay que reponer: el botón de "Olvidé mi
+contraseña" en `Login.tsx`. Para una cuenta interna ese mail se manda a la
+nada, y un botón que no puede funcionar es peor que ninguno. La contraseña la
+repone un admin (está en `USUARIOS.md`). `/recuperar` sigue en pie, pero solo
+lo alcanza un link mandado a mano desde el dashboard — para las cuentas que sí
+tienen email.
+
+El operador trabaja **sobre la orden que tiene enfrente**; el archivo es de
+admin. Las secciones **Clientes** y **Artículos** —y sus rutas
+`/clientes`, `/clientes/:id`, `/articulos`— cuelgan de `<ProtectedRoute
+soloAdmin>` en `App.tsx`, y sus ítems del menú llevan `soloAdmin: true` en
+`Layout.tsx`.
+
+Eso **no le saca al operador nada de lo que necesita para recibir ropa**:
+elegir un cliente (`BuscadorCliente`, con alta al vuelo) y marcar artículos
+siguen viviendo dentro de "Recibir ropa", y el nombre y el teléfono del cliente
+se siguen viendo en Órdenes y en el detalle. Lo que se corta es navegar el
+padrón entero.
+
+Dos cosas que se rompen fácil sin querer:
+
+- **Es partición de navegación, no de datos.** La RLS le sigue dejando a un
+  operador leer `clientes` y `articulos` porque los necesita para recibir ropa
+  (`0001_init.sql`: `is_staff()`). Si algún día hace falta un bloqueo de
+  verdad, hay que rehacer "Recibir ropa" contra RPCs acotadas y revisar
+  `v_ordenes`, que expone nombre y teléfono.
+- **Ningún link puede llevar a un operador a una ruta de admin.** Rebotaría
+  contra el `<Navigate to="/">` de `ProtectedRoute` y se lee como que el
+  sistema falló, encima perdiendo lo que estaba cargando. Por eso el nombre del
+  cliente va por `LinkCliente`, que para un operador lo dibuja como texto —sin
+  subrayado ni hover, que un texto que parece link confunde igual que uno roto.
+  Si aparece otro link a `/clientes/:id`, va por ahí.
 
 Si tocás el flujo de una orden, actualizá también
 [`gestion/GUIA-MOSTRADOR.md`](./gestion/GUIA-MOSTRADOR.md): esa guía se imprime

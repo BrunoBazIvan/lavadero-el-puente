@@ -27,7 +27,7 @@ interface ItemNav {
 const NAV: ItemNav[] = [
   { to: '/', texto: 'Recibir ropa', icono: IconoRecibir, end: true },
   { to: '/ordenes', texto: 'Órdenes', icono: IconoOrdenes },
-  { to: '/clientes', texto: 'Clientes', icono: IconoClientes },
+  { to: '/clientes', texto: 'Clientes', icono: IconoClientes, soloAdmin: true },
   { to: '/articulos', texto: 'Artículos', icono: IconoArticulos, soloAdmin: true },
 ];
 

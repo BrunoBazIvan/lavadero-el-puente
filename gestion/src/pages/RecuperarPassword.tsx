@@ -19,8 +19,14 @@ const esquema = z
 type Form = z.infer<typeof esquema>;
 
 /**
- * Pantalla a la que cae el link de "olvidé mi contraseña".
- * Supabase abre una sesión de tipo recovery que solo sirve para esto.
+ * Pantalla a la que cae un link de recuperación de contraseña. Supabase abre
+ * una sesión de tipo recovery que solo sirve para esto.
+ *
+ * La app ya no pide esos links: las cuentas del mostrador no tienen casilla
+ * (`lib/usuarios.ts`), así que el mail no llegaría a ningún lado. Esto queda
+ * en pie para las cuentas que sí tienen email de verdad, cuando el link se
+ * manda a mano desde el dashboard de Supabase — es la única salida si un admin
+ * se queda afuera de su propia cuenta.
  */
 export default function RecuperarPassword() {
   const { session, cargando, recuperandoPassword, cambiarPassword } = useAuth();
