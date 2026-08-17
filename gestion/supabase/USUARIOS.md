@@ -12,7 +12,7 @@ Un usuario del sistema son **dos cosas**:
 
 | Dónde | Qué es | Quién lo crea |
 |---|---|---|
-| `auth.users` (Supabase Auth) | El identificador y la contraseña | Vos, en el dashboard |
+| `auth.users` (Supabase Auth) | El email y la contraseña | Vos, en el dashboard |
 | `public.profiles` | El nombre que se ve arriba a la derecha, el rol y si está activo | El trigger `on_auth_user_created`, solo |
 
 El trigger es `handle_new_user()` (`migrations/0001_init.sql:60`). Lee el
@@ -25,40 +25,20 @@ Un usuario de Auth **sin** perfil activo no puede entrar: `AuthProvider` lo
 saca con un cartel que lo explica. No queda dando vueltas por una app que le
 tira error en cada pantalla.
 
-### Usuario, no email
+### Toda cuenta va con una casilla que alguien lee
 
-En el mostrador nadie tiene casilla de correo. Pero Supabase Auth necesita sí o
-sí algo con formato de email para el login con contraseña. Así que la cuenta se
-llama `mostrador` y **por debajo** viaja como:
+Es la única regla de esto que no conviene negociar, y no es burocracia: una
+cuenta sin correo detrás **no puede recuperar su contraseña sola**. Cada olvido
+pasa a ser una intervención manual, con la `service_role` en la mano, y quien
+administra queda como **único punto de falla del sistema entero**.
 
-```
-mostrador@interno.lavaderoelpuente.com
-```
+Con una casilla real, "Olvidé mi contraseña" resuelve el 100% de los casos sin
+que nadie llame a nadie.
 
-Es un subdominio nuestro **sin MX**: no le llega correo a nadie, que es
-justamente lo que queremos, y al ser propio no puede chocar con nadie. La app
-le pega ese sufijo sola antes de hablar con Supabase (`src/lib/usuarios.ts`),
-así que en la pantalla de entrada se escribe **`mostrador` y la contraseña**,
-nada más.
-
-Elegí usuarios **cortos, en minúscula y en una sola palabra**: se tipean de
-pie y con apuro. `mostrador`, `noche`, `sofia`.
-
-### Los admins van con email de verdad
-
-Es la única regla de esto que no conviene negociar. Una cuenta interna **no
-puede recuperar su contraseña sola** —no hay casilla adonde mandar el link—,
-así que si todas fueran internas, quien administra queda como **único punto de
-falla del sistema entero**: nadie más puede reponer nada, y si pierde su propia
-contraseña la única salida es la `service_role`.
-
-Con al menos dos admins entrando por email real, cualquiera de los dos
-desatasca al otro desde el dashboard. Es la regla vieja de tener siempre dos
-personas con llave.
-
-Los dos formatos **conviven en el mismo campo** y no hay que elegir nada: si lo
-que se escribe trae arroba, se manda tal cual; si no, se le pega el dominio
-interno. Rocío escribe su email entero, el mostrador escribe `mostrador`.
+La cuenta del mostrador no tiene una persona fija, así que usa la casilla del
+negocio (`lavaderoindustrialelpuente@gmail.com`). Es más largo de tipear que un
+usuario suelto, pero el navegador de esa PC lo recuerda y la sesión queda
+abierta durante el turno: se escribe entero muy pocas veces.
 
 ---
 
@@ -69,14 +49,11 @@ interno. Rocío escribe su email entero, el mostrador escribe `mostrador`.
 Dashboard de Supabase → **Authentication** → **Users** → **Add user** →
 **Create new user**.
 
-- **Email**: si la cuenta es de **admin**, su email de verdad. Si es de
-  **mostrador**, el usuario con el dominio interno:
-  `mostrador@interno.lavaderoelpuente.com`.
-- **Password**: la que va a usar. Escribila en algún lado antes de guardar —
-  después no se puede volver a leer, solo reemplazar.
-- **Auto Confirm User**: **sí**, siempre. Para las cuentas internas es
-  obligatorio: sin esto quedan esperando una confirmación por mail que nunca va
-  a llegar, porque la casilla no existe.
+- **Email**: el de la persona, o el del negocio si es una cuenta de puesto.
+  Tiene que ser uno que alguien lea de verdad — es por donde llega el mail de
+  recuperar contraseña.
+- **Password**: una provisoria.
+- **Auto Confirm User**: **sí**. Si no, no puede entrar hasta confirmar el mail.
 
 Si el formulario te deja cargar **User Metadata**, poné ahí el nombre y el rol
 y ya está:
@@ -90,7 +67,7 @@ Los roles son dos y se escriben así: `admin` u `operador`.
 ### 2. Si no viste el campo de metadata
 
 Pasa: el formulario del dashboard cambió más de una vez. No importa — el perfil
-ya se creó igual, con el nombre sacado del usuario y rol `operador`. Arreglalo
+ya se creó igual, con el nombre sacado del email y rol `operador`. Arreglalo
 desde **SQL Editor**:
 
 ```sql
@@ -99,10 +76,13 @@ set    nombre = 'Rocío Fernández',
        rol    = 'admin'
 from   auth.users u
 where  u.id = p.id
-  and  u.email = 'EL_EMAIL_CON_EL_QUE_LA_CREASTE';
+  and  u.email = 'ACÁ_EL_EMAIL'
+returning p.id, p.nombre, p.rol, p.activo;
 ```
 
-El SQL Editor corre por encima de la RLS, así que esto funciona aunque la
+El `returning` está para ver qué cambió: **cero filas quiere decir que el
+usuario no existe o que el email tiene un tipeo distinto**, no que ya estaba
+bien. El SQL Editor corre por encima de la RLS, así que esto funciona aunque la
 política diga que solo un admin puede tocar perfiles ajenos.
 
 ### 3. Comprobar que quedó bien
@@ -120,23 +100,24 @@ botón, o hasta que encuentra uno que no debería.
 
 ### 4. Entregarle la cuenta
 
-Decile que entre a `www.lavaderoelpuente.com/gestion/`. Si es una cuenta
-interna, escribe **el usuario solo** —`mostrador`, sin arroba y sin
-`@interno.lavaderoelpuente.com`— y la contraseña. Si es de admin, su email
-entero.
+Decile que entre a `www.lavaderoelpuente.com/gestion/` con el email y la
+contraseña provisoria, y que enseguida use **¿Olvidaste tu contraseña?** para
+ponerse una propia. Así la provisoria no queda anotada en ningún lado.
+
+Para que ese link caiga en la app y no en la landing, `/gestion/recuperar`
+tiene que estar en las **Redirect URLs** del panel de Auth. Se configura una
+vez.
 
 ---
 
-## Cambiar una contraseña
+## Si alguien no puede entrar y el mail no le llega
 
-Sin casilla de correo detrás, **nadie puede recuperar su contraseña solo**: la
-pantalla de entrada no tiene "Olvidé mi contraseña" porque ese mail no llegaría
-a ningún lado. La repone un admin, y son dos minutos.
+Primero descartá lo aburrido: que el mail no haya caído en correo no deseado, y
+que la casilla sea la que está cargada en Auth.
 
-Si el dashboard te ofrece cambiarla desde la ficha del usuario, usá eso. Si no
-—cambia seguido de lugar—, va por la **API de administración**, que es la
-forma oficial. La `service_role` la sacás de Settings → API, y **no se pega en
-ningún archivo del repo ni en el navegador**:
+Si hay que forzarlo, va por la **API de administración**, que es la forma
+oficial. La `service_role` la sacás de Settings → API, y **no se pega en ningún
+archivo del repo ni en el navegador**:
 
 ```bash
 SUPABASE_URL="https://TU_PROYECTO.supabase.co"
@@ -156,19 +137,13 @@ curl -X PUT "$SUPABASE_URL/auth/v1/admin/users/$USER_ID" \
 > contraseña, la cuenta queda inutilizable y sin aviso. Usalo solo si no te
 > queda otra.
 
-**La excepción:** una cuenta con email de verdad (la tuya) sí puede recuperar
-sola. Desde el dashboard, en la ficha del usuario, **Send password recovery**;
-el link cae en `/gestion/recuperar`, que sigue en pie justo para eso. Que al
-menos un admin tenga email real es lo que evita quedarse afuera del sistema sin
-salida.
-
 ---
 
 ## Cambiar el rol de alguien
 
 ```sql
 update public.profiles set rol = 'admin'
-where  id = (select id from auth.users where email = 'EL_EMAIL_DE_LA_CUENTA');
+where  id = (select id from auth.users where email = 'ACÁ_EL_EMAIL');
 ```
 
 Se aplica cuando la persona vuelve a entrar: el rol se lee al abrir sesión.
@@ -183,7 +158,7 @@ en pie. Se apaga el perfil:
 
 ```sql
 update public.profiles set activo = false
-where  id = (select id from auth.users where email = 'mostrador@interno.lavaderoelpuente.com');
+where  id = (select id from auth.users where email = 'ACÁ_EL_EMAIL');
 ```
 
 La próxima vez que intente entrar, la app le cierra la sesión y le dice que

@@ -22,12 +22,13 @@ convertirlo.
 Lo que se rompe si lo tocás sin mirar:
 
 - **`base: '/gestion/'` en `gestion/vite.config.ts`** manda sobre todo lo demás.
-  De ahí sale `import.meta.env.BASE_URL`, que usa el `basename` del
-  `BrowserRouter` (`gestion/src/App.tsx`). Cambiar la URL es cambiar ese `base`
-  + el `rewrite` de `vercel.json` + el `disallow` de `app/robots.ts`. Y, fuera
-  del repo, la **Site URL / Redirect URLs** del panel de Auth de Supabase: de
-  ahí sale adónde cae un link de recuperar contraseña mandado a mano desde el
-  dashboard, que es lo único que puede llegar a `/gestion/recuperar`.
+  De ahí sale `import.meta.env.BASE_URL`, que usan el `basename` del
+  `BrowserRouter` (`gestion/src/App.tsx`) y el `redirectTo` del mail de
+  recuperar contraseña (`gestion/src/auth/AuthProvider.tsx`). Cambiar la URL es
+  cambiar ese `base` + el `rewrite` de `vercel.json` + el `disallow` de
+  `app/robots.ts`. Y, fuera del repo, las **Redirect URLs** del panel de Auth
+  de Supabase: si `/gestion/recuperar` no está en esa lista blanca, el link del
+  mail se ignora y cae en la Site URL, que es la landing.
 - **El rewrite de `vercel.json`** es lo único que hace que un F5 en
   `/gestion/ordenes` no caiga en el 404 de la landing. No se puede poner en
   `next.config.mjs`: `rewrites` no existe con `output: 'export'`. Y no se ve
@@ -197,28 +198,18 @@ Las cuentas se dan de alta a mano en el dashboard de Supabase: el
 procedimiento, el cambio de rol y la baja están en
 [`gestion/supabase/USUARIOS.md`](./gestion/supabase/USUARIOS.md).
 
-**El mostrador entra con un usuario, no con un email.** Nadie ahí tiene
-casilla, y escribir una dirección entera con un cliente esperando es tiempo
-perdido. Pero Supabase Auth exige formato de email para el login con
-contraseña, así que la cuenta se llama `mostrador` y por debajo viaja como
-`mostrador@interno.lavaderoelpuente.com`: subdominio propio y sin MX, elegido
-por encima de un `.local` inventado, que es un TLD reservado por RFC 6762 para
-otra cosa. La conversión vive en un solo lugar,
-[`gestion/src/lib/usuarios.ts`](./gestion/src/lib/usuarios.ts).
+**Toda cuenta entra con un email real, incluida la del mostrador**, que usa la
+casilla del negocio. Es a propósito y es lo que mantiene el sistema sin dueño
+único: con una casilla detrás, cualquiera se repone la contraseña solo con
+"Olvidé mi contraseña" y nadie depende de que el admin esté disponible.
 
-**Los admins, en cambio, entran con su email de verdad**, y eso es a propósito:
-una cuenta interna no puede recuperar su contraseña sola, así que si todas
-fueran internas quien administra queda como único punto de falla del sistema.
-Los dos formatos conviven en el mismo campo porque `emailDeUsuario()` deja
-pasar tal cual lo que ya trae arroba — eso también es lo que mantiene vivas las
-cuentas viejas, creadas cuando el identificador era el email.
-
-De ahí se desprende lo que **no** hay que reponer: el botón de "Olvidé mi
-contraseña" en `Login.tsx`. Para una cuenta interna ese mail se manda a la
-nada, y un botón que no puede funcionar es peor que ninguno. La contraseña la
-repone un admin (está en `USUARIOS.md`). `/recuperar` sigue en pie, pero solo
-lo alcanza un link mandado a mano desde el dashboard — para las cuentas que sí
-tienen email.
+Hubo una versión con usuarios sin email (`mostrador`, con un dominio interno
+pegado por código) para no tipear una dirección entera en el mostrador. Se
+descartó: **el precio era perder la recuperación por correo**, que convierte
+cada olvido en una intervención manual con la `service_role` en la mano. Si
+alguna vez vuelve a hacer falta, está en el historial —
+`git log --diff-filter=D -- gestion/src/lib/usuarios.ts`— pero la contrapartida
+es esa y no cambió.
 
 El operador trabaja **sobre la orden que tiene enfrente**; el archivo es de
 admin. Las secciones **Clientes** y **Artículos** —y sus rutas

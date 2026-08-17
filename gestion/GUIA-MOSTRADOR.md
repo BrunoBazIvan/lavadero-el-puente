@@ -204,12 +204,10 @@ no se pierde por esto.
 
 ### No puedo entrar
 
-- El **usuario** va solo, sin arroba y sin nada de mail: si el tuyo es
-  `mostrador`, escribís `mostrador` y nada más
 - Fijate que el usuario y la contraseña sean los tuyos, no los de otro
 - Si dice **"Tu usuario está dado de baja"**, hablá con Bruno
-- Si te olvidaste la contraseña, **no se recupera sola**: pedile a Bruno que te
-  ponga una nueva. Son dos minutos, pero no lo podés hacer vos.
+- Si te olvidaste la contraseña, tocá **Olvidé mi contraseña** en la pantalla
+  de entrada y te llega un link por mail
 
 ### La pantalla dice "Falta configurar la app"
 
