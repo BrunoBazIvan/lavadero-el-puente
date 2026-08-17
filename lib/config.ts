@@ -116,11 +116,11 @@ export const business = {
    * ⚠️ Debe ser SIEMPRE una URL que funcione de verdad: si apunta a un dominio
    * que no existe, WhatsApp y las redes no muestran la vista previa con imagen.
    *
-   * Hoy apunta al dominio de Vercel. Cuando se compre el dominio propio
-   * (ej: https://lavaderoelpuente.uy), cambiar esta línea y conectarlo en
-   * Vercel → Project Settings → Domains.
+   * Va **con `www`** a propósito: el dominio pelado redirige (308) a `www`, así
+   * que ésa es la URL final. Si el canonical apuntara al pelado, cada página
+   * declararía como versión buena una dirección que redirige.
    */
-  domain: 'https://lavadero-el-puente.vercel.app',
+  domain: 'https://www.lavaderoelpuente.com',
 
   /**
    * ⚠️ OPCIONAL — GA4

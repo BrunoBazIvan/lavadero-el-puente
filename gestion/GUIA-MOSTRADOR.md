@@ -2,7 +2,7 @@
 
 Imprimila y dejala al lado de la computadora.
 
-**Dirección del sistema:** `lavadero-el-puente.vercel.app/gestion/`
+**Dirección del sistema:** `www.lavaderoelpuente.com/gestion/`
 
 Cada persona entra con **su propio usuario**. No se comparten: el sistema anota
 quién recibió cada orden, y con un usuario prestado esa información no sirve
