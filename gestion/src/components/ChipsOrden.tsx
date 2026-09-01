@@ -116,7 +116,7 @@ export const ETIQUETA_ESTADO: Record<EstadoOrden, string> = {
 /** El camino que recorre toda orden. Anulada no está: es una salida, no un paso. */
 type PasoOrden = Exclude<EstadoOrden, 'anulado'>;
 
-export const PASOS_ORDEN: PasoOrden[] = ['recibido', 'en_proceso', 'listo', 'entregado'];
+export const PASOS_ORDEN: PasoOrden[] = ['recibido', 'listo', 'entregado'];
 
 const TEXTO_PASO: Record<PasoOrden, { corto: string; largo: string }> = {
   recibido: { corto: 'Recibida', largo: 'La ropa está acá' },
@@ -148,7 +148,10 @@ export function LineaEstado({ estado }: { estado: EstadoOrden }) {
     );
   }
 
-  const actual = PASOS_ORDEN.indexOf(estado);
+  // Una orden vieja que hubiera quedado en "en_proceso" (paso ya sacado del
+  // flujo) se dibuja como si estuviera en "recibido", en vez de sin ningún
+  // paso marcado.
+  const actual = PASOS_ORDEN.indexOf(estado === 'en_proceso' ? 'recibido' : estado);
 
   return (
     // El gap de 1px sobre fondo azul dibuja los filetes compartidos entre celdas.

@@ -11,13 +11,7 @@ import { mensajeDeError } from '@/lib/supabase';
 import { NOMBRE_SERVICIO } from '@/types/database';
 import type { EstadoOrden } from '@/types/database';
 
-const FILTROS: (EstadoOrden | 'todos')[] = [
-  'todos',
-  'recibido',
-  'en_proceso',
-  'listo',
-  'entregado',
-];
+const FILTROS: (EstadoOrden | 'todos')[] = ['todos', 'recibido', 'listo', 'entregado'];
 
 /** Nombres cortos para los botones de filtro: la columna ya dice el estado largo. */
 const ETIQUETA_FILTRO: Record<EstadoOrden | 'todos', string> = {
@@ -70,7 +64,6 @@ export default function Ordenes() {
   /** Cuántas hay en cada filtro. Solo de los estados abiertos: son los que se miran. */
   const cuenta: Partial<Record<EstadoOrden | 'todos', number>> = {
     recibido: resumen?.recibido,
-    en_proceso: resumen?.en_proceso,
     listo: resumen?.listo,
   };
 
