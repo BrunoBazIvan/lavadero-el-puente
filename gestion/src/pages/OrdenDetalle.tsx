@@ -12,7 +12,6 @@ import {
   IconoDinero,
   IconoEntregada,
   IconoImprimir,
-  IconoLavando,
   IconoLista,
   IconoReloj,
   IconoTelefono,
@@ -44,7 +43,7 @@ import { METODOS_PAGO, NOMBRE_METODO_PAGO, NOMBRE_SERVICIO } from '@/types/datab
 import type { EstadoOrden, MetodoPago, OrdenCompleta } from '@/types/database';
 
 /** Estados que se cambian a mano. Anular va aparte, con su confirmación. */
-const ESTADOS_MANUALES: EstadoOrden[] = ['recibido', 'en_proceso', 'listo', 'entregado'];
+const ESTADOS_MANUALES: EstadoOrden[] = ['recibido', 'listo', 'entregado'];
 
 export default function OrdenDetalle() {
   const { ref } = useParams<{ ref: string }>();
@@ -446,15 +445,13 @@ function ProximoPaso({
   const diasEsperando = diasDesde(orden.fecha_retiro_estimada) ?? 0;
   const olvidada = orden.estado === 'listo' && diasEsperando > DIAS_SIN_RETIRAR;
 
+  // Una orden vieja que hubiera quedado en "en_proceso" (paso ya sacado del
+  // flujo) se trata igual que "recibido": el siguiente paso sigue siendo
+  // marcarla lista, no un estado intermedio que ya no se ofrece.
+  const clave = orden.estado === 'en_proceso' ? 'recibido' : orden.estado;
+
   const contenido = {
     recibido: {
-      pregunta: '¿Ya la pusiste a lavar?',
-      detalle: 'La ropa está acá y todavía no se tocó.',
-      accion: 'Empezar a lavar',
-      Icono: IconoLavando,
-      destino: 'en_proceso' as EstadoOrden,
-    },
-    en_proceso: {
       pregunta: '¿Ya está pronta la ropa?',
       detalle: 'Al marcarla lista te va a pedir el monto: es el momento de ponerle precio.',
       accion: 'Marcar lista para retirar',
@@ -473,7 +470,7 @@ function ProximoPaso({
       Icono: IconoEntregada,
       destino: 'entregado' as EstadoOrden,
     },
-  }[orden.estado];
+  }[clave as 'recibido' | 'listo'];
 
   const { pregunta, detalle, accion, Icono, destino } = contenido;
 

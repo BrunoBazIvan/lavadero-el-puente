@@ -16,7 +16,6 @@ Arriba de todo, abajo del menú, hay una **fila de números**. Es lo que hay
 pendiente en el lavadero ahora mismo:
 
 - **Sin empezar** — ropa que entró y todavía no se tocó
-- **En proceso** — se está lavando
 - **Listas para retirar** — prontas, esperando que venga el cliente
 - **Sin retirar hace +7 días** — aparece en naranja solo cuando hay. Esas hay
   que llamarlas.
@@ -89,17 +88,16 @@ Si sale uno solo, la impresora cortó de más: la copia sigue en el rollo.
 
 ## La orden por dentro
 
-Cuando abrís una orden, arriba de todo ves **por dónde va**: Recibida → En
-proceso → Lista → Entregada. El paso donde está ahora queda pintado de azul y
-los que ya pasaron tienen un tilde verde.
+Cuando abrís una orden, arriba de todo ves **por dónde va**: Recibida → Lista
+→ Entregada. El paso donde está ahora queda pintado de azul y los que ya
+pasaron tienen un tilde verde.
 
 Abajo de eso hay un **recuadro azul con una pregunta y un botón verde grande**.
 Ese botón es siempre lo que toca hacer ahora — no hay que buscar nada más:
 
 | Si la orden está… | El botón dice |
 |---|---|
-| Recibida | Empezar a lavar |
-| En proceso | Marcar lista para retirar |
+| Recibida | Marcar lista para retirar |
 | Lista | El cliente se la llevó |
 
 Si una orden quedó en el estado equivocado, abajo del todo hay **"¿Quedó en el

@@ -5,7 +5,6 @@ import {
   IconoAlerta,
   IconoArticulos,
   IconoClientes,
-  IconoLavando,
   IconoLista,
   IconoOrdenes,
   IconoRecibida,
@@ -138,12 +137,6 @@ function BarraPendientes() {
               icono={IconoRecibida}
               etiqueta="Sin empezar"
               cantidad={data.recibido}
-            />
-            <CeldaPendiente
-              a="/ordenes?estado=en_proceso"
-              icono={IconoLavando}
-              etiqueta="En proceso"
-              cantidad={data.en_proceso}
             />
             <CeldaPendiente
               a="/ordenes?estado=listo"
