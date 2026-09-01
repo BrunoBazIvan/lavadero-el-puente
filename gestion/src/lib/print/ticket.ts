@@ -148,8 +148,6 @@ function papelCliente(orden: OrdenCompleta, config: Configuracion): string {
 <pre class="destacado">${escapar(envolver(guarda).join('\n'))}</pre>`
     : '';
 
-  const leyenda = config.leyenda_ticket || 'Presentá este comprobante para retirar tus prendas.';
-
   return `<div class="papel">
 <img class="logo" src="${LOGO_TICKET}" alt="">
 <pre>${escapar(cuerpo.join('\n'))}</pre>
@@ -162,9 +160,6 @@ ${bloqueContacto(orden, 'Revisá que el teléfono esté bien')}
 <pre>${separador()}</pre>
 <div class="retiro"><span>RETIRO ESTIMADO</span>${escapar(fecha(orden.fecha_retiro_estimada))}</div>
 ${bloqueGuarda}
-<pre>${separador()}</pre>
-<pre class="leyenda">${escapar(envolver(leyenda).join('\n'))}</pre>
-<pre class="leyenda">¡Gracias!</pre>
 <div class="corte"></div>
 </div>`;
 }
