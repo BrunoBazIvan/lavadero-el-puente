@@ -236,6 +236,15 @@ export function IconoDinero(p: Props) {
   );
 }
 
+export function IconoAnalitica(p: Props) {
+  return (
+    <Trazo {...p}>
+      <path d="M3.5 20.5h17" />
+      <path d="M6 20.5V13M12 20.5V6.5M18 20.5v-9" />
+    </Trazo>
+  );
+}
+
 export function IconoTelefono(p: Props) {
   return (
     <Trazo {...p}>

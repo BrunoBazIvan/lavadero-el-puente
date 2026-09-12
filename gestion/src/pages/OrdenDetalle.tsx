@@ -10,17 +10,20 @@ import {
   IconoAnular,
   IconoCheck,
   IconoDinero,
+  IconoEditar,
   IconoEntregada,
   IconoImprimir,
   IconoLista,
   IconoReloj,
   IconoTelefono,
   IconoWhatsapp,
+  IconoX,
 } from '@/components/Iconos';
 import { useToast } from '@/components/Toaster';
 import { useAuth } from '@/auth/AuthProvider';
 import {
   DIAS_SIN_RETIRAR,
+  useActualizarNota,
   useAnularOrden,
   useCambiarEstadoOrden,
   useEntregarOrden,
@@ -53,6 +56,7 @@ export default function OrdenDetalle() {
   const { data: orden, isPending, error, refetch } = useOrden(ref);
   const { data: config } = useConfiguracion();
   const cambiarEstado = useCambiarEstadoOrden();
+  const actualizarNota = useActualizarNota();
   const { imprimir } = useImprimir();
   const [anularAbierto, setAnularAbierto] = useState(false);
   /** null = cerrado. Si no, dice para qué se abrió el cuadro del monto. */
@@ -60,6 +64,8 @@ export default function OrdenDetalle() {
   const [entregaAbierta, setEntregaAbierta] = useState(false);
   const [pagoAbierto, setPagoAbierto] = useState(false);
   const [imprimiendo, setImprimiendo] = useState(false);
+  const [notaEditando, setNotaEditando] = useState(false);
+  const [notaTexto, setNotaTexto] = useState('');
 
   if (isPending) {
     return (
@@ -123,6 +129,21 @@ export default function OrdenDetalle() {
     if (estado === 'listo') return setMontoAbierto('listo');
     if (estado === 'entregado') return setEntregaAbierta(true);
     void cambiar(estado);
+  };
+
+  const editarNota = () => {
+    setNotaTexto(orden.notas ?? '');
+    setNotaEditando(true);
+  };
+
+  const guardarNota = async () => {
+    try {
+      await actualizarNota.mutateAsync({ id: orden.id, notas: notaTexto });
+      setNotaEditando(false);
+      toast.ok('Nota guardada.');
+    } catch {
+      // El toast lo muestra el manejador global de React Query.
+    }
   };
 
   const reimprimir = async () => {
@@ -349,14 +370,52 @@ export default function OrdenDetalle() {
           </section>
 
           {/* ── Notas ──────────────────────────────────────────────────── */}
-          {orden.notas && (
-            <section className="panel p-4">
+          <section className="panel p-4">
+            <div className="flex items-center justify-between gap-3">
               <h2 className="eyebrow">Notas</h2>
+              {!cerrada && !notaEditando && (
+                <button type="button" className="btn-ghost px-3 text-sm" onClick={editarNota}>
+                  <IconoEditar size={16} />
+                  Editar
+                </button>
+              )}
+            </div>
+
+            {notaEditando ? (
+              <div className="mt-2 space-y-2">
+                <textarea
+                  className="field min-h-[6rem]"
+                  value={notaTexto}
+                  onChange={(e) => setNotaTexto(e.target.value)}
+                  autoFocus
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setNotaEditando(false)}
+                    disabled={actualizarNota.isPending}
+                  >
+                    <IconoX size={16} />
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => void guardarNota()}
+                    disabled={actualizarNota.isPending}
+                  >
+                    {actualizarNota.isPending ? <Spinner size={16} /> : <IconoCheck size={16} />}
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            ) : (
               <p className="mt-2 whitespace-pre-line text-[0.9375rem] leading-relaxed text-slate-700">
-                {orden.notas}
+                {orden.notas || <span className="text-slate-400">Sin notas.</span>}
               </p>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* ── Corregir el estado ─────────────────────────────────────────
               Va plegado y al final: mover una orden para atrás es la
@@ -534,10 +593,10 @@ function armarMensaje(orden: OrdenCompleta, negocio: string | undefined): string
 
   if (orden.estado === 'listo') {
     const cuanto = orden.saldo > 0 ? ` Son ${moneda(orden.saldo)}.` : '';
-    return `Hola ${nombre}, te escribimos de ${casa}. Tu pedido ${orden.ref} ya está pronto para retirar.${cuanto} Te esperamos.`;
+    return `Hola ${nombre}! Cómo estás? Te escribimos de ${casa}. Tu pedido ${orden.ref} ya está pronto para retirar.${cuanto} Te esperamos, saludos`;
   }
 
-  return `Hola ${nombre}, te escribimos de ${casa} por tu pedido ${orden.ref}.`;
+  return `Hola ${nombre}! Cómo estás? Te escribimos de ${casa} por tu pedido ${orden.ref}.`;
 }
 
 /* ── Plata ────────────────────────────────────────────────────────────────── */

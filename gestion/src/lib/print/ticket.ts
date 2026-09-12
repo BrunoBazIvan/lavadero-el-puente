@@ -8,9 +8,10 @@ import { fecha, fechaHora, moneda, telefono as formatearTelefono } from '@/lib/f
  * Los dos papeles que salen al recibir una orden:
  *
  *  1. El comprobante del cliente, con todo lo que recibimos y las condiciones.
- *  2. El talón del lavadero, que va con la bolsa: referencia, nombre y
- *     teléfono, nada más. Es el papel que se mira cuando alguien llama o
- *     cuando hay que ubicar una bolsa sin cliente delante.
+ *  2. El talón del lavadero, que va con la bolsa: nombre, teléfono y
+ *     referencia, nada más, con el nombre destacado. Es el papel que se mira
+ *     cuando alguien llama o cuando hay que ubicar una bolsa sin cliente
+ *     delante, y se busca más por nombre que por comprobante.
  *
  * Salen en un solo documento, separados por un salto de página, y no en dos
  * llamadas a `print()`: con `--kiosk-printing` la segunda llamada compite con
@@ -176,13 +177,18 @@ ${bloqueGuarda}
 function papelLavadero(orden: OrdenCompleta): string {
   // El `respiro` de arriba no es adorno: el padding del body solo vale para la
   // primera página, así que sin él este talón arranca pegado al corte.
-  return `<div class="papel">
+  //
+  // Acá el nombre va primero y más grande que el número (clase `.talon`, que
+  // invierte los tamaños de `.contacto .nombre` y `.ref`): a este papel se lo
+  // mira para ubicar una bolsa entre veinte, y se busca más por nombre que
+  // por comprobante.
+  return `<div class="papel talon">
 <div class="respiro"></div>
 <pre class="destacado">${centrar('COPIA LAVADERO')}</pre>
 <pre>${separador()}</pre>
-<div class="ref">${escapar(orden.ref)}</div>
-<pre>${separador()}</pre>
 ${bloqueContacto(orden)}
+<pre>${separador()}</pre>
+<div class="ref">${escapar(orden.ref)}</div>
 <pre>${separador()}</pre>
 <div class="corte"></div>
 </div>`;
@@ -255,6 +261,12 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
   .contacto .nombre { font-size: 15px; font-weight: bold; }
   .contacto .tel { font-size: 17px; font-weight: bold; letter-spacing: 1px; }
   .contacto .aviso { font-size: 10px; }
+
+  /* En la copia del lavadero se busca la bolsa por nombre más que por
+     comprobante: acá el nombre sale más grande que el número, al revés que
+     en el comprobante del cliente. */
+  .talon .contacto .nombre { font-size: 26px; letter-spacing: 1px; }
+  .talon .ref { font-size: 15px; letter-spacing: 1px; }
 
   .leyenda { text-align: center; }
 

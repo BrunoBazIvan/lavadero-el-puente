@@ -221,6 +221,29 @@ export function useGuardarMonto() {
   });
 }
 
+/**
+ * Corregir la nota de la orden. Sin chequeo de rol: cualquiera del mostrador
+ * la puede editar, igual que la puede cargar al recibir la ropa. Como
+ * cualquier otro update de `ordenes`, la base lo rechaza solo si la orden ya
+ * está `entregado` o `anulado` (`guard_orden_update`).
+ */
+export function useActualizarNota() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, notas }: { id: string; notas: string }): Promise<Orden> => {
+      const { data, error } = await supabase
+        .from('ordenes')
+        .update({ notas: notas.trim() || null })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
 /** Un cobro suelto: una seña, o el resto de una orden que quedó a medias. */
 export function useRegistrarPago() {
   const qc = useQueryClient();
@@ -313,5 +336,86 @@ export function useAnularOrden() {
       return data;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
+/* ── Analíticas del mes (solo admin) ──────────────────────────────────────── */
+
+/** Primer día del mes que contiene `fecha`, a medianoche local. */
+function inicioDeMes(fecha: Date): Date {
+  return new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+}
+
+export interface ResumenMes {
+  /** Arranque del mes en curso, para mostrar "Setiembre 2026" y similares. */
+  inicioMes: Date;
+  /** Todas las órdenes del mes en curso, sin el `limit(100)` del listado. */
+  ordenes: OrdenVista[];
+  /** Suma de `total` de las órdenes no anuladas del mes en curso. */
+  montoMes: number;
+  /** Cuántas órdenes hay en cada estado, dentro del mes en curso. */
+  porEstado: Record<EstadoOrden, number>;
+  /** Suma de `total` de las órdenes no anuladas del mes anterior, para comparar. */
+  montoMesAnterior: number;
+}
+
+/**
+ * El mes completo para la pestaña de Analíticas.
+ *
+ * Trae `v_ordenes` por rango de `fecha_ingreso` (no por `limit`, como el
+ * listado del mostrador) y agrega en el cliente, mismo criterio que
+ * `useResumenPendientes`: son a lo sumo un par de cientos de filas por mes,
+ * no hace falta una RPC de agregación en la base.
+ */
+export function useResumenMes() {
+  return useQuery({
+    queryKey: ['ordenes', 'resumen-mes'],
+    queryFn: async (): Promise<ResumenMes> => {
+      const ahora = new Date();
+      const inicioMes = inicioDeMes(ahora);
+      const inicioMesSiguiente = inicioDeMes(new Date(ahora.getFullYear(), ahora.getMonth() + 1, 1));
+      const inicioMesAnterior = inicioDeMes(new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1));
+
+      const [actual, anterior] = await Promise.all([
+        supabase
+          .from('v_ordenes')
+          .select('id, ref, cliente_nombre, estado, fecha_ingreso, monto, descuento, total')
+          .gte('fecha_ingreso', inicioMes.toISOString())
+          .lt('fecha_ingreso', inicioMesSiguiente.toISOString())
+          .order('fecha_ingreso', { ascending: false }),
+        supabase
+          .from('v_ordenes')
+          .select('estado, total')
+          .gte('fecha_ingreso', inicioMesAnterior.toISOString())
+          .lt('fecha_ingreso', inicioMes.toISOString()),
+      ]);
+      if (actual.error) throw actual.error;
+      if (anterior.error) throw anterior.error;
+
+      const ordenes = (actual.data ?? []) as OrdenVista[];
+      const filasAnterior = (anterior.data ?? []) as Pick<OrdenVista, 'estado' | 'total'>[];
+
+      const sumarNoAnuladas = (filas: Pick<OrdenVista, 'estado' | 'total'>[]) =>
+        filas
+          .filter((o) => o.estado !== 'anulado')
+          .reduce((acc, o) => acc + o.total, 0);
+
+      const porEstado: Record<EstadoOrden, number> = {
+        recibido: 0,
+        en_proceso: 0,
+        listo: 0,
+        entregado: 0,
+        anulado: 0,
+      };
+      for (const o of ordenes) porEstado[o.estado]++;
+
+      return {
+        inicioMes,
+        ordenes,
+        montoMes: sumarNoAnuladas(ordenes),
+        porEstado,
+        montoMesAnterior: sumarNoAnuladas(filasAnterior),
+      };
+    },
   });
 }
