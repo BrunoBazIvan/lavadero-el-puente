@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { useAuth } from '@/auth/AuthProvider';
 import {
   IconoAlerta,
+  IconoAnalitica,
   IconoArticulos,
   IconoClientes,
   IconoLista,
@@ -28,6 +29,7 @@ const NAV: ItemNav[] = [
   { to: '/ordenes', texto: 'Órdenes', icono: IconoOrdenes },
   { to: '/clientes', texto: 'Clientes', icono: IconoClientes, soloAdmin: true },
   { to: '/articulos', texto: 'Artículos', icono: IconoArticulos, soloAdmin: true },
+  { to: '/analiticas', texto: 'Analíticas', icono: IconoAnalitica, soloAdmin: true },
 ];
 
 export function Layout() {

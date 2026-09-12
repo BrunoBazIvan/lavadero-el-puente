@@ -17,6 +17,7 @@ import TicketImpresion from '@/pages/TicketImpresion';
 import Clientes from '@/pages/Clientes';
 import ClienteDetalle from '@/pages/ClienteDetalle';
 import Articulos from '@/pages/Articulos';
+import Analiticas from '@/pages/Analiticas';
 
 /**
  * React Query con un manejo de errores global: cualquier consulta o mutación
@@ -93,6 +94,7 @@ export default function App() {
                   <Route path="clientes" element={<Clientes />} />
                   <Route path="clientes/:id" element={<ClienteDetalle />} />
                   <Route path="articulos" element={<Articulos />} />
+                  <Route path="analiticas" element={<Analiticas />} />
                 </Route>
               </Route>
 
