@@ -49,9 +49,9 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-industrial-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Lavandería industrial',
-    metaTitle: 'Lavandería industrial en Maldonado | El Puente',
+    metaTitle: 'Lavandería para Hoteles y Empresas | Maldonado',
     metaDescription:
-      'Lavandería industrial para hoteles, apart y restaurantes de Maldonado y Punta del Este. Ropa blanca impecable y cumplimiento en temporada alta.',
+      'Lavandería industrial para hoteles, apart y restaurantes de Maldonado y Punta del Este. Volumen alto en temporada y facturación a empresa.',
     primaryKeyword: 'lavandería industrial Maldonado',
     h1: 'Lavandería industrial en Maldonado y Punta del Este',
     intro:
@@ -410,9 +410,9 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-punta-del-este',
     kind: 'zona',
     breadcrumbLabel: 'Punta del Este',
-    metaTitle: 'Lavandería en Punta del Este | El Puente',
+    metaTitle: 'Lavandería en Punta del Este | Retiro a Domicilio',
     metaDescription:
-      'Lavandería y lavadero en Punta del Este: ropa, acolchados, cortinas y ropa blanca, con retiro y entrega. Servicio todo el año. Escribinos por WhatsApp.',
+      'Lavadero en Punta del Este con retiro y entrega a domicilio, todo el año. Ropa, acolchados, cortinas y ropa blanca. Escribinos por WhatsApp.',
     primaryKeyword: 'lavandería Punta del Este',
     h1: 'Lavandería en Punta del Este',
     intro:
@@ -460,9 +460,9 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-la-barra-manantiales-jose-ignacio',
     kind: 'zona',
     breadcrumbLabel: 'La Barra · José Ignacio',
-    metaTitle: 'Lavandería en La Barra, Manantiales y José Ignacio',
+    metaTitle: 'Lavadero para La Barra, Manantiales y José Ignacio',
     metaDescription:
-      'Lavadero con retiro y entrega en La Barra, Manantiales y José Ignacio. Ropa blanca para apart y alojamientos, más los textiles de tu casa.',
+      'Lavadero para casas, aparts y alojamientos de La Barra, Manantiales y José Ignacio: ropa blanca y acolchados, con retiro a domicilio. Escribinos.',
     primaryKeyword: 'lavandería La Barra',
     h1: 'Lavandería en La Barra, Manantiales y José Ignacio',
     intro:

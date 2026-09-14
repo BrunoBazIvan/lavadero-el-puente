@@ -43,7 +43,7 @@ export default function ServicesBusiness() {
                 href="/lavanderia-industrial-maldonado/"
                 className="group inline-flex items-center gap-2 whitespace-nowrap font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-200 transition-colors hover:text-white"
               >
-                Ver lavandería industrial
+                Ver lavandería para hoteles
                 <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-1" />
               </Link>
             </div>

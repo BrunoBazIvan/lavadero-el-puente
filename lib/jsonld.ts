@@ -22,6 +22,7 @@ export function localBusinessJsonLd() {
     '@type': 'DryCleaningOrLaundry',
     '@id': businessId,
     name: business.name,
+    inLanguage: 'es-UY',
     image: `${business.domain}/og.png`,
     logo: `${business.domain}/android-chrome-512x512.png`,
     url: `${business.domain}/`,
