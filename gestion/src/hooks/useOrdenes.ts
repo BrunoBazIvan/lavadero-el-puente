@@ -346,21 +346,31 @@ function inicioDeMes(fecha: Date): Date {
   return new Date(fecha.getFullYear(), fecha.getMonth(), 1);
 }
 
+/** Quién más facturó en el mes (por `total`, no por lo ya cobrado: es "quién nos dejó más trabajo", no un corte de caja). */
+export interface MejorCliente {
+  clienteId: string;
+  nombre: string;
+  total: number;
+  cantidadOrdenes: number;
+}
+
 export interface ResumenMes {
   /** Arranque del mes en curso, para mostrar "Setiembre 2026" y similares. */
   inicioMes: Date;
-  /** Todas las órdenes del mes en curso, sin el `limit(100)` del listado. */
-  ordenes: OrdenVista[];
   /**
    * Suma de `pagado` (no de `total`) de las órdenes no anuladas del mes en
    * curso: una orden en "listo" ya tiene precio pero puede seguir sin
    * cobrarse, y contarla por su `total` mostraría plata que todavía no entró.
    */
   cobradoMes: number;
+  /** Suma de `saldo` de las órdenes no anuladas del mes: lo que falta cobrar. */
+  aCobrarMes: number;
   /** Cuántas órdenes hay en cada estado, dentro del mes en curso. */
   porEstado: Record<EstadoOrden, number>;
   /** Suma de `pagado` de las órdenes no anuladas del mes anterior, para comparar. */
   cobradoMesAnterior: number;
+  /** Null si ninguna orden del mes tiene monto cargado todavía. */
+  mejorCliente: MejorCliente | null;
 }
 
 /**
@@ -369,7 +379,8 @@ export interface ResumenMes {
  * Trae `v_ordenes` por rango de `fecha_ingreso` (no por `limit`, como el
  * listado del mostrador) y agrega en el cliente, mismo criterio que
  * `useResumenPendientes`: son a lo sumo un par de cientos de filas por mes,
- * no hace falta una RPC de agregación en la base.
+ * no hace falta una RPC de agregación en la base. No se expone el listado de
+ * órdenes: para eso ya está la pantalla de Órdenes con sus filtros.
  */
 export function useResumenMes() {
   return useQuery({
@@ -383,10 +394,9 @@ export function useResumenMes() {
       const [actual, anterior] = await Promise.all([
         supabase
           .from('v_ordenes')
-          .select('id, ref, cliente_nombre, estado, fecha_ingreso, monto, descuento, total, pagado')
+          .select('cliente_id, cliente_nombre, estado, total, pagado, saldo')
           .gte('fecha_ingreso', inicioMes.toISOString())
-          .lt('fecha_ingreso', inicioMesSiguiente.toISOString())
-          .order('fecha_ingreso', { ascending: false }),
+          .lt('fecha_ingreso', inicioMesSiguiente.toISOString()),
         supabase
           .from('v_ordenes')
           .select('estado, pagado')
@@ -396,8 +406,13 @@ export function useResumenMes() {
       if (actual.error) throw actual.error;
       if (anterior.error) throw anterior.error;
 
-      const ordenes = (actual.data ?? []) as OrdenVista[];
+      type FilaMes = Pick<
+        OrdenVista,
+        'cliente_id' | 'cliente_nombre' | 'estado' | 'total' | 'pagado' | 'saldo'
+      >;
+      const ordenes = (actual.data ?? []) as FilaMes[];
       const filasAnterior = (anterior.data ?? []) as Pick<OrdenVista, 'estado' | 'pagado'>[];
+      const noAnuladas = ordenes.filter((o) => o.estado !== 'anulado');
 
       const sumarCobrado = (filas: Pick<OrdenVista, 'estado' | 'pagado'>[]) =>
         filas
@@ -413,12 +428,29 @@ export function useResumenMes() {
       };
       for (const o of ordenes) porEstado[o.estado]++;
 
+      const porCliente = new Map<string, MejorCliente>();
+      for (const o of noAnuladas) {
+        if (o.total <= 0) continue; // orden todavía sin monto: no cuenta para el ranking
+        const previo = porCliente.get(o.cliente_id);
+        porCliente.set(o.cliente_id, {
+          clienteId: o.cliente_id,
+          nombre: o.cliente_nombre,
+          total: (previo?.total ?? 0) + o.total,
+          cantidadOrdenes: (previo?.cantidadOrdenes ?? 0) + 1,
+        });
+      }
+      let mejorCliente: MejorCliente | null = null;
+      for (const c of porCliente.values()) {
+        if (!mejorCliente || c.total > mejorCliente.total) mejorCliente = c;
+      }
+
       return {
         inicioMes,
-        ordenes,
-        cobradoMes: sumarCobrado(ordenes),
+        cobradoMes: sumarCobrado(noAnuladas),
+        aCobrarMes: noAnuladas.reduce((acc, o) => acc + o.saldo, 0),
         porEstado,
         cobradoMesAnterior: sumarCobrado(filasAnterior),
+        mejorCliente,
       };
     },
   });
