@@ -161,6 +161,7 @@ export const waMessages = {
   location: 'Hola! Quiero consultar por los servicios del lavadero.',
   footer: 'Hola! Quiero hacer una consulta al lavadero.',
   faq: 'Hola! Tengo una consulta sobre los servicios del lavadero.',
+  legal: 'Hola! Tengo una consulta sobre las condiciones o las políticas del lavadero.',
   /** Genera el mensaje para una tarjeta de servicio concreto. */
   service: (servicio: string) => `Hola! Quiero consultar por ${servicio}.`,
 } as const;

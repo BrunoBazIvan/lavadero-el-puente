@@ -28,7 +28,7 @@ export default function ServicesHome() {
             <Reveal key={s.slug} delay={(i % 3) * 70} className="matrix-cell">
               <ServiceCardLink pageSlug={s.pageSlug} title={s.title}>
                 <div className="flex items-start justify-between gap-4">
-                  <span className="tnum font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-500">
+                  <span className="tnum font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-600">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <ServiceIcon

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { business } from '@/lib/config';
 import { landingPages } from '@/lib/landingPages';
+import { legalPages } from '@/lib/legalContent';
 
 export const dynamic = 'force-static';
 
@@ -27,5 +28,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.5,
     },
+    // Páginas legales: de referencia, no de conversión.
+    ...legalPages.map((p) => ({
+      url: `${business.domain}/${p.slug}/`,
+      lastModified: now,
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    })),
   ];
 }

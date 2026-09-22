@@ -20,6 +20,7 @@ export type WhatsAppSource =
   | 'location'
   | 'faq'
   | 'sobre_nosotros'
+  | 'legal'
   | `servicio_${string}`;
 
 function track(event: string, params: Record<string, unknown> = {}): void {

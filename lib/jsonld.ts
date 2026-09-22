@@ -87,8 +87,8 @@ export function serviceJsonLd(page: LandingPage) {
   };
 }
 
-/** JSON-LD BreadcrumbList (Inicio › Página). */
-export function breadcrumbJsonLd(page: LandingPage) {
+/** JSON-LD BreadcrumbList (Inicio › Página). Acepta cualquier página con slug + breadcrumbLabel, no solo LandingPage. */
+export function breadcrumbJsonLd(page: Pick<LandingPage, 'slug' | 'breadcrumbLabel'>) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
