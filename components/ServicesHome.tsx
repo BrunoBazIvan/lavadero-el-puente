@@ -17,8 +17,9 @@ export default function ServicesHome() {
             <h2 className="h2 mt-6">Servicios para tu hogar</h2>
           </div>
           <p className="text-base leading-relaxed text-brand-600 lg:col-span-5 lg:pb-2">
-            Limpieza de acolchados, cortinas y alfombras en Maldonado, más lavado de ropa,
-            planchado y secado. Tocá el servicio que necesitás y coordinamos por WhatsApp.
+            Limpieza de acolchados, cortinas, alfombras, sillones y colchones en Maldonado, más
+            lavado de ropa, planchado y secado. Tocá el servicio que necesitás y coordinamos por
+            WhatsApp.
           </p>
         </Reveal>
 
@@ -48,8 +49,11 @@ export default function ServicesHome() {
           ))}
 
           {/* La celda libre de la matriz es el CTA: cierra la retícula en vez
-              de dejar un hueco, y evita el botón centrado suelto. */}
-          <Reveal delay={210} className="matrix-cell">
+              de dejar un hueco, y evita el botón centrado suelto. Con 7
+              servicios, la última fila en lg (3 columnas) llega con 1 celda
+              suelta, así que el CTA ocupa las 2 que faltan para cerrarla; en
+              sm (2 columnas) ya cierra solo, sin span extra. */}
+          <Reveal delay={210} className="matrix-cell lg:col-span-2">
             <div className="flex h-full items-center justify-center bg-brand-50/70 p-7 sm:p-8">
               <WhatsAppButton
                 source="servicio_general"

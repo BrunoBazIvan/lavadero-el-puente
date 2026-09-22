@@ -301,12 +301,114 @@ export const landingPages: LandingPage[] = [
       },
     ],
     relatedSlugs: [
-      'lavado-de-cortinas-maldonado',
+      'limpieza-de-sillones-maldonado',
+      'limpieza-de-colchones-maldonado',
       'limpieza-de-acolchados-maldonado',
-      'retiro-y-entrega-a-domicilio-maldonado',
     ],
     waMessage: waMessages.service('la limpieza de alfombras y tapizados'),
     serviceType: 'Limpieza de alfombras',
+  },
+  {
+    slug: 'limpieza-de-sillones-maldonado',
+    kind: 'servicio',
+    breadcrumbLabel: 'Limpieza de sillones',
+    metaTitle: 'Limpieza de sillones a domicilio | Maldonado',
+    metaDescription:
+      'Limpieza de sillones y tapizados a domicilio en Maldonado y Punta del Este, con equipo de inyección y extracción. Sin moverlos. Escribinos.',
+    primaryKeyword: 'limpieza de sillones Maldonado',
+    h1: 'Limpieza de sillones a domicilio en Maldonado',
+    intro:
+      'Limpieza profesional de sillones, sillones de living y sillas tapizadas con equipo de inyección y extracción. Vamos a tu casa u oficina en Maldonado y Punta del Este: no hace falta que muevas ni retires nada.',
+    sections: [
+      {
+        h2: 'El equipo va a tu casa',
+        body: [
+          'Trabajamos con una máquina de inyección y extracción: inyecta agua y detergente en la fibra del tapizado y después la extrae junto con la suciedad, sin empapar el mueble.',
+        ],
+      },
+      {
+        h2: 'Según el tipo de tela',
+        body: [
+          'Género, pana, símil cuero o microfibra llevan cada uno su proceso. Contanos el material del sillón y te decimos qué esperar antes de coordinar la visita.',
+        ],
+      },
+      {
+        h2: 'Cómo coordinamos la visita',
+        body: [
+          `Escribinos por WhatsApp, contanos cuántos sillones o sillas tenés y coordinamos día y horario en ${zonas}.`,
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: '¿Tengo que sacar el sillón de mi casa?',
+        a: 'No. Vamos con el equipo hasta tu casa u oficina y lo limpiamos en el lugar, sin moverlo.',
+      },
+      {
+        q: '¿Cuánto tarda en secar?',
+        a: 'Depende de la tela y la ventilación del ambiente. Te contamos el tiempo estimado cuando coordinamos la visita por WhatsApp.',
+      },
+      {
+        q: '¿Limpian sillas y sillones de todo tipo de tela?',
+        a: 'Sí, adaptamos el proceso según el tapizado: género, pana, símil cuero o microfibra. Contanos el material y te asesoramos antes de coordinar.',
+      },
+    ],
+    relatedSlugs: [
+      'limpieza-de-colchones-maldonado',
+      'limpieza-de-alfombras-maldonado',
+    ],
+    waMessage: waMessages.service('la limpieza de sillones y tapizados a domicilio'),
+    serviceType: 'Limpieza de sillones',
+  },
+  {
+    slug: 'limpieza-de-colchones-maldonado',
+    kind: 'servicio',
+    breadcrumbLabel: 'Limpieza de colchones',
+    metaTitle: 'Limpieza de colchones a domicilio | Maldonado',
+    metaDescription:
+      'Limpieza de colchones a domicilio en Maldonado y Punta del Este, con equipo de inyección y extracción que saca polvo y ácaros. Escribinos.',
+    primaryKeyword: 'limpieza de colchones Maldonado',
+    h1: 'Limpieza de colchones a domicilio en Maldonado',
+    intro:
+      'Limpieza profunda de colchones en tu casa, con equipo de inyección y extracción. Sacamos el polvo y los ácaros acumulados sin necesidad de mover el colchón de la habitación.',
+    sections: [
+      {
+        h2: 'Por qué limpiar el colchón',
+        body: [
+          'El colchón acumula polvo, ácaros y transpiración durante años sin que se note a simple vista. La limpieza profunda ayuda a descansar mejor, sobre todo si hay alergias en casa.',
+        ],
+      },
+      {
+        h2: 'Cómo trabajamos',
+        body: [
+          'Inyectamos agua y detergente en la tela del colchón y lo extraemos con la misma máquina, arrastrando la suciedad acumulada. El colchón queda en su lugar en todo momento.',
+        ],
+      },
+      {
+        h2: 'Coordiná la visita',
+        body: [`Escribinos por WhatsApp y coordinamos día y horario en ${zonas}.`],
+      },
+    ],
+    faq: [
+      {
+        q: '¿Se moja mucho el colchón?',
+        a: 'El proceso de inyección y extracción deja la tela apenas húmeda, no empapada. Te contamos el tiempo de secado según la tela y la ventilación al coordinar la visita.',
+      },
+      {
+        q: '¿Sirve para manchas viejas?',
+        a: 'Contanos qué tipo de mancha es y hace cuánto está, y te decimos con qué resultado podés contar antes de coordinar la visita.',
+      },
+      {
+        q: '¿Tengo que sacar el colchón de la habitación?',
+        a: 'No, vamos con el equipo y lo limpiamos en el lugar donde está.',
+      },
+    ],
+    relatedSlugs: [
+      'limpieza-de-sillones-maldonado',
+      'limpieza-de-alfombras-maldonado',
+    ],
+    waMessage: waMessages.service('la limpieza de colchones a domicilio'),
+    serviceType: 'Limpieza de colchones',
   },
   {
     slug: 'lavado-y-planchado-de-ropa-maldonado',
