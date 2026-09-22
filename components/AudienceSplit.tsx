@@ -14,7 +14,7 @@ export default function AudienceSplit() {
     {
       href: '#empresas',
       eyebrow: 'Para tu empresa',
-      title: 'Tu ropa blanca siempre lista, incluso en plena temporada',
+      title: 'Tu ropa blanca lista, también en plena temporada',
       body: 'Hoteles, apart, Airbnb, restaurantes, edificios y clínicas.',
       invert: true,
     },

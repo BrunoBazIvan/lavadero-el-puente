@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { business, waMessages } from '@/lib/config';
 import { landingPages } from '@/lib/landingPages';
+import { legalPages } from '@/lib/legalContent';
 import Logo from './Logo';
 import WhatsAppButton from './WhatsAppButton';
 import PhoneLink from './PhoneLink';
@@ -125,8 +126,19 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 border-t border-white/15 pt-6 text-sm text-brand-300">
-          © {year} {business.name}. Todos los derechos reservados.
+        <div className="mt-14 flex flex-col gap-4 border-t border-white/15 pt-6 text-sm text-brand-300 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {year} {business.name}. Todos los derechos reservados.
+          </p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {legalPages.map((p) => (
+              <li key={p.slug}>
+                <Link href={`/${p.slug}/`} className="transition-colors hover:text-white">
+                  {p.breadcrumbLabel}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>

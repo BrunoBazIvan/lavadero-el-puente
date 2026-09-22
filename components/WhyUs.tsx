@@ -29,7 +29,7 @@ export default function WhyUs() {
           {differentiators.map((d, i) => (
             <Reveal key={d.title} delay={(i % 4) * 60} className="matrix-cell">
               <div className="flex h-full flex-col p-7 sm:p-8">
-                <span className="tnum font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-500">
+                <span className="tnum font-display text-[0.6875rem] font-bold uppercase tracking-technical text-aqua-600">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <h3 className="mt-10 font-display text-lg font-bold leading-snug tracking-[-0.015em] text-brand-800">

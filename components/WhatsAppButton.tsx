@@ -33,17 +33,21 @@ export default function WhatsAppButton({
   const base =
     'group/cta inline-flex items-center justify-center gap-2.5 rounded-sharp font-semibold transition-colors duration-150 focus-visible:outline-offset-4 min-h-[44px]';
 
+  // Texto/ícono en brand-900 (no blanco): blanco sobre el verde whatsapp da
+  // 1.98:1 de contraste, muy por debajo del 4.5:1 que exige WCAG AA. Con
+  // brand-900 queda en 8.75:1 en reposo y 5.6:1 sobre whatsapp-dark (hover),
+  // sin tocar el verde en sí (sigue siendo exclusivo de los CTA de conversión).
   const variants: Record<Variant, string> = {
     // CTA grande principal (verde WhatsApp — reservado a conversión).
     primary:
-      'bg-whatsapp px-7 py-3.5 text-base text-white shadow-cta hover:bg-whatsapp-dark',
+      'bg-whatsapp px-7 py-3.5 text-base text-brand-900 shadow-cta hover:bg-whatsapp-dark',
     // CTA sólido tamaño medio.
-    solid: 'bg-whatsapp px-5 py-2.5 text-sm text-white shadow-cta hover:bg-whatsapp-dark',
+    solid: 'bg-whatsapp px-5 py-2.5 text-sm text-brand-900 shadow-cta hover:bg-whatsapp-dark',
     // Botón compacto del header.
-    compact: 'bg-whatsapp px-4 py-2 text-sm text-white hover:bg-whatsapp-dark',
+    compact: 'bg-whatsapp px-4 py-2 text-sm text-brand-900 hover:bg-whatsapp-dark',
     // Verde sobre fondo claro, con filete (para secciones invertidas).
     ghost:
-      'border border-whatsapp bg-white px-6 py-3 text-base text-whatsapp-dark hover:bg-whatsapp hover:text-white',
+      'border border-whatsapp bg-white px-6 py-3 text-base text-brand-900 hover:bg-whatsapp hover:text-brand-900',
   };
 
   return (
