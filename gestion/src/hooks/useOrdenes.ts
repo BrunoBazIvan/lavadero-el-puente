@@ -351,12 +351,16 @@ export interface ResumenMes {
   inicioMes: Date;
   /** Todas las órdenes del mes en curso, sin el `limit(100)` del listado. */
   ordenes: OrdenVista[];
-  /** Suma de `total` de las órdenes no anuladas del mes en curso. */
-  montoMes: number;
+  /**
+   * Suma de `pagado` (no de `total`) de las órdenes no anuladas del mes en
+   * curso: una orden en "listo" ya tiene precio pero puede seguir sin
+   * cobrarse, y contarla por su `total` mostraría plata que todavía no entró.
+   */
+  cobradoMes: number;
   /** Cuántas órdenes hay en cada estado, dentro del mes en curso. */
   porEstado: Record<EstadoOrden, number>;
-  /** Suma de `total` de las órdenes no anuladas del mes anterior, para comparar. */
-  montoMesAnterior: number;
+  /** Suma de `pagado` de las órdenes no anuladas del mes anterior, para comparar. */
+  cobradoMesAnterior: number;
 }
 
 /**
@@ -379,13 +383,13 @@ export function useResumenMes() {
       const [actual, anterior] = await Promise.all([
         supabase
           .from('v_ordenes')
-          .select('id, ref, cliente_nombre, estado, fecha_ingreso, monto, descuento, total')
+          .select('id, ref, cliente_nombre, estado, fecha_ingreso, monto, descuento, total, pagado')
           .gte('fecha_ingreso', inicioMes.toISOString())
           .lt('fecha_ingreso', inicioMesSiguiente.toISOString())
           .order('fecha_ingreso', { ascending: false }),
         supabase
           .from('v_ordenes')
-          .select('estado, total')
+          .select('estado, pagado')
           .gte('fecha_ingreso', inicioMesAnterior.toISOString())
           .lt('fecha_ingreso', inicioMes.toISOString()),
       ]);
@@ -393,12 +397,12 @@ export function useResumenMes() {
       if (anterior.error) throw anterior.error;
 
       const ordenes = (actual.data ?? []) as OrdenVista[];
-      const filasAnterior = (anterior.data ?? []) as Pick<OrdenVista, 'estado' | 'total'>[];
+      const filasAnterior = (anterior.data ?? []) as Pick<OrdenVista, 'estado' | 'pagado'>[];
 
-      const sumarNoAnuladas = (filas: Pick<OrdenVista, 'estado' | 'total'>[]) =>
+      const sumarCobrado = (filas: Pick<OrdenVista, 'estado' | 'pagado'>[]) =>
         filas
           .filter((o) => o.estado !== 'anulado')
-          .reduce((acc, o) => acc + o.total, 0);
+          .reduce((acc, o) => acc + o.pagado, 0);
 
       const porEstado: Record<EstadoOrden, number> = {
         recibido: 0,
@@ -412,9 +416,9 @@ export function useResumenMes() {
       return {
         inicioMes,
         ordenes,
-        montoMes: sumarNoAnuladas(ordenes),
+        cobradoMes: sumarCobrado(ordenes),
         porEstado,
-        montoMesAnterior: sumarNoAnuladas(filasAnterior),
+        cobradoMesAnterior: sumarCobrado(filasAnterior),
       };
     },
   });

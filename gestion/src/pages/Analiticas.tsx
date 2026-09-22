@@ -29,8 +29,9 @@ export default function Analiticas() {
   const { data, isPending, error, refetch } = useResumenMes();
 
   const comparacion = useMemo(() => {
-    if (!data || data.montoMesAnterior <= 0) return null;
-    const variacion = ((data.montoMes - data.montoMesAnterior) / data.montoMesAnterior) * 100;
+    if (!data || data.cobradoMesAnterior <= 0) return null;
+    const variacion =
+      ((data.cobradoMes - data.cobradoMesAnterior) / data.cobradoMesAnterior) * 100;
     return Math.round(variacion);
   }, [data]);
 
@@ -55,20 +56,20 @@ export default function Analiticas() {
 
       {data && (
         <div className="space-y-5">
-          {/* ── Monto generado ────────────────────────────────────────────── */}
+          {/* ── Monto cobrado ─────────────────────────────────────────────── */}
           <section className="panel p-4">
-            <h2 className="eyebrow">Generado en el mes</h2>
+            <h2 className="eyebrow">Cobrado en el mes</h2>
             <p className="tabular mt-2 font-display text-4xl font-bold leading-none text-brand-900">
-              {moneda(data.montoMes)}
+              {moneda(data.cobradoMes)}
             </p>
             <p className="mt-2 text-[0.9375rem] text-slate-600">
               {comparacion === null
-                ? 'El mes anterior no tuvo órdenes para comparar.'
+                ? 'El mes anterior no tuvo cobros para comparar.'
                 : comparacion === 0
                   ? 'Igual que el mes anterior.'
                   : comparacion > 0
-                    ? `${comparacion}% más que el mes anterior (${moneda(data.montoMesAnterior)}).`
-                    : `${Math.abs(comparacion)}% menos que el mes anterior (${moneda(data.montoMesAnterior)}).`}
+                    ? `${comparacion}% más que el mes anterior (${moneda(data.cobradoMesAnterior)}).`
+                    : `${Math.abs(comparacion)}% menos que el mes anterior (${moneda(data.cobradoMesAnterior)}).`}
             </p>
           </section>
 
