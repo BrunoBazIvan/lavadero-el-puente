@@ -16,7 +16,7 @@ export type HomeService = {
   waSubject: string;
   /** alt sugerido para la imagen/ícono. */
   alt: string;
-  icon: 'quilt' | 'curtain' | 'rug' | 'clothes' | 'iron';
+  icon: 'quilt' | 'curtain' | 'rug' | 'clothes' | 'iron' | 'armchair' | 'mattress';
 };
 
 export const homeServices: HomeService[] = [
@@ -49,6 +49,26 @@ export const homeServices: HomeService[] = [
     waSubject: 'limpieza de alfombras y tapizados',
     alt: 'Alfombra limpia en lavadero de Maldonado y Punta del Este',
     icon: 'rug',
+  },
+  {
+    slug: 'sillones',
+    pageSlug: 'limpieza-de-sillones-maldonado',
+    title: 'Sillones y tapizados',
+    description:
+      'Limpieza de sillones, sillas y tapizados con equipo de inyección y extracción, en tu casa u oficina. No hace falta que muevas nada.',
+    waSubject: 'la limpieza de sillones y tapizados a domicilio',
+    alt: 'Sillón tapizado limpio en un hogar de Maldonado',
+    icon: 'armchair',
+  },
+  {
+    slug: 'colchones',
+    pageSlug: 'limpieza-de-colchones-maldonado',
+    title: 'Colchones',
+    description:
+      'Limpieza profunda de colchones a domicilio, con equipo de inyección y extracción que saca el polvo y los ácaros sin moverlo de la habitación.',
+    waSubject: 'la limpieza de colchones a domicilio',
+    alt: 'Colchón limpio en un dormitorio de Maldonado',
+    icon: 'mattress',
   },
   {
     slug: 'ropa',
@@ -175,7 +195,7 @@ export const faqs: { q: string; a: string }[] = [
   },
   {
     q: '¿Qué servicios ofrecen?',
-    a: 'Lavado industrial y lavandería general, acolchados y frazadas, cortinas y cortinados, alfombras y tapizados, y planchado y secado de ropa.',
+    a: 'Lavado industrial y lavandería general, acolchados y frazadas, cortinas y cortinados, alfombras y tapizados, limpieza de sillones y colchones a domicilio, y planchado y secado de ropa.',
   },
   {
     q: '¿Cómo pido un presupuesto?',

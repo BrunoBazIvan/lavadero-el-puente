@@ -38,6 +38,8 @@ export const metadata: Metadata = {
     'limpieza de acolchados maldonado',
     'lavado de cortinas maldonado',
     'limpieza de alfombras punta del este',
+    'limpieza de sillones maldonado',
+    'limpieza de colchones maldonado',
     'lavandería para hoteles punta del este',
     'lavadero punta del este',
   ],

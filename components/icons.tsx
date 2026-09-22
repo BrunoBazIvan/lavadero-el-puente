@@ -111,6 +111,22 @@ export function ServiceIcon({ name, ...props }: { name: HomeService['icon'] } & 
           <path d="M3 15h18M8 8V6a1 1 0 0 1 1-1h4" />
         </svg>
       );
+    case 'armchair':
+      return (
+        <svg {...common}>
+          <path d="M6 11V8a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3" />
+          <path d="M4 11h16a1 1 0 0 1 1 1v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a1 1 0 0 1 1-1z" />
+          <path d="M7 18v2M17 18v2" />
+        </svg>
+      );
+    case 'mattress':
+      return (
+        <svg {...common}>
+          <rect x="5" y="5" width="7" height="5" rx="1.5" />
+          <rect x="3" y="10" width="18" height="9" rx="1.5" />
+          <path d="M3 14h18" />
+        </svg>
+      );
     default:
       return null;
   }
