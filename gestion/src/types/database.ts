@@ -379,7 +379,13 @@ export interface AnaliticasMes {
    */
   dia_de_hoy: number | null;
   totales: {
-    /** Caja real: Σ `pagos.monto` vigentes por `pagos.fecha`, sin importar el estado de la orden. */
+    /**
+     * Σ `total` de las órdenes NO ANULADAS que quedaron COMPLETAMENTE pagadas
+     * este mes (`pagado >= total`), ubicadas por la fecha del pago que las
+     * saldó — no por cuándo ingresaron (migración `0008`). Una orden anulada
+     * no cuenta acá nunca, se haya devuelto la plata o no: no es una venta
+     * cerrada. Ver `cobradas_detalle` para la lista.
+     */
     cobrado: number;
     cobrado_mes_anterior: number;
     /** Σ de lo anulado de `pagos` con `anulado_el` en este mes. */
@@ -404,10 +410,19 @@ export interface AnaliticasMes {
   por_articulo: { descripcion: string; cantidad: number; ordenes: number }[];
   /** Quién recibió el trabajo (`ordenes.created_by`). */
   por_operador: { nombre: string; ordenes: number; facturado: number }[];
-  /** Quién cobró (`pagos.recibido_por`) — no es lo mismo que quién recibió la orden. */
+  /** Quién recibió el pago que cerró cada orden cobrada este mes — no es lo mismo que quién recibió la orden. */
   cobrado_por: { nombre: string; cobrado: number; cobros: number }[];
   /** Top 5 por facturado. Las órdenes sin monto no entran. */
   top_clientes: { cliente_id: string; nombre: string; facturado: number; ordenes: number }[];
+  /** El desglose de `totales.cobrado`: una fila por orden, más recientes primero. */
+  cobradas_detalle: {
+    ref: string;
+    cliente_id: string;
+    cliente_nombre: string;
+    total: number;
+    /** Fecha del pago que dejó la orden en saldo $0. */
+    fecha_cobro: string;
+  }[];
   /** Días de `fecha_ingreso` a `fecha_entrega_real`, medido sobre lo entregado en el mes. Null si no hubo entregas. */
   dias_promedio_entrega: number | null;
   /** NO es del mes pedido: es de ahora mismo, igual que la barra del encabezado. */

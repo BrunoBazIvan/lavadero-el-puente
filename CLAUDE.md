@@ -90,9 +90,14 @@ de una orden y el de las analíticas dejan de coincidir.
   perderse porque se devolvió solo el saldo de hoy).
 - **Anular una orden con plata adentro** (`anular_orden`) anula también los
   cobros que se devolvieron, en la misma transacción — nunca en dos pasos
-  donde el segundo se puede saltear. Un cobro vigente de una orden anulada
-  sigue siendo caja real: las analíticas lo cuentan en "cobrado" aunque la
-  orden ya no cuente en "facturado".
+  donde el segundo se puede saltear. "Cobrado en el mes" (`analiticas_mes`,
+  migración `0008`) cuenta **órdenes no anuladas que quedaron completamente
+  pagadas**, no pagos sueltos: una orden anulada no cuenta nunca ahí, se haya
+  devuelto la plata o no — decisión del negocio, no es una venta cerrada.
+  Mismo criterio que ya regía para `facturado` y `a_cobrar` desde la 0004.
+  Ojo: esto puede mover retroactivamente el "cobrado" de un mes ya cerrado si
+  hoy se anula una orden que se había cobrado hace tiempo — es la consecuencia
+  aceptada, no un descuido.
 
 ---
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { addMonths, parseISO, subMonths } from 'date-fns';
 import { EncabezadoPagina } from '@/components/Layout';
@@ -8,7 +8,7 @@ import { BarrasPorDia, LineaAcumulado } from '@/components/Grafica';
 import { IconoVolver } from '@/components/Iconos';
 import { mesAInput, useAnaliticas } from '@/hooks/useOrdenes';
 import { mensajeDeError } from '@/lib/supabase';
-import { moneda } from '@/lib/format';
+import { fecha, moneda } from '@/lib/format';
 import { METODOS_PAGO, NOMBRE_METODO_PAGO, NOMBRE_SERVICIO } from '@/types/database';
 import type { EstadoOrden, ServicioOrden } from '@/types/database';
 
@@ -43,6 +43,7 @@ const CELDA_ETIQUETA =
 const CELDA_VALOR = 'mt-0.5 tabular font-display text-lg font-bold text-brand-900';
 
 export default function Analiticas() {
+  const [verDesglose, setVerDesglose] = useState(false);
   const [parametros, setParametros] = useSearchParams();
 
   // El mes vive en la URL (`?mes=2026-10-01`), igual que el filtro de Órdenes:
@@ -120,9 +121,19 @@ export default function Analiticas() {
       {data && (
         <div className="space-y-5">
           {/* ── Plata: cobrada, pendiente, mejor cliente ────────────────────── */}
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid items-start gap-5 sm:grid-cols-3">
             <section className="panel p-4">
-              <h2 className="eyebrow">Cobrado en el mes</h2>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between gap-2 text-left"
+                aria-expanded={verDesglose}
+                onClick={() => setVerDesglose((v) => !v)}
+              >
+                <h2 className="eyebrow">Cobrado en el mes</h2>
+                <span className="font-display text-[11px] font-semibold uppercase tracking-technical text-brand-600">
+                  {verDesglose ? 'Ocultar' : 'Ver detalle'}
+                </span>
+              </button>
               <p className="tabular mt-2 font-display text-4xl font-bold leading-none text-brand-900">
                 {moneda(data.totales.cobrado)}
               </p>
@@ -136,8 +147,43 @@ export default function Analiticas() {
                       : `${Math.abs(comparacionCobrado)}% menos que el mes anterior (${moneda(data.totales.cobrado_mes_anterior)}).`}
               </p>
               <p className="ayuda mt-1">
-                Es la plata que entró estos días (por fecha de cobro), no lo facturado.
+                Órdenes no anuladas que quedaron completamente pagadas este mes, el día en que se
+                saldaron. No cuenta una seña de una orden que todavía debe, ni una orden anulada.
               </p>
+
+              {verDesglose && (
+                <div className="mt-3 max-h-64 overflow-y-auto border-t border-brand-100 pt-3">
+                  {data.cobradas_detalle.length === 0 ? (
+                    <p className="text-sm text-slate-500">
+                      Ninguna orden se terminó de cobrar este mes.
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-brand-100 text-sm">
+                      {data.cobradas_detalle.map((o) => (
+                        <li key={o.ref}>
+                          <Link
+                            to={`/ordenes/${o.ref}`}
+                            className="flex items-center justify-between gap-2 py-1.5 transition-colors hover:text-brand-800"
+                          >
+                            <span className="min-w-0 truncate">
+                              <span className="font-mono font-semibold text-brand-800">
+                                {o.ref}
+                              </span>{' '}
+                              <span className="text-slate-600">{o.cliente_nombre}</span>
+                              <span className="block text-xs text-slate-400">
+                                {fecha(o.fecha_cobro)}
+                              </span>
+                            </span>
+                            <span className="tabular shrink-0 font-semibold text-ink">
+                              {moneda(o.total)}
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </section>
 
             <section className="panel p-4">
