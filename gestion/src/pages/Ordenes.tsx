@@ -15,16 +15,17 @@ const FILTROS: (EstadoOrden | 'todos')[] = ['todos', 'recibido', 'listo', 'entre
 
 /**
  * Nombres cortos para los botones de filtro: la columna ya dice el estado
- * largo. "Entregadas" aclara el recorte semanal porque, a diferencia de los
- * demás filtros, acá sí se deja gente afuera a propósito (ver
- * `ordenes_tablero()`): una entregada de hace un mes no aparece acá, se busca.
+ * largo. "Entregadas", a diferencia de los demás filtros, sí deja gente
+ * afuera a propósito (ver `ordenes_tablero()`): una entregada de hace un mes
+ * no aparece acá, se busca. El recorte ya está explicado en el detalle de la
+ * pantalla, así que acá el botón queda corto.
  */
 const ETIQUETA_FILTRO: Record<EstadoOrden | 'todos', string> = {
   todos: 'Todas',
   recibido: 'Sin empezar',
   en_proceso: 'En proceso',
   listo: 'Listas',
-  entregado: 'Entregadas (7 días)',
+  entregado: 'Entregadas',
   anulado: 'Anuladas',
 };
 
