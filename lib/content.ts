@@ -6,7 +6,7 @@ import { business, waMessages } from './config';
  */
 
 export type HomeService = {
-  /** id corto para el tracking (source: servicio_<slug>). */
+  /** id corto de la tarjeta. */
   slug: string;
   /** Slug de la página de servicio dedicada a la que enlaza la tarjeta. */
   pageSlug: string;

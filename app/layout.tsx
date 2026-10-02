@@ -6,6 +6,7 @@ import { localBusinessJsonLd } from '@/lib/jsonld';
 import Script from 'next/script';
 import { buildAnalyticsInitScript } from '@/lib/analytics-init';
 import ConsentBanner from '@/components/analytics/ConsentBanner';
+import ConversionTracker from '@/components/analytics/ConversionTracker';
 
 // Tipografías del Manual de Marca El Puente: Montserrat (títulos y destacados)
 // + Lato (texto corrido). Self-hosted por next/font (cero requests externos,
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <ConsentBanner />
+        <ConversionTracker />
         {analyticsInit && (
           <Script
             id="analytics-init"

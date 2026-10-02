@@ -115,29 +115,23 @@ export function analyticsAllowedHere(): boolean {
 }
 
 // --- Eventos de conversión ---------------------------------------------------
-// Se reemplazan en la Fase 4 del plan por el rastreador por delegación.
+// Los mide ConversionTracker escuchando los clics de todo el documento: cada
+// link de conversión solo declara dónde está con `data-cta` (y `data-service`
+// en las páginas de servicio). Estos son los valores válidos de `data-cta`;
+// uno que falte llega a GA4 como "unknown".
 
-export type WhatsAppSource =
-  | 'hero'
+export type CtaLocation =
   | 'header'
+  | 'hero'
+  | 'floating'
+  | 'services_grid'
   | 'b2b'
   | 'trusted'
-  | 'fab'
-  | 'footer'
   | 'location'
   | 'faq'
-  | 'sobre_nosotros'
+  | 'footer'
   | 'legal'
-  | `servicio_${string}`;
-
-export function trackWhatsAppClick(source: WhatsAppSource): void {
-  track('whatsapp_click', { source });
-}
-
-export function trackPhoneClick(): void {
-  track('phone_click');
-}
-
-export function trackDirectionsClick(): void {
-  track('directions_click');
-}
+  | 'about_intro'
+  | 'about_closing'
+  | 'landing_hero'
+  | 'landing_closing';

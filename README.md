@@ -116,6 +116,11 @@ Solo cargan en el dominio de producción (nunca en localhost ni en previews) y s
 hasta que la persona acepta. Para no medirte a vos: entrá una vez con `?no_track=1` en cada
 dispositivo (`?no_track=0` lo revierte). El plan completo está en `PLAN-ANALITICA.md`.
 
+Eventos (`components/analytics/ConversionTracker.tsx`, un solo listener para todo el sitio):
+`whatsapp_click`, `phone_click`, `directions_click` y `social_click`, con `cta_location`
+(sale del `data-cta` del link o de su contenedor) y `service` (el slug, en las páginas de
+servicio). Un link de conversión nuevo necesita su `data-cta`: si no, llega como `unknown`.
+
 ---
 
 ## 🗂️ Estructura

@@ -49,7 +49,7 @@ export default function Footer() {
               </li>
               <li className="text-brand-200">{openingHours.label}</li>
               <li>
-                <PhoneLink className="font-semibold text-white transition-colors hover:text-aqua-200" />
+                <PhoneLink cta="footer" className="font-semibold text-white transition-colors hover:text-aqua-200" />
               </li>
             </ul>
           </div>
@@ -89,7 +89,7 @@ export default function Footer() {
               </li>
             </ul>
             {(social.instagram || social.facebook) && (
-              <div className="mt-6 flex gap-4 text-sm">
+              <div data-cta="footer" className="mt-6 flex gap-4 text-sm">
                 {social.instagram && (
                   <a
                     href={social.instagram}
