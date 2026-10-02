@@ -3,7 +3,8 @@ import { Montserrat, Lato } from 'next/font/google';
 import './globals.css';
 import { business } from '@/lib/config';
 import { localBusinessJsonLd } from '@/lib/jsonld';
-import Analytics from '@/components/Analytics';
+import Script from 'next/script';
+import { buildAnalyticsInitScript } from '@/lib/analytics-init';
 
 // Tipografías del Manual de Marca El Puente: Montserrat (títulos y destacados)
 // + Lato (texto corrido). Self-hosted por next/font (cero requests externos,
@@ -70,6 +71,9 @@ export const metadata: Metadata = {
   },
 };
 
+// GA4 + Clarity: solo en producción y con consentimiento (ver lib/analytics-init.ts).
+const analyticsInit = buildAnalyticsInitScript();
+
 export const viewport: Viewport = {
   themeColor: '#07598C',
   width: 'device-width',
@@ -87,7 +91,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         {children}
-        <Analytics />
+        {analyticsInit && (
+          <Script
+            id="analytics-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: analyticsInit }}
+          />
+        )}
       </body>
     </html>
   );

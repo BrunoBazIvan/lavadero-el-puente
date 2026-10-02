@@ -121,13 +121,6 @@ export const business = {
    * declararía como versión buena una dirección que redirige.
    */
   domain: 'https://www.lavaderoelpuente.com',
-
-  /**
-   * ⚠️ OPCIONAL — GA4
-   * ID de medición de Google Analytics 4 (formato G-XXXXXXX).
-   * Dejá '' para desactivar analítica. Se carga diferido para no dañar performance.
-   */
-  ga4Id: '',
 } as const;
 
 /**
