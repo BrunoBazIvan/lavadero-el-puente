@@ -146,10 +146,6 @@ export default function Analiticas() {
                       ? `${comparacionCobrado}% más que el mes anterior (${moneda(data.totales.cobrado_mes_anterior)}).`
                       : `${Math.abs(comparacionCobrado)}% menos que el mes anterior (${moneda(data.totales.cobrado_mes_anterior)}).`}
               </p>
-              <p className="ayuda mt-1">
-                Órdenes no anuladas que quedaron completamente pagadas este mes, el día en que se
-                saldaron. No cuenta una seña de una orden que todavía debe, ni una orden anulada.
-              </p>
 
               {verDesglose && (
                 <div className="mt-3 max-h-64 overflow-y-auto border-t border-brand-100 pt-3">
