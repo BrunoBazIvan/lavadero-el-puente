@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/auth/AuthProvider';
-import { diasDesde } from '@/lib/format';
 import type {
+  AnaliticasMes,
   Cliente,
   CrearOrdenPayload,
   EstadoOrden,
@@ -12,6 +12,7 @@ import type {
   OrdenItem,
   OrdenVista,
   Pago,
+  ResumenPendientesRPC,
 } from '@/types/database';
 
 export const clavesOrdenes = {
@@ -29,12 +30,22 @@ export const clavesOrdenes = {
  */
 export const DIAS_SIN_RETIRAR = 7;
 
+/** Días hacia atrás que trae el tablero para lo ya cerrado. Ver `ordenes_tablero()`. */
+const DIAS_TABLERO = 7;
+
 /**
  * Listado del mostrador.
  *
  * Con término de búsqueda usa la RPC `buscar()`, que ya sabe distinguir si lo
- * que escribieron es una referencia, un teléfono o un nombre. Sin término, trae
- * las últimas órdenes con el filtro de estado.
+ * que escribieron es una referencia, un teléfono o un nombre, y llega a todo
+ * el historial: es el camino para reimprimir un comprobante viejo o cobrar un
+ * saldo de hace meses.
+ *
+ * Sin término, usa `ordenes_tablero()`: lo abierto (sin tope, son las bolsas
+ * que hay físicamente en el lavadero) más lo cerrado de los últimos
+ * `DIAS_TABLERO` días. Con el filtro en "entregadas", eso significa
+ * "entregadas de esta semana" — una entregada más vieja se busca, no se
+ * scrollea (ver el aviso en `Ordenes.tsx`).
  */
 export function useListaOrdenes(busqueda: string, estado: EstadoOrden | 'todos') {
   const termino = busqueda.trim();
@@ -49,36 +60,24 @@ export function useListaOrdenes(busqueda: string, estado: EstadoOrden | 'todos')
         return estado === 'todos' ? filas : filas.filter((o) => o.estado === estado);
       }
 
-      let q = supabase
-        .from('v_ordenes')
-        .select('*')
-        .order('fecha_ingreso', { ascending: false })
-        .limit(100);
-
-      if (estado !== 'todos') q = q.eq('estado', estado);
-
-      const { data, error } = await q;
+      const { data, error } = await supabase.rpc('ordenes_tablero', { p_dias: DIAS_TABLERO });
       if (error) throw error;
-      return (data ?? []) as OrdenVista[];
+      const filas = (data ?? []) as OrdenVista[];
+      return estado === 'todos' ? filas : filas.filter((o) => o.estado === estado);
     },
   });
 }
 
 /** Lo que hay para hacer ahora mismo. Alimenta la barra fija del encabezado. */
-export interface ResumenPendientes {
-  recibido: number;
-  en_proceso: number;
-  listo: number;
-  /** Listas hace más de `DIAS_SIN_RETIRAR` días: nadie las vino a buscar. */
-  olvidadas: number;
-}
+export type ResumenPendientes = ResumenPendientesRPC;
 
 /**
  * El estado del día, siempre a la vista.
  *
- * Trae solo dos columnas de las órdenes abiertas y cuenta acá: son decenas de
- * filas flaquísimas, y hacerlo en el cliente evita cuatro `count` contra la
- * base cada vez que alguien cambia de pantalla.
+ * Una sola RPC (`resumen_pendientes()`) que cuenta en la base, por el índice
+ * parcial de órdenes abiertas: antes era `select` de todas las órdenes
+ * abiertas —estado y fecha de retiro de cada una— para contarlas en el
+ * cliente, repetido cada 120 segundos desde cada pantalla abierta.
  *
  * Se refresca al volver a la ventana: la PC del mostrador queda abierta todo
  * el día y la otra persona del turno carga órdenes desde su propia sesión.
@@ -89,23 +88,11 @@ export function useResumenPendientes() {
     refetchOnWindowFocus: true,
     refetchInterval: 120_000,
     queryFn: async (): Promise<ResumenPendientes> => {
-      const { data, error } = await supabase
-        .from('v_ordenes')
-        .select('estado, fecha_retiro_estimada')
-        .in('estado', ['recibido', 'en_proceso', 'listo']);
+      const { data, error } = await supabase.rpc('resumen_pendientes', {
+        p_dias_sin_retirar: DIAS_SIN_RETIRAR,
+      });
       if (error) throw error;
-
-      const filas = (data ?? []) as Pick<OrdenVista, 'estado' | 'fecha_retiro_estimada'>[];
-      const cuenta = (estado: EstadoOrden) => filas.filter((o) => o.estado === estado).length;
-
-      return {
-        recibido: cuenta('recibido'),
-        en_proceso: cuenta('en_proceso'),
-        listo: cuenta('listo'),
-        olvidadas: filas.filter(
-          (o) => o.estado === 'listo' && (diasDesde(o.fecha_retiro_estimada) ?? 0) > DIAS_SIN_RETIRAR,
-        ).length,
-      };
+      return data as ResumenPendientesRPC;
     },
   });
 }
@@ -306,34 +293,93 @@ export function useEntregarOrden() {
 }
 
 /**
- * Anulación. Solo admin (lo impone la RLS y el trigger de la base).
- * El motivo queda escrito en las notas: una orden anulada sin explicación no
- * le sirve a nadie dentro de seis meses.
+ * Anulación. Cualquier staff mientras la orden no esté entregada; solo admin
+ * si ya se entregó (lo impone la base en `anular_orden`, no el cliente).
+ *
+ * Va por RPC y no por un `update` directo: si la orden tiene plata adentro,
+ * anular el cobro es parte de la misma operación — hacerlo en dos pasos
+ * separados deja una ventana donde alguien puede saltear el segundo y
+ * olvidarse de devolver el pago. El motivo y el sello se arman en la base,
+ * igual que en `revertir_entrega`.
  */
 export function useAnularOrden() {
   const qc = useQueryClient();
-  const { profile } = useAuth();
 
   return useMutation({
     mutationFn: async ({
-      orden,
+      ordenId,
+      motivo,
+      pagosDevueltos = [],
+    }: {
+      ordenId: string;
+      motivo: string;
+      /** Ids de los pagos vigentes que se le devolvieron al cliente. */
+      pagosDevueltos?: string[];
+    }): Promise<Orden> => {
+      const { data, error } = await supabase.rpc('anular_orden', {
+        p_orden_id: ordenId,
+        p_motivo: motivo,
+        p_pagos_devueltos: pagosDevueltos,
+      });
+      if (error) throw error;
+      return data as Orden;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
+/**
+ * Revertir una entrega: "el cliente NO se la llevó", un toque de más que se
+ * corrige donde se cometió. Cualquier staff, sin límite de tiempo — pedir un
+ * admin dejaría el error puesto todo el día.
+ *
+ * La base exige que quede un motivo escrito (`guard_orden_update` rechaza un
+ * `update` que no toque `notas`), así que el único camino es esta RPC. Los
+ * cobros a devolver van por lista de ids, no por un sí/no genérico: una orden
+ * puede tener una seña vieja y el cobro de hoy, y devolver "todo" borraría la
+ * seña sin que nadie lo pidiera.
+ */
+export function useRevertirEntrega() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      ordenId,
+      pagosDevueltos = [],
       motivo,
     }: {
-      orden: OrdenCompleta;
-      motivo: string;
+      ordenId: string;
+      pagosDevueltos?: string[];
+      motivo?: string | null;
     }): Promise<Orden> => {
-      const sello = new Date().toLocaleString('es-UY');
-      const registro = `[Anulada el ${sello} por ${profile?.nombre ?? 'desconocido'}: ${motivo.trim()}]`;
-      const notas = orden.notas ? `${orden.notas}\n${registro}` : registro;
-
-      const { data, error } = await supabase
-        .from('ordenes')
-        .update({ estado: 'anulado', notas })
-        .eq('id', orden.id)
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('revertir_entrega', {
+        p_orden_id: ordenId,
+        p_pagos_devueltos: pagosDevueltos,
+        p_motivo: motivo ?? null,
+      });
       if (error) throw error;
-      return data;
+      return data as Orden;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
+  });
+}
+
+/**
+ * Anular un cobro suelto (seña cargada dos veces, monto tipeado mal) sin
+ * tocar el estado de la orden. No se borra nunca: queda tachado en la lista
+ * de pagos del detalle, con motivo y quién lo anuló.
+ */
+export function useAnularPago() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ pagoId, motivo }: { pagoId: string; motivo: string }): Promise<Pago> => {
+      const { data, error } = await supabase.rpc('anular_pago', {
+        p_pago_id: pagoId,
+        p_motivo: motivo,
+      });
+      if (error) throw error;
+      return data as Pago;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['ordenes'] }),
   });
@@ -341,117 +387,35 @@ export function useAnularOrden() {
 
 /* ── Analíticas del mes (solo admin) ──────────────────────────────────────── */
 
-/** Primer día del mes que contiene `fecha`, a medianoche local. */
-function inicioDeMes(fecha: Date): Date {
-  return new Date(fecha.getFullYear(), fecha.getMonth(), 1);
-}
-
-/** Quién más facturó en el mes (por `total`, no por lo ya cobrado: es "quién nos dejó más trabajo", no un corte de caja). */
-export interface MejorCliente {
-  clienteId: string;
-  nombre: string;
-  total: number;
-  cantidadOrdenes: number;
-}
-
-export interface ResumenMes {
-  /** Arranque del mes en curso, para mostrar "Setiembre 2026" y similares. */
-  inicioMes: Date;
-  /**
-   * Suma de `pagado` (no de `total`) de las órdenes no anuladas del mes en
-   * curso: una orden en "listo" ya tiene precio pero puede seguir sin
-   * cobrarse, y contarla por su `total` mostraría plata que todavía no entró.
-   */
-  cobradoMes: number;
-  /** Suma de `saldo` de las órdenes no anuladas del mes: lo que falta cobrar. */
-  aCobrarMes: number;
-  /** Cuántas órdenes hay en cada estado, dentro del mes en curso. */
-  porEstado: Record<EstadoOrden, number>;
-  /** Suma de `pagado` de las órdenes no anuladas del mes anterior, para comparar. */
-  cobradoMesAnterior: number;
-  /** Null si ninguna orden del mes tiene monto cargado todavía. */
-  mejorCliente: MejorCliente | null;
+/**
+ * `aaaa-mm-dd` del primer día del mes que contiene `fecha` — lo que espera
+ * `analiticas_mes(p_mes)`. El mes vive en la URL (`?mes=…`), así que esto es
+ * la única conversión entre la URL y la RPC.
+ */
+export function mesAInput(fecha: Date): string {
+  return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
 /**
- * El mes completo para la pestaña de Analíticas.
+ * El mes completo para la pestaña de Analíticas, en un solo viaje.
  *
- * Trae `v_ordenes` por rango de `fecha_ingreso` (no por `limit`, como el
- * listado del mostrador) y agrega en el cliente, mismo criterio que
- * `useResumenPendientes`: son a lo sumo un par de cientos de filas por mes,
- * no hace falta una RPC de agregación en la base. No se expone el listado de
- * órdenes: para eso ya está la pantalla de Órdenes con sus filtros.
+ * Antes traía TODAS las filas del mes y del anterior por separado y sumaba en
+ * el cliente, con el tope mudo de 1000 filas de PostgREST esperando al mes
+ * bueno. Ahora es un `jsonb` ya agregado por `analiticas_mes()`: un POST,
+ * payload de unos pocos KB. `staleTime` largo porque es una pantalla de
+ * repaso, no de mostrador — no hace falta refrescarla sola.
  */
-export function useResumenMes() {
+export function useAnaliticas(mes?: string) {
   return useQuery({
-    queryKey: ['ordenes', 'resumen-mes'],
-    queryFn: async (): Promise<ResumenMes> => {
-      const ahora = new Date();
-      const inicioMes = inicioDeMes(ahora);
-      const inicioMesSiguiente = inicioDeMes(new Date(ahora.getFullYear(), ahora.getMonth() + 1, 1));
-      const inicioMesAnterior = inicioDeMes(new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1));
-
-      const [actual, anterior] = await Promise.all([
-        supabase
-          .from('v_ordenes')
-          .select('cliente_id, cliente_nombre, estado, total, pagado, saldo')
-          .gte('fecha_ingreso', inicioMes.toISOString())
-          .lt('fecha_ingreso', inicioMesSiguiente.toISOString()),
-        supabase
-          .from('v_ordenes')
-          .select('estado, pagado')
-          .gte('fecha_ingreso', inicioMesAnterior.toISOString())
-          .lt('fecha_ingreso', inicioMes.toISOString()),
-      ]);
-      if (actual.error) throw actual.error;
-      if (anterior.error) throw anterior.error;
-
-      type FilaMes = Pick<
-        OrdenVista,
-        'cliente_id' | 'cliente_nombre' | 'estado' | 'total' | 'pagado' | 'saldo'
-      >;
-      const ordenes = (actual.data ?? []) as FilaMes[];
-      const filasAnterior = (anterior.data ?? []) as Pick<OrdenVista, 'estado' | 'pagado'>[];
-      const noAnuladas = ordenes.filter((o) => o.estado !== 'anulado');
-
-      const sumarCobrado = (filas: Pick<OrdenVista, 'estado' | 'pagado'>[]) =>
-        filas
-          .filter((o) => o.estado !== 'anulado')
-          .reduce((acc, o) => acc + o.pagado, 0);
-
-      const porEstado: Record<EstadoOrden, number> = {
-        recibido: 0,
-        en_proceso: 0,
-        listo: 0,
-        entregado: 0,
-        anulado: 0,
-      };
-      for (const o of ordenes) porEstado[o.estado]++;
-
-      const porCliente = new Map<string, MejorCliente>();
-      for (const o of noAnuladas) {
-        if (o.total <= 0) continue; // orden todavía sin monto: no cuenta para el ranking
-        const previo = porCliente.get(o.cliente_id);
-        porCliente.set(o.cliente_id, {
-          clienteId: o.cliente_id,
-          nombre: o.cliente_nombre,
-          total: (previo?.total ?? 0) + o.total,
-          cantidadOrdenes: (previo?.cantidadOrdenes ?? 0) + 1,
-        });
-      }
-      let mejorCliente: MejorCliente | null = null;
-      for (const c of porCliente.values()) {
-        if (!mejorCliente || c.total > mejorCliente.total) mejorCliente = c;
-      }
-
-      return {
-        inicioMes,
-        cobradoMes: sumarCobrado(noAnuladas),
-        aCobrarMes: noAnuladas.reduce((acc, o) => acc + o.saldo, 0),
-        porEstado,
-        cobradoMesAnterior: sumarCobrado(filasAnterior),
-        mejorCliente,
-      };
+    queryKey: ['ordenes', 'analiticas', mes ?? 'actual'],
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<AnaliticasMes> => {
+      const { data, error } = await supabase.rpc('analiticas_mes', {
+        p_mes: mes ?? null,
+        p_dias_sin_retirar: DIAS_SIN_RETIRAR,
+      });
+      if (error) throw error;
+      return data as AnaliticasMes;
     },
   });
 }

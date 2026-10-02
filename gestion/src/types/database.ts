@@ -168,6 +168,15 @@ export interface Database {
           fecha: string;
           recibido_por: string | null;
           notas: string | null;
+          /**
+           * Cobros anulables, no borrables (migración 0006): un pago nunca se
+           * hace DELETE, se marca. Null = vigente, suma a todo. Estas tres
+           * columnas no van en `Insert` — se escriben solo desde `anular_pago`,
+           * `revertir_entrega` y `anular_orden`.
+           */
+          anulado_el: string | null;
+          anulado_por: string | null;
+          anulado_motivo: string | null;
         };
         Insert: {
           id?: string;
@@ -231,6 +240,42 @@ export interface Database {
       };
       is_staff: { Args: Record<string, never>; Returns: boolean };
       is_admin: { Args: Record<string, never>; Returns: boolean };
+
+      /**
+       * El listado del mostrador (migración 0006): abiertas sin tope +
+       * cerradas de los últimos `p_dias`, con tope. Reemplaza al
+       * `select * from v_ordenes order by fecha_ingreso desc limit 100` que
+       * dejaba caer una orden abierta vieja por debajo del corte.
+       */
+      ordenes_tablero: {
+        Args: { p_dias?: number; p_limite?: number };
+        Returns: Database['public']['Views']['v_ordenes']['Row'][];
+      };
+      /** La barra de pendientes del encabezado, en una sola pasada. */
+      resumen_pendientes: {
+        Args: { p_dias_sin_retirar?: number };
+        Returns: ResumenPendientesRPC;
+      };
+      /** Todo el jsonb agregado de Analíticas, en un solo viaje. */
+      analiticas_mes: {
+        Args: { p_mes?: string | null; p_dias_sin_retirar?: number };
+        Returns: AnaliticasMes;
+      };
+      /** Anula un cobro suelto sin tocar el estado de la orden. */
+      anular_pago: {
+        Args: { p_pago_id: string; p_motivo: string };
+        Returns: Database['public']['Tables']['pagos']['Row'];
+      };
+      /** Entregado → listo, dejando motivo escrito y devolviendo la plata que corresponda. */
+      revertir_entrega: {
+        Args: { p_orden_id: string; p_pagos_devueltos?: string[]; p_motivo?: string | null };
+        Returns: Database['public']['Tables']['ordenes']['Row'];
+      };
+      /** Anula la orden y, si corresponde, los cobros que se devolvieron. */
+      anular_orden: {
+        Args: { p_orden_id: string; p_motivo: string; p_pagos_devueltos?: string[] };
+        Returns: Database['public']['Tables']['ordenes']['Row'];
+      };
     };
 
     Enums: {
@@ -238,6 +283,7 @@ export interface Database {
       metodo_pago: MetodoPago;
       rol_usuario: RolUsuario;
       tipo_cliente: TipoCliente;
+      servicio_orden: ServicioOrden;
     };
   };
 }
@@ -290,4 +336,80 @@ export interface OrdenCompleta extends OrdenVista {
   items: OrdenItem[];
   pagos: Pago[];
   cliente: Cliente;
+}
+
+/* ── Formas de los `jsonb` que devuelven las RPC de agregación (0006) ───────
+ *
+ * No las genera `supabase gen types` (son `jsonb`, no filas): se escriben a
+ * mano acá, igual que el resto de este archivo, y tienen que coincidir con
+ * lo que arma cada función en `0006_revertir_y_analiticas.sql`.
+ */
+
+/** Lo que devuelve `resumen_pendientes()`. Alimenta la barra fija del encabezado. */
+export interface ResumenPendientesRPC {
+  recibido: number;
+  en_proceso: number;
+  listo: number;
+  /** Listas hace más de `p_dias_sin_retirar` días: nadie las vino a buscar. */
+  olvidadas: number;
+}
+
+/** Un día de la serie comparada, mes en curso contra el anterior. */
+export interface PuntoSerieAnalitica {
+  dia: number;
+  /** Suma de `pagos.monto` vigentes con `fecha` ese día. */
+  cobrado: number;
+  /** Cantidad de órdenes con `fecha_ingreso` ese día. */
+  ordenes: number;
+  cobrado_anterior: number;
+  ordenes_anterior: number;
+}
+
+/** Todo lo que devuelve `analiticas_mes()`, en un solo jsonb. */
+export interface AnaliticasMes {
+  /** `aaaa-mm-dd`, primer día del mes pedido. */
+  mes: string;
+  mes_anterior: string;
+  dias_mes: number;
+  dias_mes_anterior: number;
+  /**
+   * Día de hoy, solo si `mes` es el mes en curso — si no, `null`. Sirve para
+   * no comparar el acumulado completo del mes anterior contra un mes a medio
+   * terminar: la curva del mes actual se corta acá, no al final.
+   */
+  dia_de_hoy: number | null;
+  totales: {
+    /** Caja real: Σ `pagos.monto` vigentes por `pagos.fecha`, sin importar el estado de la orden. */
+    cobrado: number;
+    cobrado_mes_anterior: number;
+    /** Σ de lo anulado de `pagos` con `anulado_el` en este mes. */
+    cobros_devueltos: number;
+    /** Σ `total` de las no anuladas, por `ordenes.fecha_ingreso`. Puede ser menor que `cobrado`: son preguntas distintas. */
+    facturado: number;
+    a_cobrar: number;
+    ingresadas: number;
+    anuladas: number;
+    /** Cuántas de las ingresadas (no anuladas) llevaban retiro y entrega a domicilio. */
+    con_envio: number;
+    /** Entregadas EN el mes (por `fecha_entrega_real`), no las que ingresaron y hoy están entregadas. */
+    entregadas: number;
+  };
+  /** Estado actual de las órdenes que ingresaron este mes. */
+  por_estado: Record<EstadoOrden, number>;
+  /** Un punto por cada día del mes más largo de los dos (actual y anterior). */
+  serie: PuntoSerieAnalitica[];
+  por_metodo: Record<MetodoPago, { cobrado: number; cantidad: number }>;
+  por_servicio: Record<ServicioOrden, { ordenes: number; facturado: number }>;
+  /** Por `orden_items.descripcion` (el nombre al momento de recibir), no por `articulo_id`. */
+  por_articulo: { descripcion: string; cantidad: number; ordenes: number }[];
+  /** Quién recibió el trabajo (`ordenes.created_by`). */
+  por_operador: { nombre: string; ordenes: number; facturado: number }[];
+  /** Quién cobró (`pagos.recibido_por`) — no es lo mismo que quién recibió la orden. */
+  cobrado_por: { nombre: string; cobrado: number; cobros: number }[];
+  /** Top 5 por facturado. Las órdenes sin monto no entran. */
+  top_clientes: { cliente_id: string; nombre: string; facturado: number; ordenes: number }[];
+  /** Días de `fecha_ingreso` a `fecha_entrega_real`, medido sobre lo entregado en el mes. Null si no hubo entregas. */
+  dias_promedio_entrega: number | null;
+  /** NO es del mes pedido: es de ahora mismo, igual que la barra del encabezado. */
+  listas_sin_retirar: number;
 }

@@ -13,13 +13,18 @@ import type { EstadoOrden } from '@/types/database';
 
 const FILTROS: (EstadoOrden | 'todos')[] = ['todos', 'recibido', 'listo', 'entregado'];
 
-/** Nombres cortos para los botones de filtro: la columna ya dice el estado largo. */
+/**
+ * Nombres cortos para los botones de filtro: la columna ya dice el estado
+ * largo. "Entregadas" aclara el recorte semanal porque, a diferencia de los
+ * demás filtros, acá sí se deja gente afuera a propósito (ver
+ * `ordenes_tablero()`): una entregada de hace un mes no aparece acá, se busca.
+ */
 const ETIQUETA_FILTRO: Record<EstadoOrden | 'todos', string> = {
   todos: 'Todas',
   recibido: 'Sin empezar',
   en_proceso: 'En proceso',
   listo: 'Listas',
-  entregado: 'Entregadas',
+  entregado: 'Entregadas (7 días)',
   anulado: 'Anuladas',
 };
 
@@ -74,7 +79,7 @@ export default function Ordenes() {
         detalle={
           soloOlvidadas
             ? `Están prontas hace más de ${DIAS_SIN_RETIRAR} días y nadie las vino a buscar.`
-            : 'Buscá por el comprobante que trae el cliente, por su nombre o por su teléfono.'
+            : 'Lo de los últimos 7 días y todo lo que todavía no se entregó. Para algo más viejo, buscá por comprobante, nombre o teléfono.'
         }
         acciones={
           <Link to="/" className="btn-primary btn-lg">

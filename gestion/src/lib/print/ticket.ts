@@ -8,10 +8,11 @@ import { fecha, fechaHora, moneda, telefono as formatearTelefono } from '@/lib/f
  * Los dos papeles que salen al recibir una orden:
  *
  *  1. El comprobante del cliente, con todo lo que recibimos y las condiciones.
- *  2. El talón del lavadero, que va con la bolsa: nombre, teléfono y
- *     referencia, nada más, con el nombre destacado. Es el papel que se mira
+ *  2. El talón del lavadero, que va con la bolsa: nombre, teléfono, referencia,
+ *     servicio y lo recibido, con el nombre destacado. Es el papel que se mira
  *     cuando alguien llama o cuando hay que ubicar una bolsa sin cliente
- *     delante, y se busca más por nombre que por comprobante.
+ *     delante, y se busca más por nombre que por comprobante. Sin fechas ni
+ *     precios: eso se consulta en pantalla.
  *
  * Salen en un solo documento, separados por un salto de página, y no en dos
  * llamadas a `print()`: con `--kiosk-printing` la segunda llamada compite con
@@ -170,9 +171,11 @@ ${bloqueGuarda}
 /**
  * El talón que se queda acá, enganchado a la bolsa.
  *
- * Va sin logo, sin ítems y sin precios a propósito: no lo lee un cliente, lo
- * lee alguien del mostrador buscando una bolsa entre veinte. Cuanto menos
- * texto tenga, más rápido se encuentra lo que importa.
+ * Va sin logo y sin precios a propósito: no lo lee un cliente, lo lee alguien
+ * del mostrador buscando una bolsa entre veinte. Sí lleva el servicio y lo
+ * recibido —con acolchados de distinta plaza mezclados hace falta saber qué
+ * se le hace a esa bolsa sin abrir el sistema—, pero nada de fechas ni de
+ * plata: eso se consulta en pantalla, acá solo lo que importa al tacto.
  */
 function papelLavadero(orden: OrdenCompleta): string {
   // El `respiro` de arriba no es adorno: el padding del body solo vale para la
@@ -182,11 +185,16 @@ function papelLavadero(orden: OrdenCompleta): string {
   // invierte los tamaños de `.contacto .nombre` y `.ref`): a este papel se lo
   // mira para ubicar una bolsa entre veinte, y se busca más por nombre que
   // por comprobante.
+  const recibido = [...lineasRecibido(orden), `Servicio: ${NOMBRE_SERVICIO[orden.servicio]}`];
+  if (orden.envio) recibido.push('Envío:    Retiro y entrega');
+
   return `<div class="papel talon">
 <div class="respiro"></div>
 <pre class="destacado">${centrar('COPIA LAVADERO')}</pre>
 <pre>${separador()}</pre>
 ${bloqueContacto(orden)}
+<pre>${separador()}</pre>
+<pre class="recibido">${escapar(recibido.join('\n'))}</pre>
 <pre>${separador()}</pre>
 <div class="ref">${escapar(orden.ref)}</div>
 <pre>${separador()}</pre>
@@ -267,6 +275,10 @@ export function armarComprobante(orden: OrdenCompleta, config: Configuracion): s
      en el comprobante del cliente. */
   .talon .contacto .nombre { font-size: 26px; letter-spacing: 1px; }
   .talon .ref { font-size: 15px; letter-spacing: 1px; }
+  /* Servicio y artículos: por debajo del nombre, pero legible de un vistazo.
+     Si entra un artículo con nombre largo, envuelve — a 14px entran unos 27
+     caracteres en 32 columnas, así que "2 x Acolchado 2 plazas" pasa justo. */
+  .talon .recibido { font-size: 14px; font-weight: bold; }
 
   .leyenda { text-align: center; }
 
