@@ -1,8 +1,6 @@
-'use client';
-
 import type { ReactNode } from 'react';
 import { buildWhatsAppUrl } from '@/lib/config';
-import { trackWhatsAppClick, type WhatsAppSource } from '@/lib/analytics';
+import type { CtaLocation } from '@/lib/analytics';
 import { WhatsAppIcon } from './icons';
 
 type Variant = 'primary' | 'solid' | 'compact' | 'ghost';
@@ -10,7 +8,8 @@ type Variant = 'primary' | 'solid' | 'compact' | 'ghost';
 /**
  * Componente ÚNICO de conversión a WhatsApp.
  * Todos los caminos de conversión pasan por acá: un solo lugar para el número
- * (via buildWhatsAppUrl) y para el tracking (via trackWhatsAppClick).
+ * (via buildWhatsAppUrl) y para declarar su ubicación (`data-cta`), que es lo
+ * que lee ConversionTracker para el evento `whatsapp_click`.
  *
  * Geometría recta (radio 2px) y sin desplazamiento al hover: el botón se
  * comporta como un control industrial, no como un CTA de plantilla.
@@ -23,7 +22,7 @@ export default function WhatsAppButton({
   className = '',
   showIcon = true,
 }: {
-  source: WhatsAppSource;
+  source: CtaLocation;
   message: string;
   children: ReactNode;
   variant?: Variant;
@@ -55,7 +54,7 @@ export default function WhatsAppButton({
       href={buildWhatsAppUrl(message)}
       target="_blank"
       rel="noopener"
-      onClick={() => trackWhatsAppClick(source)}
+      data-cta={source}
       className={`${base} ${variants[variant]} ${className}`}
     >
       {showIcon && <WhatsAppIcon className="h-5 w-5 shrink-0" />}

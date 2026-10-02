@@ -96,7 +96,7 @@ export const business = {
    * Redes sociales si existen. Dejá el string vacío '' para ocultar cada una.
    */
   social: {
-    instagram: '', // ej: 'https://instagram.com/lavaderoelpuente'
+    instagram: 'https://www.instagram.com/lavaderoindustrial.elpuente/',
     facebook: '', // ej: 'https://facebook.com/lavaderoelpuente'
   },
 
@@ -121,13 +121,6 @@ export const business = {
    * declararía como versión buena una dirección que redirige.
    */
   domain: 'https://www.lavaderoelpuente.com',
-
-  /**
-   * ⚠️ OPCIONAL — GA4
-   * ID de medición de Google Analytics 4 (formato G-XXXXXXX).
-   * Dejá '' para desactivar analítica. Se carga diferido para no dañar performance.
-   */
-  ga4Id: '',
 } as const;
 
 /**

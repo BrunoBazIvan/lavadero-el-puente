@@ -42,7 +42,6 @@ Abrilo y cambiá solo los valores entre comillas. Los más importantes:
 | **Años de trayectoria** | `yearsActive` (poné `null` si no querés mostrar cifra) |
 | **Redes sociales** | `social.instagram` / `social.facebook` |
 | **Dominio final** | `domain` |
-| **Google Analytics (opcional)** | `ga4Id` (formato `G-XXXXXXX`, vacío = desactivado) |
 
 Los mensajes prellenados de WhatsApp también están ahí (`waMessages`).
 
@@ -101,7 +100,6 @@ Subí el contenido de la carpeta `/out` por FTP o el panel del hosting.
 - [ ] Pedir **reseñas en Google** a clientes.
 - [ ] **NAP consistente** (nombre-dirección-teléfono idénticos) en landing, Google Business y guías locales (1122, etc.).
 - [ ] **Google Search Console**: registrar la propiedad y enviar `sitemap.xml`.
-- [ ] (Opcional) Cargar `ga4Id` en `lib/config.ts` para medir clics de WhatsApp.
 - [ ] Validar el JSON-LD en [Rich Results Test](https://search.google.com/test/rich-results).
 - [ ] Correr **Lighthouse móvil** (objetivo: Performance ≥95, SEO 100, Accessibility ≥95).
 
@@ -109,8 +107,19 @@ Subí el contenido de la carpeta `/out` por FTP o el panel del hosting.
 
 ## 📊 Medición (opcional)
 
-Cargá `ga4Id` en `lib/config.ts`. GA4 se carga **diferido** (tras la primera interacción) para no dañar el rendimiento. Eventos:
-`whatsapp_click` (con `source`), `phone_click`, `directions_click`, `scroll_75`.
+Google Analytics 4 y Microsoft Clarity. Los IDs **no** van en `lib/config.ts`: son variables
+de entorno (`NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_CLARITY_ID`, ver `.env.example`) cargadas en
+Vercel → Settings → Environment Variables, entorno Production. Se incrustan en el build:
+después de cambiarlas hay que volver a deployar.
+
+Solo cargan en el dominio de producción (nunca en localhost ni en previews) y sin cookies
+hasta que la persona acepta. Para no medirte a vos: entrá una vez con `?no_track=1` en cada
+dispositivo (`?no_track=0` lo revierte). El plan completo está en `PLAN-ANALITICA.md`.
+
+Eventos (`components/analytics/ConversionTracker.tsx`, un solo listener para todo el sitio):
+`whatsapp_click`, `phone_click`, `directions_click` y `social_click`, con `cta_location`
+(sale del `data-cta` del link o de su contenedor) y `service` (el slug, en las páginas de
+servicio). Un link de conversión nuevo necesita su `data-cta`: si no, llega como `unknown`.
 
 ---
 

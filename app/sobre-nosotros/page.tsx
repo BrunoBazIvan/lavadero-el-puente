@@ -76,7 +76,7 @@ export default function SobreNosotros() {
 
               <div className="mt-8">
                 <WhatsAppButton
-                  source="sobre_nosotros"
+                  source="about_intro"
                   message={waMessages.hero}
                   variant="primary"
                 >
@@ -155,7 +155,7 @@ export default function SobreNosotros() {
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <WhatsAppButton
-                  source="sobre_nosotros"
+                  source="about_closing"
                   message={waMessages.footer}
                   variant="primary"
                 >

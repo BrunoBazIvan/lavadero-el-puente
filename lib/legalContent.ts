@@ -34,6 +34,8 @@ export type LegalPage = {
 };
 
 const ACTUALIZADA = '21 de setiembre de 2026';
+/** Privacidad y Cookies: revisadas al sumar Google Analytics y Microsoft Clarity. */
+const ACTUALIZADA_ANALITICA = '2 de octubre de 2026';
 const zonas = business.deliveryZones.join(', ');
 
 export const legalPages: LegalPage[] = [
@@ -44,7 +46,7 @@ export const legalPages: LegalPage[] = [
     metaDescription:
       'Qué datos recibe el lavadero cuando coordinás por WhatsApp o teléfono, para qué los usa y cómo ejercer tus derechos sobre ellos.',
     h1: 'Política de Privacidad',
-    actualizada: ACTUALIZADA,
+    actualizada: ACTUALIZADA_ANALITICA,
     intro:
       'Esta página explica qué datos recibe el lavadero cuando coordinás un servicio, para qué los usamos y qué derechos tenés sobre ellos, según la Ley 18.331 de Protección de Datos Personales de Uruguay.',
     sections: [
@@ -59,6 +61,12 @@ export const legalPages: LegalPage[] = [
         body: [
           'Cuando nos escribís o llamás para coordinar un servicio, recibimos lo que vos nos contás: tu nombre, tu teléfono, y —si hay retiro o entrega a domicilio— tu dirección. Guardamos esos datos junto con el detalle de tu orden (qué trajiste, cuándo, el monto) en un sistema interno, para poder identificarte la próxima vez que escribas y llevar un registro de tus órdenes.',
           'No usamos tus datos para nada más que coordinar y llevar el registro del servicio: no los vendemos, no los compartimos con terceros para publicidad, y no armamos perfiles de comportamiento.',
+        ],
+      },
+      {
+        h2: 'Lo que medimos en la web',
+        body: [
+          'Si aceptás el aviso de cookies, usamos Google Analytics y Microsoft Clarity para ver cómo se usa el sitio: qué páginas se visitan, desde qué dispositivo y qué botones se tocan. No les mandamos tu nombre, tu teléfono ni lo que nos escribas. El detalle, y cómo cambiar tu elección, está en la Política de Cookies.',
         ],
       },
       {
@@ -134,16 +142,49 @@ export const legalPages: LegalPage[] = [
     breadcrumbLabel: 'Política de Cookies',
     metaTitle: 'Política de Cookies | Lavadero El Puente',
     metaDescription:
-      'Hoy este sitio no usa cookies de seguimiento. Te contamos qué cargamos, cuándo, y qué pasaría si en el futuro sumamos analítica.',
+      'Qué mide este sitio con Google Analytics y Microsoft Clarity, qué cookies se guardan si aceptás y cómo cambiar tu elección cuando quieras.',
     h1: 'Política de Cookies',
-    actualizada: ACTUALIZADA,
+    actualizada: ACTUALIZADA_ANALITICA,
     intro:
-      'Esta página describe con exactitud lo que este sitio carga en tu navegador hoy, no una lista genérica de cookies posibles.',
+      'Esta página describe con exactitud lo que este sitio carga en tu navegador, no una lista genérica de cookies posibles.',
     sections: [
       {
-        h2: 'Hoy no usamos cookies de seguimiento',
+        h2: 'Qué medimos y para qué',
         body: [
-          'Este sitio no tiene Google Analytics activo ni ningún otro rastreador cargando por defecto: no se guarda ninguna cookie de medición en tu navegador al visitarlo. Tampoco usamos cookies propias para recordar tu sesión ni tus preferencias.',
+          'Usamos Google Analytics y Microsoft Clarity para entender cómo se usa la web: qué páginas se visitan, desde dónde llegó la visita (por ejemplo, una búsqueda en Google o Instagram), qué tipo de dispositivo y navegador se usa, la ciudad o el país aproximados, y qué botones se tocan, como el de WhatsApp o el de llamar.',
+          'Clarity, además, registra de forma anónima cómo se mueve la página: el scroll, los clics y dónde se queda la gente. Nos sirve para ver si algo confunde o no se encuentra. Clarity oculta automáticamente los datos sensibles en esas grabaciones.',
+          'Lo usamos solo para mejorar la web y la atención. No lo usamos para publicidad, no armamos perfiles con tu nombre y nunca mandamos a estas herramientas tu nombre, tu teléfono ni lo que nos escribas por WhatsApp.',
+        ],
+      },
+      {
+        h2: 'Nada se guarda hasta que aceptes',
+        body: [
+          'La primera vez que entrás ves un aviso con dos botones, "Aceptar" y "Rechazar". Mientras no aceptes, no se instala ninguna cookie de medición en tu navegador.',
+          'Si rechazás o no elegís, igual se cuenta la visita, pero de forma anónima y sin cookies: no se guarda nada en tu navegador y no hay forma de reconocerte si volvés otro día.',
+        ],
+      },
+      {
+        h2: 'Qué cookies se guardan si aceptás',
+        body: [
+          'Solo estas cuatro, para distinguir una visita de otra y saber si alguien ya había entrado antes:',
+        ],
+        bullets: [
+          '_ga y _ga_<código>: de Google Analytics. Duran hasta 2 años.',
+          '_clck: de Microsoft Clarity. Dura hasta 1 año.',
+          '_clsk: de Microsoft Clarity. Une las páginas de una misma visita y dura 1 día.',
+        ],
+      },
+      {
+        h2: 'Cómo cambiar tu elección',
+        body: [
+          'Al pie de cualquier página está el link "Preferencias de cookies": vuelve a mostrar el aviso para que elijas de nuevo. Si antes habías aceptado y ahora rechazás, borramos esas cookies de tu navegador.',
+          'Tu elección se guarda en el almacenamiento local de tu navegador, no en una cookie, y no sale de tu dispositivo. Si borrás los datos del sitio desde tu navegador, el aviso vuelve a aparecer.',
+        ],
+      },
+      {
+        h2: 'Quién recibe estos datos',
+        body: [
+          'Google y Microsoft procesan esta información en sus propios servidores, que pueden estar fuera de Uruguay, según sus políticas de privacidad. Nosotros vemos los resultados en sus paneles, como totales y grabaciones anónimas.',
         ],
       },
       {
@@ -156,12 +197,6 @@ export const legalPages: LegalPage[] = [
         h2: 'Las tipografías son propias',
         body: [
           'El sitio incluye sus propias tipografías (Montserrat y Lato) en vez de pedirlas a Google Fonts en cada visita, así que tampoco hay cookies ni conexiones externas por ese lado.',
-        ],
-      },
-      {
-        h2: 'Si en el futuro activamos analítica',
-        body: [
-          'Si más adelante sumamos Google Analytics para entender cómo se usa el sitio, vamos a actualizar esta página antes de activarlo y vas a ver un aviso pidiendo tu consentimiento antes de que se instale cualquier cookie de medición. Hasta que eso pase, esta página describe la situación real: no hay nada que consentir porque no se usa nada.',
         ],
       },
     ],

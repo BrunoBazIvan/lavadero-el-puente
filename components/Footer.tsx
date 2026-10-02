@@ -5,6 +5,7 @@ import { legalPages } from '@/lib/legalContent';
 import Logo from './Logo';
 import WhatsAppButton from './WhatsAppButton';
 import PhoneLink from './PhoneLink';
+import CookiePreferencesLink from './analytics/CookiePreferencesLink';
 
 const servicePages = landingPages.filter((p) => p.kind === 'servicio');
 const zonePages = landingPages.filter((p) => p.kind === 'zona');
@@ -48,7 +49,7 @@ export default function Footer() {
               </li>
               <li className="text-brand-200">{openingHours.label}</li>
               <li>
-                <PhoneLink className="font-semibold text-white transition-colors hover:text-aqua-200" />
+                <PhoneLink cta="footer" className="font-semibold text-white transition-colors hover:text-aqua-200" />
               </li>
             </ul>
           </div>
@@ -88,7 +89,7 @@ export default function Footer() {
               </li>
             </ul>
             {(social.instagram || social.facebook) && (
-              <div className="mt-6 flex gap-4 text-sm">
+              <div data-cta="footer" className="mt-6 flex gap-4 text-sm">
                 {social.instagram && (
                   <a
                     href={social.instagram}
@@ -138,6 +139,9 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <CookiePreferencesLink className="transition-colors hover:text-white" />
+            </li>
           </ul>
         </div>
       </div>

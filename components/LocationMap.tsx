@@ -52,10 +52,10 @@ export default function LocationMap() {
 
               <p className="pt-5 text-sm text-brand-500">
                 ¿Preferís llamar?{' '}
-                <PhoneLink className="font-semibold text-brand-700 underline decoration-aqua-300 decoration-1 underline-offset-4 hover:decoration-aqua-500" />
+                <PhoneLink cta="location" className="font-semibold text-brand-700 underline decoration-aqua-300 decoration-1 underline-offset-4 hover:decoration-aqua-500" />
               </p>
 
-              <div className="mt-auto flex flex-col gap-3 pt-8 sm:flex-row sm:flex-wrap">
+              <div data-cta="location" className="mt-auto flex flex-col gap-3 pt-8 sm:flex-row sm:flex-wrap">
                 <WhatsAppButton source="location" message={waMessages.location} variant="solid">
                   Escribinos por WhatsApp
                 </WhatsAppButton>

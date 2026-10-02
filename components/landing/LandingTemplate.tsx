@@ -9,7 +9,6 @@ import { ArrowRight } from '@/components/icons';
 import { business } from '@/lib/config';
 import { getRelated, type LandingPage } from '@/lib/landingPages';
 import { serviceJsonLd, breadcrumbJsonLd, faqListJsonLd } from '@/lib/jsonld';
-import type { WhatsAppSource } from '@/lib/analytics';
 
 /**
  * Plantilla única para todas las páginas de servicio y zona (SEO local).
@@ -18,7 +17,6 @@ import type { WhatsAppSource } from '@/lib/analytics';
  */
 export default function LandingTemplate({ page }: { page: LandingPage }) {
   const related = getRelated(page);
-  const waSource = `servicio_${page.slug}` as WhatsAppSource;
   const jsonLd = [
     serviceJsonLd(page),
     breadcrumbJsonLd(page),
@@ -26,7 +24,9 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
   ];
 
   return (
-    <>
+    // data-service: los clics de conversión de esta página (FAB incluido) se
+    // reportan con el servicio o zona en el parámetro `service`.
+    <div data-service={page.slug}>
       {jsonLd.map((data, i) => (
         <script
           key={i}
@@ -63,10 +63,10 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
               <p className="lead mt-7">{page.intro}</p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <WhatsAppButton source={waSource} message={page.waMessage} variant="primary">
+                <WhatsAppButton source="landing_hero" message={page.waMessage} variant="primary">
                   Pedí tu presupuesto por WhatsApp
                 </WhatsAppButton>
-                <PhoneLink className="min-h-[44px] justify-center rounded-sharp border border-brand-200 bg-white px-6 py-3.5 font-semibold text-brand-700 transition-colors hover:border-brand-400 hover:text-brand-800">
+                <PhoneLink cta="landing_hero" className="min-h-[44px] justify-center rounded-sharp border border-brand-200 bg-white px-6 py-3.5 font-semibold text-brand-700 transition-colors hover:border-brand-400 hover:text-brand-800">
                   Llamar {business.phoneDisplay}
                 </PhoneLink>
               </div>
@@ -180,10 +180,10 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
                 Contanos qué necesitás y te pasamos el presupuesto. Sin compromiso.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <WhatsAppButton source={waSource} message={page.waMessage} variant="primary">
+                <WhatsAppButton source="landing_closing" message={page.waMessage} variant="primary">
                   Escribinos por WhatsApp
                 </WhatsAppButton>
-                <PhoneLink className="min-h-[44px] justify-center rounded-sharp border border-white/25 px-6 py-3.5 font-semibold text-white transition-colors hover:border-white/60">
+                <PhoneLink cta="landing_closing" className="min-h-[44px] justify-center rounded-sharp border border-white/25 px-6 py-3.5 font-semibold text-white transition-colors hover:border-white/60">
                   Llamar {business.phoneDisplay}
                 </PhoneLink>
               </div>
@@ -193,6 +193,6 @@ export default function LandingTemplate({ page }: { page: LandingPage }) {
       </main>
       <Footer />
       <WhatsAppFAB />
-    </>
+    </div>
   );
 }
