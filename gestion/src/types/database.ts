@@ -380,12 +380,11 @@ export interface AnaliticasMes {
   dia_de_hoy: number | null;
   totales: {
     /**
-     * Σ `total` de las órdenes que quedaron COMPLETAMENTE pagadas este mes
-     * (`pagado >= total`), ubicadas por la fecha del pago que las saldó — no
-     * por cuándo ingresaron. No mira el estado de la orden: si se anula una
-     * ya cobrada sin devolver la plata, sigue contando acá (la plata sigue en
-     * la caja); si se devuelve, el pago se anula y la orden sale sola de la
-     * cuenta. Ver `cobradas_detalle` para la lista.
+     * Σ `total` de las órdenes NO ANULADAS que quedaron COMPLETAMENTE pagadas
+     * este mes (`pagado >= total`), ubicadas por la fecha del pago que las
+     * saldó — no por cuándo ingresaron (migración `0008`). Una orden anulada
+     * no cuenta acá nunca, se haya devuelto la plata o no: no es una venta
+     * cerrada. Ver `cobradas_detalle` para la lista.
      */
     cobrado: number;
     cobrado_mes_anterior: number;

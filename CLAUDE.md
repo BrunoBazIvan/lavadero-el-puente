@@ -91,12 +91,13 @@ de una orden y el de las analíticas dejan de coincidir.
 - **Anular una orden con plata adentro** (`anular_orden`) anula también los
   cobros que se devolvieron, en la misma transacción — nunca en dos pasos
   donde el segundo se puede saltear. "Cobrado en el mes" (`analiticas_mes`,
-  migración `0007`) cuenta **órdenes completamente pagadas**, no pagos
-  sueltos, y a propósito no mira el `estado` de la orden: si se anula una ya
-  cobrada sin devolver la plata, sigue contando — la plata sigue en la caja.
-  Si se devuelve, el pago se anula y la orden sale de la cuenta sola. Es la
-  misma razón original por la que anular no puede mover el total de un mes ya
-  cerrado.
+  migración `0008`) cuenta **órdenes no anuladas que quedaron completamente
+  pagadas**, no pagos sueltos: una orden anulada no cuenta nunca ahí, se haya
+  devuelto la plata o no — decisión del negocio, no es una venta cerrada.
+  Mismo criterio que ya regía para `facturado` y `a_cobrar` desde la 0004.
+  Ojo: esto puede mover retroactivamente el "cobrado" de un mes ya cerrado si
+  hoy se anula una orden que se había cobrado hace tiempo — es la consecuencia
+  aceptada, no un descuido.
 
 ---
 
