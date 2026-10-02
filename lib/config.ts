@@ -96,7 +96,7 @@ export const business = {
    * Redes sociales si existen. Dejá el string vacío '' para ocultar cada una.
    */
   social: {
-    instagram: '', // ej: 'https://instagram.com/lavaderoelpuente'
+    instagram: 'https://www.instagram.com/lavaderoindustrial.elpuente/',
     facebook: '', // ej: 'https://facebook.com/lavaderoelpuente'
   },
 
