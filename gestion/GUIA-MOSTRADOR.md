@@ -78,9 +78,11 @@ Lo que escribas acá **no sale impreso** en el comprobante del cliente.
 
 1. **El del cliente** — con el logo, todo lo que recibimos y las condiciones.
    Es lo que trae cuando viene a buscar la ropa.
-2. **La copia del lavadero** — dice `COPIA LAVADERO` y trae solo la
-   referencia, el nombre y el teléfono. Ese va **con la bolsa**: es lo que
-   mirás cuando hay que ubicar una bolsa o llamar al cliente.
+2. **La copia del lavadero** — dice `COPIA LAVADERO` y trae el nombre, el
+   teléfono, la referencia, el servicio y lo que recibimos (con cantidad, por
+   ejemplo "2 × Acolchado 2 plazas"). Ese va **con la bolsa**: es lo que mirás
+   para saber qué hacerle a esa bolsa sin abrir el sistema, o para ubicarla o
+   llamar al cliente.
 
 Si sale uno solo, la impresora cortó de más: la copia sigue en el rollo.
 
@@ -102,6 +104,14 @@ Ese botón es siempre lo que toca hacer ahora — no hay que buscar nada más:
 
 Si una orden quedó en el estado equivocado, abajo del todo hay **"¿Quedó en el
 estado equivocado?"**: ahí la podés mover a mano para adelante o para atrás.
+
+Si la orden ya está **Entregada** y "el cliente se la llevó" fue un error —era
+otra bolsa, tocaste el botón de más—, en ese mismo lugar aparece **"El cliente
+NO se la llevó"**. Te pide un motivo (queda anotado con tu nombre y la fecha)
+y, si la orden tenía algún cobro, te pregunta cuáles de esos cobros le
+devolviste de verdad: marcá solo esos, el resto queda a favor del cliente. La
+orden vuelve a **Lista para retirar**. No hay límite de tiempo ni hace falta un
+admin: lo arregla quien lo cometió, en el momento.
 
 ---
 
@@ -141,6 +151,11 @@ en el contador de arriba y que el cliente pueda venir tranquilo.
 En la lista de **Órdenes** se ve el monto de cada una y, abajo del importe, lo
 que quedó debiendo.
 
+La lista no muestra todo el historial: trae **lo de los últimos 7 días y todo
+lo que todavía no se entregó**. Si necesitás una entregada de hace más tiempo,
+no la vas a encontrar scrolleando — buscala por el comprobante, el nombre o el
+teléfono, que eso sí llega a cualquier fecha.
+
 ### Si perdió el comprobante
 
 Buscala por teléfono o por nombre. Desde el detalle de la orden podés
@@ -167,10 +182,12 @@ cuántos días está esperando y tenés el botón que arma el mensaje solo.
 
 ## Si te equivocaste al recibir
 
-Abrí la orden y tocá **Anular orden**. Te va a pedir dos cosas:
+Abrí la orden y tocá **Anular orden**. Te va a pedir:
 
-1. Escribir la referencia a mano (`EP-00001`), para que no se anule sin querer
+1. Si la orden tenía algún cobro, cuáles de esos cobros le devolviste de
+   verdad al cliente (marcá solo esos; los que no marques quedan a favor)
 2. Un motivo
+3. Escribir la referencia a mano (`EP-00001`), para que no se anule sin querer
 
 El motivo queda guardado con tu nombre y la fecha. Escribí algo que se entienda
 dentro de seis meses: *"cliente equivocado"* sirve, *"error"* no.

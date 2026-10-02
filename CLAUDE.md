@@ -62,8 +62,11 @@ Lo que se rompe si lo tocás sin mirar:
 El total de una orden sale de **`ordenes.monto`** (migración `0004_cobro.sql`),
 no de los precios de los ítems: la 0002 dejó `precio_unitario` en 0 a propósito
 porque la ropa no se cuenta prenda por prenda, y lo que se cobra es una bolsa.
-Si algún día vuelven los precios por artículo, los dos únicos lugares donde se
-decide el total son `orden_totales()` y `v_ordenes`.
+Si algún día vuelven los precios por artículo, los lugares donde se decide el
+total son `orden_totales()`, `v_ordenes` y **`guard_pago()`** (migración
+`0006_revertir_y_analiticas.sql`): los tres suman `pagos.monto` por separado, y
+los tres tienen que filtrar `anulado_el is null` — si se olvida uno, el saldo
+de una orden y el de las analíticas dejan de coincidir.
 
 - **El monto se carga al pasar la orden a `listo`**, y la base lo exige
   (`guard_orden_update`). Por eso la UI manda estado y monto en el **mismo**
@@ -75,6 +78,21 @@ decide el total son `orden_totales()` y `v_ordenes`.
 - **Entregar debiendo es solo de admin**, como ya era. La UI apaga el botón y
   lo explica, en vez de dejar que el mostrador choque contra un error de
   Postgres que no puede resolver.
+- **Los pagos no se borran, se anulan** (`pagos.anulado_el`, migración 0006).
+  Un cobro mal cargado queda en la tabla, tachado en la UI, con motivo y quién
+  lo anuló (`anular_pago`): borrar plata deja un arqueo que nadie puede
+  explicar seis meses después.
+- **Una entrega se puede revertir** (`revertir_entrega`, `entregado → listo`):
+  cualquier staff, sin límite de tiempo, siempre que quede un motivo escrito —
+  `guard_orden_update` rechaza un `update` que no toque `notas`, así que el
+  único camino es esa RPC. Al revertir, los cobros que de verdad se devolvieron
+  se anulan (van por lista de ids, no por un sí/no: una seña vieja no tiene que
+  perderse porque se devolvió solo el saldo de hoy).
+- **Anular una orden con plata adentro** (`anular_orden`) anula también los
+  cobros que se devolvieron, en la misma transacción — nunca en dos pasos
+  donde el segundo se puede saltear. Un cobro vigente de una orden anulada
+  sigue siendo caja real: las analíticas lo cuentan en "cobrado" aunque la
+  orden ya no cuente en "facturado".
 
 ---
 
@@ -184,6 +202,9 @@ rediseñó a propósito y no hay que deshacer:
   en punta) y **nunca van solos**: siempre acompañan a un texto. No agregar una
   librería de íconos — la PC del mostrador tiene que renderizar sin internet,
   igual que con las tipografías auto-hospedadas.
+- **Las gráficas de Analíticas son SVG propio** (`components/Grafica.tsx`), por
+  el mismo motivo que los íconos: nada de librerías de charts. El tooltip es el
+  `<title>` nativo del SVG, no un componente aparte.
 - **La barra de pendientes del encabezado es fija y está en todas las
   pantallas.** Responde "¿qué quedó pendiente?" sin navegar. Sus celdas son
   links a `/ordenes?estado=…`, por eso **el filtro de Órdenes vive en la URL** y

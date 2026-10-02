@@ -16,6 +16,7 @@ import {
   IconoLista,
   IconoReloj,
   IconoTelefono,
+  IconoVolver,
   IconoWhatsapp,
   IconoX,
 } from '@/components/Iconos';
@@ -25,11 +26,13 @@ import {
   DIAS_SIN_RETIRAR,
   useActualizarNota,
   useAnularOrden,
+  useAnularPago,
   useCambiarEstadoOrden,
   useEntregarOrden,
   useGuardarMonto,
   useOrden,
   useRegistrarPago,
+  useRevertirEntrega,
 } from '@/hooks/useOrdenes';
 import { useConfiguracion } from '@/hooks/useConfiguracion';
 import { useImprimir } from '@/hooks/useImprimir';
@@ -43,9 +46,14 @@ import {
   telefono as formatearTelefono,
 } from '@/lib/format';
 import { METODOS_PAGO, NOMBRE_METODO_PAGO, NOMBRE_SERVICIO } from '@/types/database';
-import type { EstadoOrden, MetodoPago, OrdenCompleta } from '@/types/database';
+import type { EstadoOrden, MetodoPago, OrdenCompleta, Pago } from '@/types/database';
 
-/** Estados que se cambian a mano. Anular va aparte, con su confirmación. */
+/**
+ * Estados que se cambian a mano desde una orden ABIERTA (recibido o listo).
+ * Anular va aparte, con su confirmación, y revertir una ENTREGADA tiene su
+ * propio camino (`ModalRevertir`): la base no deja un `update` de estado
+ * directo ahí, exige que quede un motivo escrito.
+ */
 const ESTADOS_MANUALES: EstadoOrden[] = ['recibido', 'listo', 'entregado'];
 
 export default function OrdenDetalle() {
@@ -59,10 +67,13 @@ export default function OrdenDetalle() {
   const actualizarNota = useActualizarNota();
   const { imprimir } = useImprimir();
   const [anularAbierto, setAnularAbierto] = useState(false);
+  const [revertirAbierto, setRevertirAbierto] = useState(false);
   /** null = cerrado. Si no, dice para qué se abrió el cuadro del monto. */
   const [montoAbierto, setMontoAbierto] = useState<'listo' | 'corregir' | null>(null);
   const [entregaAbierta, setEntregaAbierta] = useState(false);
   const [pagoAbierto, setPagoAbierto] = useState(false);
+  /** El pago que se está por anular, o null si el cuadro está cerrado. */
+  const [pagoAnulando, setPagoAnulando] = useState<Pago | null>(null);
   const [imprimiendo, setImprimiendo] = useState(false);
   const [notaEditando, setNotaEditando] = useState(false);
   const [notaTexto, setNotaTexto] = useState('');
@@ -274,15 +285,40 @@ export default function OrdenDetalle() {
                 </dl>
 
                 {orden.pagos.length > 0 && (
-                  <ul className="mt-3 space-y-1.5 border-t border-brand-100 pt-3 text-sm text-slate-600">
-                    {orden.pagos.map((p) => (
-                      <li key={p.id} className="flex justify-between gap-2">
-                        <span>
-                          {NOMBRE_METODO_PAGO[p.metodo]} · {fecha(p.fecha)}
-                        </span>
-                        <span className="tabular">{moneda(p.monto)}</span>
-                      </li>
-                    ))}
+                  <ul className="mt-3 space-y-1.5 border-t border-brand-100 pt-3 text-sm">
+                    {/* Los anulados no se esconden: un pago que desaparece se
+                        lee como un error del sistema, no como una corrección. */}
+                    {orden.pagos.map((p) =>
+                      p.anulado_el ? (
+                        <li key={p.id} className="text-slate-400">
+                          <div className="flex justify-between gap-2 line-through">
+                            <span>
+                              {NOMBRE_METODO_PAGO[p.metodo]} · {fecha(p.fecha)}
+                            </span>
+                            <span className="tabular">{moneda(p.monto)}</span>
+                          </div>
+                          <p className="text-xs italic">Anulado: {p.anulado_motivo}</p>
+                        </li>
+                      ) : (
+                        <li key={p.id} className="flex items-center justify-between gap-2 text-slate-600">
+                          <span>
+                            {NOMBRE_METODO_PAGO[p.metodo]} · {fecha(p.fecha)}
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <span className="tabular">{moneda(p.monto)}</span>
+                            {orden.estado !== 'entregado' && (
+                              <button
+                                type="button"
+                                className="text-xs font-semibold text-alerta hover:underline"
+                                onClick={() => setPagoAnulando(p)}
+                              >
+                                Anular
+                              </button>
+                            )}
+                          </span>
+                        </li>
+                      ),
+                    )}
                   </ul>
                 )}
 
@@ -419,30 +455,50 @@ export default function OrdenDetalle() {
 
           {/* ── Corregir el estado ─────────────────────────────────────────
               Va plegado y al final: mover una orden para atrás es la
-              excepción, y arriba compite con el paso que sí toca hacer. */}
-          {!cerrada && (
+              excepción, y arriba compite con el paso que sí toca hacer.
+              Desde "anulado" no hay nada que corregir: es definitivo. */}
+          {orden.estado !== 'anulado' && (
             <details className="panel group">
               <summary className="cursor-pointer list-none px-4 py-3 font-display text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50">
                 ¿Quedó en el estado equivocado?
               </summary>
               <div className="border-t border-brand-100 px-4 py-4">
-                <p className="mb-3 text-sm text-slate-600">
-                  Movela al estado que corresponde. Marcarla lista o entregada te va a pedir los
-                  datos de siempre.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {ESTADOS_MANUALES.filter((e) => e !== orden.estado).map((e) => (
+                {orden.estado === 'entregado' ? (
+                  <>
+                    <p className="mb-3 text-sm text-slate-600">
+                      Si "el cliente se la llevó" fue un error, revertila: vuelve a lista para
+                      retirar y queda anotado el motivo.
+                    </p>
                     <button
-                      key={e}
                       type="button"
                       className="btn-secondary"
-                      disabled={cambiarEstado.isPending}
-                      onClick={() => elegirEstado(e)}
+                      onClick={() => setRevertirAbierto(true)}
                     >
-                      {ETIQUETA_ESTADO[e]}
+                      <IconoVolver size={18} />
+                      El cliente NO se la llevó
                     </button>
-                  ))}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-3 text-sm text-slate-600">
+                      Movela al estado que corresponde. Marcarla lista o entregada te va a pedir los
+                      datos de siempre.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {ESTADOS_MANUALES.filter((e) => e !== orden.estado).map((e) => (
+                        <button
+                          key={e}
+                          type="button"
+                          className="btn-secondary"
+                          disabled={cambiarEstado.isPending}
+                          onClick={() => elegirEstado(e)}
+                        >
+                          {ETIQUETA_ESTADO[e]}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </details>
           )}
@@ -457,6 +513,10 @@ export default function OrdenDetalle() {
       {entregaAbierta && <ModalEntrega orden={orden} onCerrar={() => setEntregaAbierta(false)} />}
       {pagoAbierto && <ModalPago orden={orden} onCerrar={() => setPagoAbierto(false)} />}
       <ModalAnular orden={orden} abierto={anularAbierto} onCerrar={() => setAnularAbierto(false)} />
+      <ModalRevertir orden={orden} abierto={revertirAbierto} onCerrar={() => setRevertirAbierto(false)} />
+      {pagoAnulando && (
+        <ModalAnularPago pago={pagoAnulando} abierto onCerrar={() => setPagoAnulando(null)} />
+      )}
     </>
   );
 }
@@ -1004,16 +1064,32 @@ function ModalAnular({
   const anular = useAnularOrden();
   const [motivo, setMotivo] = useState('');
   const [confirmacion, setConfirmacion] = useState('');
+  const [devueltos, setDevueltos] = useState<Set<string>>(new Set());
 
+  const pagosVigentes = orden.pagos.filter((p) => !p.anulado_el);
   const refCoincide = confirmacion.trim().toUpperCase() === orden.ref.toUpperCase();
   const puedeAnular = refCoincide && motivo.trim().length >= 3;
 
+  const alternarDevuelto = (id: string) => {
+    setDevueltos((actual) => {
+      const copia = new Set(actual);
+      if (copia.has(id)) copia.delete(id);
+      else copia.add(id);
+      return copia;
+    });
+  };
+
   const confirmar = async () => {
     try {
-      await anular.mutateAsync({ orden, motivo });
+      await anular.mutateAsync({
+        ordenId: orden.id,
+        motivo,
+        pagosDevueltos: Array.from(devueltos),
+      });
       toast.ok(`Orden ${orden.ref} anulada.`);
       setMotivo('');
       setConfirmacion('');
+      setDevueltos(new Set());
       onCerrar();
     } catch {
       // El toast lo muestra el manejador global de React Query.
@@ -1029,6 +1105,34 @@ function ModalAnular({
           Deja de contar en el historial del cliente.
         </p>
       </div>
+
+      {pagosVigentes.length > 0 && (
+        <fieldset className="mt-5">
+          <legend className="label">¿Le devolviste alguno de estos cobros?</legend>
+          <div className="space-y-2">
+            {pagosVigentes.map((p) => (
+              <label
+                key={p.id}
+                className="flex cursor-pointer items-center gap-3 rounded-sharp border border-brand-300 px-4 py-3 transition-colors hover:bg-brand-50 has-[:checked]:border-brand-800 has-[:checked]:bg-brand-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={devueltos.has(p.id)}
+                  onChange={() => alternarDevuelto(p.id)}
+                  className="casilla"
+                />
+                <span className="flex-1 text-[0.9375rem] text-ink">
+                  {NOMBRE_METODO_PAGO[p.metodo]} · {fecha(p.fecha)}
+                </span>
+                <span className="tabular font-semibold text-ink">{moneda(p.monto)}</span>
+              </label>
+            ))}
+          </div>
+          <p className="ayuda">
+            Marcá solo los que de verdad devolviste. Los que no marques quedan a favor del cliente.
+          </p>
+        </fieldset>
+      )}
 
       <div className="mt-5">
         <label className="label" htmlFor="motivo">
@@ -1071,6 +1175,210 @@ function ModalAnular({
         >
           {anular.isPending ? <Spinner size={18} /> : <IconoAnular size={18} />}
           Anular orden
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ── Revertir una entrega ─────────────────────────────────────────────────── */
+
+/**
+ * "El cliente NO se la llevó": el toque de más se corrige donde se cometió,
+ * sin esperar a un admin ni límite de tiempo. Lo único que la base exige es
+ * que quede un motivo escrito — por eso el motivo es obligatorio acá también,
+ * y no hay confirmación de referencia como en anular: esto corrige, no
+ * destruye.
+ */
+function ModalRevertir({
+  orden,
+  abierto,
+  onCerrar,
+}: {
+  orden: OrdenCompleta;
+  abierto: boolean;
+  onCerrar: () => void;
+}) {
+  const toast = useToast();
+  const revertir = useRevertirEntrega();
+  const [motivo, setMotivo] = useState('');
+  const [devueltos, setDevueltos] = useState<Set<string>>(new Set());
+
+  const pagosVigentes = orden.pagos.filter((p) => !p.anulado_el);
+  const puedeConfirmar = motivo.trim().length >= 3;
+
+  const alternarDevuelto = (id: string) => {
+    setDevueltos((actual) => {
+      const copia = new Set(actual);
+      if (copia.has(id)) copia.delete(id);
+      else copia.add(id);
+      return copia;
+    });
+  };
+
+  const confirmar = async () => {
+    if (!puedeConfirmar) return;
+    try {
+      await revertir.mutateAsync({
+        ordenId: orden.id,
+        motivo,
+        pagosDevueltos: Array.from(devueltos),
+      });
+      toast.ok(`Orden ${orden.ref}: vuelve a lista para retirar.`);
+      setMotivo('');
+      setDevueltos(new Set());
+      onCerrar();
+    } catch {
+      // El toast lo muestra el manejador global de React Query.
+    }
+  };
+
+  return (
+    <Modal
+      abierto={abierto}
+      onCerrar={onCerrar}
+      titulo={`Revertir la entrega de ${orden.ref}`}
+      ancho="md"
+    >
+      <div className="flex items-start gap-3 rounded-card border border-brand-200 bg-brand-50 px-4 py-3.5">
+        <IconoVolver size={20} className="mt-0.5 shrink-0 text-brand-700" />
+        <p className="text-[0.9375rem] leading-relaxed text-ink">
+          La orden vuelve a <span className="font-semibold">lista para retirar</span>.
+        </p>
+      </div>
+
+      {/* Lista de ids, no un sí/no genérico: una seña vieja y el cobro de hoy
+          pueden convivir, y devolver "todo" borraría la seña sin que nadie lo
+          pidiera. Por default no se marca ninguno: la plata queda a favor
+          salvo que acá se diga lo contrario. */}
+      {pagosVigentes.length > 0 && (
+        <fieldset className="mt-5">
+          <legend className="label">¿Devolviste alguno de estos cobros?</legend>
+          <div className="space-y-2">
+            {pagosVigentes.map((p) => (
+              <label
+                key={p.id}
+                className="flex cursor-pointer items-center gap-3 rounded-sharp border border-brand-300 px-4 py-3 transition-colors hover:bg-brand-50 has-[:checked]:border-brand-800 has-[:checked]:bg-brand-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={devueltos.has(p.id)}
+                  onChange={() => alternarDevuelto(p.id)}
+                  className="casilla"
+                />
+                <span className="flex-1 text-[0.9375rem] text-ink">
+                  {NOMBRE_METODO_PAGO[p.metodo]} · {fecha(p.fecha)}
+                </span>
+                <span className="tabular font-semibold text-ink">{moneda(p.monto)}</span>
+              </label>
+            ))}
+          </div>
+          <p className="ayuda">
+            Marcá solo los que de verdad le devolviste. Los que no marques quedan a favor.
+          </p>
+        </fieldset>
+      )}
+
+      <div className="mt-5">
+        <label className="label" htmlFor="motivo-revertir">
+          Motivo
+        </label>
+        <textarea
+          id="motivo-revertir"
+          rows={2}
+          value={motivo}
+          onChange={(e) => setMotivo(e.target.value)}
+          placeholder="Se tocó el botón por error, era otra bolsa…"
+          className="field resize-y"
+        />
+        <p className="ayuda">Queda escrito en las notas de la orden, con tu nombre y la fecha.</p>
+      </div>
+
+      <div className="mt-6 flex flex-wrap justify-end gap-2">
+        <button type="button" className="btn-secondary" onClick={onCerrar}>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={!puedeConfirmar || revertir.isPending}
+          onClick={() => void confirmar()}
+        >
+          {revertir.isPending ? <Spinner size={18} /> : <IconoVolver size={18} />}
+          Revertir la entrega
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ── Anular un cobro suelto ───────────────────────────────────────────────── */
+
+/**
+ * Un cobro mal cargado (seña dos veces, monto tipeado mal), sin tocar el
+ * estado de la orden. No se borra: queda tachado en la lista de pagos, con
+ * motivo y quién lo anuló.
+ */
+function ModalAnularPago({
+  pago,
+  abierto,
+  onCerrar,
+}: {
+  pago: Pago;
+  abierto: boolean;
+  onCerrar: () => void;
+}) {
+  const toast = useToast();
+  const anularPago = useAnularPago();
+  const [motivo, setMotivo] = useState('');
+  const puedeConfirmar = motivo.trim().length >= 3;
+
+  const confirmar = async () => {
+    if (!puedeConfirmar) return;
+    try {
+      await anularPago.mutateAsync({ pagoId: pago.id, motivo });
+      toast.ok('Cobro anulado.');
+      setMotivo('');
+      onCerrar();
+    } catch {
+      // El toast lo muestra el manejador global de React Query.
+    }
+  };
+
+  return (
+    <Modal abierto={abierto} onCerrar={onCerrar} titulo="Anular este cobro" ancho="md">
+      <p className="text-[0.9375rem] text-slate-600">
+        {NOMBRE_METODO_PAGO[pago.metodo]} · {fecha(pago.fecha)} ·{' '}
+        <span className="tabular font-semibold text-ink">{moneda(pago.monto)}</span>
+      </p>
+
+      <div className="mt-4">
+        <label className="label" htmlFor="motivo-pago">
+          Motivo
+        </label>
+        <textarea
+          id="motivo-pago"
+          rows={2}
+          value={motivo}
+          onChange={(e) => setMotivo(e.target.value)}
+          placeholder="Se cargó dos veces, monto mal tipeado…"
+          className="field resize-y"
+        />
+        <p className="ayuda">No se borra: queda tachado en la lista, con el motivo y tu nombre.</p>
+      </div>
+
+      <div className="mt-6 flex flex-wrap justify-end gap-2">
+        <button type="button" className="btn-secondary" onClick={onCerrar}>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="btn-danger"
+          disabled={!puedeConfirmar || anularPago.isPending}
+          onClick={() => void confirmar()}
+        >
+          {anularPago.isPending ? <Spinner size={18} /> : <IconoAnular size={18} />}
+          Anular cobro
         </button>
       </div>
     </Modal>
