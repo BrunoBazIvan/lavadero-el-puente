@@ -5,6 +5,7 @@ import { legalPages } from '@/lib/legalContent';
 import Logo from './Logo';
 import WhatsAppButton from './WhatsAppButton';
 import PhoneLink from './PhoneLink';
+import CookiePreferencesLink from './analytics/CookiePreferencesLink';
 
 const servicePages = landingPages.filter((p) => p.kind === 'servicio');
 const zonePages = landingPages.filter((p) => p.kind === 'zona');
@@ -138,6 +139,9 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <CookiePreferencesLink className="transition-colors hover:text-white" />
+            </li>
           </ul>
         </div>
       </div>

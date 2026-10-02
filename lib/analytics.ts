@@ -54,6 +54,48 @@ export function setAnalyticsConsent(granted: boolean): void {
       analytics_Storage: granted ? 'granted' : 'denied',
     });
   } catch {}
+  // Pasar a "denied" frena las cookies nuevas pero no borra las que ya están.
+  if (!granted) clearAnalyticsCookies();
+}
+
+/** ¿La persona ya eligió? (solo leer dentro de un efecto: en el render rompe la hidratación). */
+export function hasConsentChoice(): boolean {
+  try {
+    return localStorage.getItem(CONSENT_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+/** Evento con el que el link "Preferencias de cookies" reabre el banner. */
+export const OPEN_CONSENT_EVENT = 'analytics:open-consent';
+
+export function reopenConsentBanner(): void {
+  try {
+    localStorage.removeItem(CONSENT_KEY);
+  } catch {}
+  window.dispatchEvent(new Event(OPEN_CONSENT_EVENT));
+}
+
+/**
+ * Borra `_ga`, `_ga_<ID>`, `_clck` y `_clsk`. Se prueba sin dominio y con
+ * `.dominio` porque GA y Clarity las escriben en el dominio raíz: un borrado
+ * con un `domain` distinto al de la cookie no hace nada.
+ */
+function clearAnalyticsCookies(): void {
+  try {
+    const names = document.cookie
+      .split(';')
+      .map((c) => c.split('=')[0].trim())
+      .filter((n) => n === '_ga' || n.startsWith('_ga_') || n === '_clck' || n === '_clsk');
+    const host = location.hostname;
+    const domains = ['', host, `.${host}`, `.${host.replace(/^www\./, '')}`];
+    for (const name of names) {
+      for (const d of domains) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${d ? `; domain=${d}` : ''}`;
+      }
+    }
+  } catch {}
 }
 
 /**
