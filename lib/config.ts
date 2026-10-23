@@ -49,18 +49,19 @@ export const business = {
   },
 
   /**
-   * ⚠️ PLACEHOLDER — OPENING_HOURS
    * Horarios reales de atención. `label` es lo que ve el visitante.
    * `spec` alimenta los datos estructurados de Google (formato 24h HH:MM).
+   * Si cambian, cambialos también en el perfil de Google Business: si no
+   * coinciden, Google puede seguir mostrando el viejo.
    */
   openingHours: {
-    label: 'Lunes a Sábado de 8:00 a 19:00',
-    shortLabel: 'Lun a Sáb · 8 a 19 h',
+    label: 'Todos los días de 7:00 a 16:30',
+    shortLabel: 'Todos los días · 7 a 16:30 h',
     spec: [
       {
-        days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        opens: '08:00',
-        closes: '19:00',
+        days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+        opens: '07:00',
+        closes: '16:30',
       },
     ],
   },

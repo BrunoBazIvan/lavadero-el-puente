@@ -109,27 +109,37 @@ export function finDelDia(valor: Date | string): string {
   return fin.toISOString();
 }
 
-/* ── Teléfonos uruguayos ─────────────────────────────────────────────────────
- *  Celular:  09X XXX XXX   (9 dígitos, arranca en 09)
- *  Fijo:     42XX XXXX     (8 dígitos; 42 es Maldonado)
+/* ── Teléfonos ───────────────────────────────────────────────────────────────
+ *  Uruguayos, que son casi todos:
+ *    Celular:  09X XXX XXX   (9 dígitos, arranca en 09)
+ *    Fijo:     42XX XXXX     (8 dígitos; 42 es Maldonado)
+ *  Se guardan sin espacios y sin el 598. Para WhatsApp se antepone el 598 y se
+ *  saca el 0 inicial.
  *
- *  Se guarda siempre normalizado y sin espacios. Para WhatsApp se antepone el
- *  598 y se saca el 0 inicial.
+ *  De otro país (turistas): se escriben con + y el código, y se guardan así,
+ *  "+5491122334455". El + es lo que los distingue: sin él, un número se toma
+ *  como uruguayo.
  * ─────────────────────────────────────────────────────────────────────────── */
 
 /**
- * Deja el teléfono como se guarda: solo dígitos, formato 09XXXXXXX.
- * Acepta "+598 99 767 134", "099-767-134", "99767134"…
+ * Deja el teléfono como se guarda: solo dígitos, formato 09XXXXXXX; o, si es
+ * de otro país, + y los dígitos.
+ * Acepta "+598 99 767 134", "099-767-134", "99767134", "+54 9 11 2233-4455"…
  * Devuelve null si no queda nada.
  */
 export function normalizarTelefono(entrada: string | null | undefined): string | null {
   if (!entrada) return null;
 
+  const internacional = /^\s*(\+|00)/.test(entrada);
   let d = entrada.replace(/\D/g, '');
   if (!d) return null;
 
   // Prefijo internacional, con o sin ceros de salida.
-  d = d.replace(/^(00)?598/, '');
+  if (internacional) {
+    d = d.replace(/^00/, '');
+    if (!d.startsWith('598')) return '+' + d;
+  }
+  d = d.replace(/^598/, '');
 
   // Celular sin el 0: 99767134 → 099767134
   if (d.length === 8 && d.startsWith('9')) d = '0' + d;
@@ -137,19 +147,21 @@ export function normalizarTelefono(entrada: string | null | undefined): string |
   return d;
 }
 
-/** true si parece un teléfono uruguayo usable. */
+/** true si parece un teléfono usable: uruguayo, o de otro país con su código. */
 export function telefonoValido(entrada: string | null | undefined): boolean {
   const d = normalizarTelefono(entrada);
   if (!d) return false;
+  if (d.startsWith('+')) return /^\+\d{8,15}$/.test(d); // otro país
   if (d.length === 9 && d.startsWith('09')) return true; // celular
   if (d.length === 8) return true; // fijo
   return false;
 }
 
-/** 099767134 → "099 767 134" · 42223344 → "4222 3344" */
+/** 099767134 → "099 767 134" · 42223344 → "4222 3344" · los de afuera, tal cual */
 export function telefono(valor: string | null | undefined): string {
   const d = normalizarTelefono(valor);
   if (!d) return '—';
+  if (d.startsWith('+')) return d;
   if (d.length === 9) return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
   if (d.length === 8) return `${d.slice(0, 4)} ${d.slice(4)}`;
   return d;
@@ -159,6 +171,8 @@ export function telefono(valor: string | null | undefined): string {
 export function telefonoWhatsapp(valor: string | null | undefined): string | null {
   const d = normalizarTelefono(valor);
   if (!d) return null;
+  // De afuera no sabemos si es celular: se prueba, y WhatsApp avisa si no.
+  if (d.startsWith('+')) return d.slice(1);
   const sinCero = d.replace(/^0/, '');
   // WhatsApp solo tiene sentido en celulares.
   if (sinCero.length !== 8 || !sinCero.startsWith('9')) return null;

@@ -26,8 +26,12 @@ export function Modal({ abierto, onCerrar, titulo, detalle, children, ancho = 'm
   useEffect(() => {
     if (!abierto) return;
 
+    // Con un modal abierto encima de otro (confirmar algo desde un formulario
+    // que ya es modal), Escape cierra solo el de arriba: el último del DOM.
     const alTeclado = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCerrar();
+      if (e.key !== 'Escape') return;
+      const dialogos = document.querySelectorAll('[role="dialog"]');
+      if (dialogos[dialogos.length - 1] === caja.current) onCerrar();
     };
     document.addEventListener('keydown', alTeclado);
 

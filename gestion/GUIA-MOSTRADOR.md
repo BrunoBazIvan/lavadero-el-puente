@@ -45,6 +45,13 @@ lista abajo: te movés con las flechas ↑ ↓ y elegís con **Enter**.
 **Si el cliente es nuevo**, escribí el nombre y apretá Enter: se abre el alta
 ahí mismo, sin salir de la pantalla. Con nombre y teléfono alcanza.
 
+- **Teléfono de otro país** (turistas): escribilo con **+** y el código del
+  país, por ejemplo `+54 9 11 2233 4455`. Sin el +, el sistema lo toma como
+  uruguayo y no lo acepta.
+- **Sin teléfono:** el sistema te pide que lo confirmes antes de seguir,
+  porque sin teléfono no le podés avisar por WhatsApp que la ropa está pronta.
+  Si el cliente no tiene o no lo quiere dar, tocá **Seguir sin teléfono**.
+
 > Antes de dar de alta, buscá bien. Dos fichas del mismo cliente hacen que
 > después no aparezca el historial completo cuando lo necesites.
 
@@ -63,9 +70,6 @@ Si además se retira y se entrega a domicilio, tocá **Envío**.
 ### 4 · Retiro estimado
 
 Viene puesto para el día siguiente. Cambialo si el cliente pide otro día.
-
-Si elegís un **domingo** te avisa, porque el lavadero está cerrado. Te deja
-igual, por si es a propósito.
 
 ### 5 · Notas
 

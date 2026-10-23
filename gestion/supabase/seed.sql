@@ -29,7 +29,8 @@ insert into public.configuracion (clave, valor) values
   ('leyenda_responsabilidad',
    'Guardamos las prendas 7 días desde que te avisamos que están listas. Pasado ese plazo el lavadero no se hace responsable.'),
   ('dias_entrega_default',  '1'),
-  ('ancho_ticket_mm',       '80')
+  ('ancho_ticket_mm',       '80'),
+  ('link_google',           '')
 on conflict (clave) do nothing;
 
 -- -----------------------------------------------------------------------------

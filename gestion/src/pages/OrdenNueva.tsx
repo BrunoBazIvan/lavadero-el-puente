@@ -16,7 +16,7 @@ import { useCliente } from '@/hooks/useClientes';
 import { useCrearOrden, traerOrdenCompleta } from '@/hooks/useOrdenes';
 import { useDiasEntrega } from '@/hooks/useConfiguracion';
 import { useImprimir } from '@/hooks/useImprimir';
-import { aValorInput, esDomingo, fechaRetiroEstimada, hoyInput } from '@/lib/fechas';
+import { aValorInput, fechaRetiroEstimada, hoyInput } from '@/lib/fechas';
 import { fechaLarga } from '@/lib/format';
 import { mensajeDeError } from '@/lib/supabase';
 import { NOMBRE_SERVICIO } from '@/types/database';
@@ -314,19 +314,7 @@ export default function OrdenNueva() {
             }}
             className="field tabular h-12 text-lg sm:max-w-xs"
           />
-          {fechaRetiro && (
-            <p className="ayuda">
-              {esDomingo(fechaRetiro) ? (
-                <span className="flex items-start gap-1.5 font-semibold text-aviso">
-                  <IconoAlerta size={16} className="mt-0.5 shrink-0" />
-                  Ese día es domingo y el lavadero está cerrado. Te deja igual, por si es a
-                  propósito.
-                </span>
-              ) : (
-                <>Sale el {fechaLarga(fechaRetiro)}.</>
-              )}
-            </p>
-          )}
+          {fechaRetiro && <p className="ayuda">Sale el {fechaLarga(fechaRetiro)}.</p>}
         </Paso>
 
         <Paso

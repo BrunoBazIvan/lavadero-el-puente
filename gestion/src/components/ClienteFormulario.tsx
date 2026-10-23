@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { LinkCliente } from '@/components/LinkCliente';
 import { Spinner } from '@/components/Estados';
+import { Modal } from '@/components/Modal';
 import { useToast } from '@/components/Toaster';
 import {
   useActualizarCliente,
@@ -25,7 +27,10 @@ export const esquemaCliente = z
     telefono: z
       .string()
       .trim()
-      .refine((v) => !v || telefonoValido(v), 'Ese teléfono no parece uruguayo.')
+      .refine(
+        (v) => !v || telefonoValido(v),
+        'Ese teléfono no parece válido. Si es de otro país, empezalo con + y el código.',
+      )
       .optional()
       .or(z.literal('')),
     email: z.string().trim().email('Ese email no parece válido.').optional().or(z.literal('')),
@@ -86,6 +91,7 @@ export function ClienteFormulario({
     register,
     handleSubmit,
     watch,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<FormCliente>({
     resolver: zodResolver(esquemaCliente),
@@ -108,7 +114,13 @@ export function ClienteFormulario({
   const { data: mismoTelefono } = useClientePorTelefono(telefonoEscrito ?? null);
   const duplicados = (mismoTelefono ?? []).filter((c) => c.id !== cliente?.id);
 
-  const enviar = handleSubmit(async (valores) => {
+  // "Seguir sin teléfono" guarda por fuera del submit: isSubmitting no lo ve.
+  const guardando = isSubmitting || crear.isPending || actualizar.isPending;
+
+  // Valores ya validados que esperan que confirmen guardar sin teléfono.
+  const [sinTelefono, setSinTelefono] = useState<FormCliente | null>(null);
+
+  const guardar = async (valores: FormCliente) => {
     try {
       const datos = aDatos(valores);
       const guardado = cliente
@@ -121,152 +133,206 @@ export function ClienteFormulario({
       // El error ya lo mostró el manejador global de React Query (App.tsx).
       // Acá solo cortamos: el formulario queda abierto con lo que escribieron.
     }
+  };
+
+  const enviar = handleSubmit(async (valores) => {
+    // Sin teléfono no hay cómo avisar que la ropa está pronta: se pregunta
+    // antes. Solo al darlo de alta o al borrárselo; si ya venía sin teléfono,
+    // editarle otra cosa no vuelve a preguntar.
+    if (!valores.telefono && (!cliente || cliente.telefono)) {
+      setSinTelefono(valores);
+      return;
+    }
+    await guardar(valores);
   });
 
-  return (
-    <form onSubmit={enviar} noValidate>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className={compacto ? '' : 'sm:col-span-2'}>
-          <label className="label" htmlFor="nombre">
-            Nombre {compacto && <span className="text-alerta">*</span>}
-          </label>
-          <input
-            id="nombre"
-            className={`field ${errors.nombre ? 'field-error' : ''}`}
-            autoFocus
-            autoComplete="off"
-            {...register('nombre')}
-          />
-          {errors.nombre && <p className="error-text">{errors.nombre.message}</p>}
-        </div>
+  const cargarTelefono = () => {
+    setSinTelefono(null);
+    // Después de que el modal devuelva el foco a donde estaba.
+    setTimeout(() => setFocus('telefono'), 0);
+  };
 
-        <div>
-          <label className="label" htmlFor="telefono">
-            Teléfono
-          </label>
-          <input
-            id="telefono"
-            inputMode="tel"
-            placeholder="099 123 456"
-            className={`field ${errors.telefono ? 'field-error' : ''}`}
-            autoComplete="off"
-            {...register('telefono')}
-          />
-          {errors.telefono && <p className="error-text">{errors.telefono.message}</p>}
-          {duplicados.length > 0 && (
-            <p className="mt-1 text-sm text-aviso">
-              Ese teléfono ya lo tiene{' '}
-              {duplicados.map((c, i) => (
-                <span key={c.id}>
-                  {i > 0 && ', '}
-                  <LinkCliente
-                    id={c.id}
-                    className="font-semibold"
-                    claseLink="underline underline-offset-2"
-                  >
-                    {c.nombre}
-                  </LinkCliente>
-                </span>
-              ))}
-              .
-            </p>
+  const seguirSinTelefono = async () => {
+    const valores = sinTelefono;
+    setSinTelefono(null);
+    if (valores) await guardar(valores);
+  };
+
+  return (
+    <>
+      <form onSubmit={enviar} noValidate>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className={compacto ? '' : 'sm:col-span-2'}>
+            <label className="label" htmlFor="nombre">
+              Nombre {compacto && <span className="text-alerta">*</span>}
+            </label>
+            <input
+              id="nombre"
+              className={`field ${errors.nombre ? 'field-error' : ''}`}
+              autoFocus
+              autoComplete="off"
+              {...register('nombre')}
+            />
+            {errors.nombre && <p className="error-text">{errors.nombre.message}</p>}
+          </div>
+
+          <div>
+            <label className="label" htmlFor="telefono">
+              Teléfono
+            </label>
+            <input
+              id="telefono"
+              inputMode="tel"
+              placeholder="099 123 456"
+              className={`field ${errors.telefono ? 'field-error' : ''}`}
+              autoComplete="off"
+              {...register('telefono')}
+            />
+            {errors.telefono ? (
+              <p className="error-text">{errors.telefono.message}</p>
+            ) : (
+              <p className="mt-1 text-xs text-slate-500">Si es de otro país: con + y el código.</p>
+            )}
+            {duplicados.length > 0 && (
+              <p className="mt-1 text-sm text-aviso">
+                Ese teléfono ya lo tiene{' '}
+                {duplicados.map((c, i) => (
+                  <span key={c.id}>
+                    {i > 0 && ', '}
+                    <LinkCliente
+                      id={c.id}
+                      className="font-semibold"
+                      claseLink="underline underline-offset-2"
+                    >
+                      {c.nombre}
+                    </LinkCliente>
+                  </span>
+                ))}
+                .
+              </p>
+            )}
+          </div>
+
+          {!compacto && (
+            <>
+              <div>
+                <label className="label" htmlFor="tipo">
+                  Tipo
+                </label>
+                <select id="tipo" className="field" {...register('tipo')}>
+                  <option value="particular">Particular</option>
+                  <option value="empresa">Empresa</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="label" htmlFor="email">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className={`field ${errors.email ? 'field-error' : ''}`}
+                  autoComplete="off"
+                  {...register('email')}
+                />
+                {errors.email && <p className="error-text">{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label className="label" htmlFor="direccion">
+                  Dirección
+                </label>
+                <input
+                  id="direccion"
+                  className="field"
+                  autoComplete="off"
+                  {...register('direccion')}
+                />
+              </div>
+
+              {tipo === 'empresa' && (
+                <>
+                  <div>
+                    <label className="label" htmlFor="razon_social">
+                      Razón social
+                    </label>
+                    <input
+                      id="razon_social"
+                      className={`field ${errors.razon_social ? 'field-error' : ''}`}
+                      autoComplete="off"
+                      {...register('razon_social')}
+                    />
+                    {errors.razon_social && (
+                      <p className="error-text">{errors.razon_social.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="label" htmlFor="rut">
+                      RUT
+                    </label>
+                    <input
+                      id="rut"
+                      inputMode="numeric"
+                      className={`field ${errors.rut ? 'field-error' : ''}`}
+                      autoComplete="off"
+                      {...register('rut')}
+                    />
+                    {errors.rut && <p className="error-text">{errors.rut.message}</p>}
+                  </div>
+                </>
+              )}
+
+              <div className="sm:col-span-2">
+                <label className="label" htmlFor="notas">
+                  Notas
+                </label>
+                <textarea id="notas" rows={2} className="field resize-y" {...register('notas')} />
+              </div>
+            </>
           )}
         </div>
 
-        {!compacto && (
-          <>
-            <div>
-              <label className="label" htmlFor="tipo">
-                Tipo
-              </label>
-              <select id="tipo" className="field" {...register('tipo')}>
-                <option value="particular">Particular</option>
-                <option value="empresa">Empresa</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="label" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                className={`field ${errors.email ? 'field-error' : ''}`}
-                autoComplete="off"
-                {...register('email')}
-              />
-              {errors.email && <p className="error-text">{errors.email.message}</p>}
-            </div>
-
-            <div>
-              <label className="label" htmlFor="direccion">
-                Dirección
-              </label>
-              <input id="direccion" className="field" autoComplete="off" {...register('direccion')} />
-            </div>
-
-            {tipo === 'empresa' && (
-              <>
-                <div>
-                  <label className="label" htmlFor="razon_social">
-                    Razón social
-                  </label>
-                  <input
-                    id="razon_social"
-                    className={`field ${errors.razon_social ? 'field-error' : ''}`}
-                    autoComplete="off"
-                    {...register('razon_social')}
-                  />
-                  {errors.razon_social && (
-                    <p className="error-text">{errors.razon_social.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="label" htmlFor="rut">
-                    RUT
-                  </label>
-                  <input
-                    id="rut"
-                    inputMode="numeric"
-                    className={`field ${errors.rut ? 'field-error' : ''}`}
-                    autoComplete="off"
-                    {...register('rut')}
-                  />
-                  {errors.rut && <p className="error-text">{errors.rut.message}</p>}
-                </div>
-              </>
-            )}
-
-            <div className="sm:col-span-2">
-              <label className="label" htmlFor="notas">
-                Notas
-              </label>
-              <textarea id="notas" rows={2} className="field resize-y" {...register('notas')} />
-            </div>
-          </>
+        {compacto && (
+          <p className="mt-3 text-xs text-slate-500">
+            Después podés completar el resto de los datos desde la ficha del cliente.
+          </p>
         )}
-      </div>
 
-      {compacto && (
-        <p className="mt-3 text-xs text-slate-500">
-          Después podés completar el resto de los datos desde la ficha del cliente.
-        </p>
-      )}
-
-      <div className="mt-6 flex items-center justify-end gap-2">
-        {onCancelar && (
-          <button type="button" className="btn-secondary" onClick={onCancelar}>
-            Cancelar
+        <div className="mt-6 flex items-center justify-end gap-2">
+          {onCancelar && (
+            <button type="button" className="btn-secondary" onClick={onCancelar}>
+              Cancelar
+            </button>
+          )}
+          <button type="submit" className="btn-primary" disabled={guardando}>
+            {guardando && <Spinner size={16} />}
+            {cliente ? 'Guardar cambios' : 'Dar de alta'}
           </button>
-        )}
-        <button type="submit" className="btn-primary" disabled={isSubmitting}>
-          {isSubmitting && <Spinner size={16} />}
-          {cliente ? 'Guardar cambios' : 'Dar de alta'}
-        </button>
-      </div>
-    </form>
+        </div>
+      </form>
+
+      <Modal
+        abierto={sinTelefono !== null}
+        onCerrar={cargarTelefono}
+        titulo="Este cliente se está cargando sin teléfono"
+        ancho="sm"
+      >
+        <p className="leading-relaxed text-slate-700">
+          Sin teléfono no le vas a poder avisar por WhatsApp cuando la ropa esté pronta. ¿Seguro que
+          querés seguir?
+        </p>
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <button type="button" className="btn-secondary" onClick={() => void seguirSinTelefono()}>
+            Seguir sin teléfono
+          </button>
+          <button type="button" className="btn-primary" onClick={cargarTelefono}>
+            Cargar el teléfono
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }
 

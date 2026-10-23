@@ -119,7 +119,7 @@ export default function OrdenDetalle() {
    * base, el botón existiría para terminar en un error de Postgres.
    */
   const puedeAnular = orden.estado !== 'anulado' && (esAdmin || orden.estado !== 'entregado');
-  const whatsapp = linkWhatsapp(orden.cliente.telefono, armarMensaje(orden, config?.nombre_negocio));
+  const whatsapp = linkWhatsapp(orden.cliente.telefono, armarMensaje(orden, config?.nombre_negocio, config?.link_google));
 
   const cambiar = async (estado: EstadoOrden) => {
     try {
@@ -647,13 +647,18 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactN
 }
 
 /** Mensaje pre-armado de WhatsApp, distinto según el estado de la orden. */
-function armarMensaje(orden: OrdenCompleta, negocio: string | undefined): string {
+function armarMensaje(
+  orden: OrdenCompleta,
+  negocio: string | undefined,
+  linkGoogle: string | undefined,
+): string {
   const nombre = orden.cliente.nombre.split(' ')[0];
   const casa = negocio ?? 'El Puente';
 
   if (orden.estado === 'listo') {
     const cuanto = orden.saldo > 0 ? ` Son ${moneda(orden.saldo)}.` : '';
-    return `Hola ${nombre}! Cómo estás? Te escribimos de ${casa}. Tu pedido ${orden.ref} ya está pronto para retirar.${cuanto} Te esperamos, saludos`;
+    const horarios = linkGoogle?.trim() ? ` Nuestros horarios: ${linkGoogle.trim()}` : '';
+    return `Hola ${nombre}! Cómo estás? Te escribimos de ${casa}. Tu pedido ${orden.ref} ya está pronto para retirar.${cuanto}${horarios} Te esperamos, saludos`;
   }
 
   return `Hola ${nombre}! Cómo estás? Te escribimos de ${casa} por tu pedido ${orden.ref}.`;

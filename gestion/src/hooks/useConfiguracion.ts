@@ -16,6 +16,8 @@ const POR_DEFECTO: Configuracion = {
     'Guardamos las prendas 7 días desde que te avisamos que están listas. Pasado ese plazo el lavadero no se hace responsable.',
   dias_entrega_default: '1',
   ancho_ticket_mm: '80',
+  // Ficha de Google Maps del lavadero, para el WhatsApp de "listo". Vacío, no va.
+  link_google: '',
 };
 
 /** La tabla clave/valor, ya convertida a objeto. */
