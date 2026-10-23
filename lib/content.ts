@@ -35,7 +35,7 @@ export const homeServices: HomeService[] = [
     pageSlug: 'lavado-de-cortinas-maldonado',
     title: 'Cortinas y cortinados',
     description:
-      'Lavado de cortinas y cortinados de todo tipo de tela, con cuidado del color y la caída.',
+      'Lavado de cortinas y cortinados livianos y pesados, con cuidado del color y la caída.',
     waSubject: 'lavado de cortinas y cortinados',
     alt: 'Cortinas limpias y planchadas en lavadero de Maldonado',
     icon: 'curtain',

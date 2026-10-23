@@ -216,16 +216,16 @@ export const landingPages: LandingPage[] = [
     breadcrumbLabel: 'Lavado de cortinas',
     metaTitle: 'Lavado de cortinas y cortinados | Maldonado',
     metaDescription:
-      'Lavado de cortinas y cortinados de todo tipo de tela en Maldonado, cuidando el color y la caída. Retiro y entrega a coordinar por WhatsApp.',
+      'Lavado de cortinas y cortinados en Maldonado, cuidando el color y la caída. Retiro y entrega a coordinar por WhatsApp.',
     primaryKeyword: 'lavado de cortinas Maldonado',
     h1: 'Lavado de cortinas y cortinados en Maldonado',
     intro:
-      'Lavado de cortinas y cortinados de todo tipo de tela, con el cuidado que hace falta para que no pierdan el color ni la caída. Sin el riesgo de meterlas en el lavarropas de casa.',
+      'Lavado de cortinas y cortinados livianos y pesados, con el cuidado que hace falta para que no pierdan el color ni la caída. Sin el riesgo de meterlas en el lavarropas de casa.',
     sections: [
       {
-        h2: 'Cortinas de todo tipo de tela',
+        h2: 'Livianas, voile y cortinados',
         body: [
-          'Trabajamos cortinas livianas, blackout, voile y cortinados pesados. Cada tela lleva un proceso distinto y lo ajustamos para que el resultado sea parejo y prolijo.',
+          'Trabajamos cortinas livianas, voile y cortinados pesados. Cada tela lleva un proceso distinto y lo ajustamos para que el resultado sea parejo y prolijo.',
         ],
       },
       {
@@ -243,8 +243,8 @@ export const landingPages: LandingPage[] = [
     ],
     faq: [
       {
-        q: '¿Lavan todo tipo de cortinas?',
-        a: 'Sí, desde cortinas livianas y voile hasta blackout y cortinados pesados. Adaptamos el proceso a cada tela.',
+        q: '¿Qué cortinas lavan?',
+        a: 'Cortinas livianas, voile y cortinados pesados. Adaptamos el proceso a cada tela.',
       },
       {
         q: '¿Cuánto demora el lavado de cortinas?',
