@@ -64,9 +64,6 @@ Si además se retira y se entrega a domicilio, tocá **Envío**.
 
 Viene puesto para el día siguiente. Cambialo si el cliente pide otro día.
 
-Si elegís un **domingo** te avisa, porque el lavadero está cerrado. Te deja
-igual, por si es a propósito.
-
 ### 5 · Notas
 
 Manchas, prendas delicadas, cualquier cosa que haya que tener en cuenta.
