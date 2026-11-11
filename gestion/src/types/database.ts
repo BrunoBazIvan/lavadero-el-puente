@@ -17,7 +17,7 @@ export type TipoCliente = 'particular' | 'empresa';
 export type EstadoPago = 'pendiente' | 'parcial' | 'pagado';
 /** El retiro y entrega no es un servicio aparte: va en `ordenes.envio`. */
 export type ServicioOrden = 'lavado_secado' | 'con_plancha' | 'solo_secado';
-export type EstadoTapizado = 'pendiente' | 'terminado' | 'cobrado';
+export type EstadoTapizado = 'pendiente' | 'terminado' | 'cobrado' | 'anulado';
 export type ProductoTapizado =
   | 'sillon_1'
   | 'sillon_2'
@@ -201,7 +201,10 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['pagos']['Insert']>;
       };
 
-      /** Migración 0010. Solo admin. `precio_final` es columna generada. */
+      /**
+       * Migraciones 0010 y 0011. Solo admin. `precio_final` es columna
+       * generada. Se anula solo por la RPC `anular_tapizado`.
+       */
       tapizados: {
         Row: {
           id: string;
@@ -220,6 +223,9 @@ export interface Database {
           notas: string | null;
           terminado_el: string | null;
           cobrado_el: string | null;
+          anulado_el: string | null;
+          anulado_por: string | null;
+          anulado_motivo: string | null;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -332,6 +338,11 @@ export interface Database {
       anular_orden: {
         Args: { p_orden_id: string; p_motivo: string; p_pagos_devueltos?: string[] };
         Returns: Database['public']['Tables']['ordenes']['Row'];
+      };
+      /** Anula un tapizado (0011). Definitivo; deja motivo y si se devolvió la plata. */
+      anular_tapizado: {
+        Args: { p_id: string; p_motivo: string; p_devuelto?: boolean };
+        Returns: Database['public']['Tables']['tapizados']['Row'];
       };
     };
 
