@@ -25,6 +25,9 @@ todas las pantallas, así que no hace falta ir a buscarlo.
 
 Si dice *"No hay ropa pendiente en el lavadero"*, está todo entregado.
 
+Si entrás desde el celular o una pantalla chica, las secciones no se ven en la
+barra azul: están en el botón **Menú**, arriba a la derecha.
+
 ---
 
 ## Recibir ropa
