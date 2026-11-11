@@ -245,6 +245,26 @@ export function IconoAnalitica(p: Props) {
   );
 }
 
+/** Sillón visto de frente: respaldo, apoyabrazos y patas. */
+export function IconoTapizado(p: Props) {
+  return (
+    <Trazo {...p}>
+      <path d="M5.5 11V6.5h13V11" />
+      <path d="M3 11h3.5v3.5h11V11H21v6.5H3z" />
+      <path d="M5 17.5v2M19 17.5v2" />
+    </Trazo>
+  );
+}
+
+/** Tres filetes: abre el menú en el celular. */
+export function IconoMenu(p: Props) {
+  return (
+    <Trazo {...p}>
+      <path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17" />
+    </Trazo>
+  );
+}
+
 export function IconoTelefono(p: Props) {
   return (
     <Trazo {...p}>

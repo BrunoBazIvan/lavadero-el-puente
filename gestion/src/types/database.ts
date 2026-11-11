@@ -17,6 +17,17 @@ export type TipoCliente = 'particular' | 'empresa';
 export type EstadoPago = 'pendiente' | 'parcial' | 'pagado';
 /** El retiro y entrega no es un servicio aparte: va en `ordenes.envio`. */
 export type ServicioOrden = 'lavado_secado' | 'con_plancha' | 'solo_secado';
+export type EstadoTapizado = 'pendiente' | 'terminado' | 'cobrado';
+export type ProductoTapizado =
+  | 'sillon_1'
+  | 'sillon_2'
+  | 'sillon_3'
+  | 'sillon_esquinero'
+  | 'silla'
+  | 'colchon_1'
+  | 'colchon_2'
+  | 'alfombra'
+  | 'otro';
 
 export interface Database {
   public: {
@@ -190,6 +201,52 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['pagos']['Insert']>;
       };
 
+      /** Migración 0010. Solo admin. `precio_final` es columna generada. */
+      tapizados: {
+        Row: {
+          id: string;
+          ref: string;
+          nombre: string;
+          edificio: string | null;
+          contacto: string;
+          producto: ProductoTapizado;
+          producto_otro: string | null;
+          precio: number;
+          ancho_m: number | null;
+          largo_m: number | null;
+          precio_m2: number | null;
+          precio_final: number;
+          estado: EstadoTapizado;
+          notas: string | null;
+          terminado_el: string | null;
+          cobrado_el: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          ref?: string;
+          nombre: string;
+          edificio?: string | null;
+          contacto: string;
+          producto: ProductoTapizado;
+          producto_otro?: string | null;
+          precio?: number;
+          ancho_m?: number | null;
+          largo_m?: number | null;
+          precio_m2?: number | null;
+          estado?: EstadoTapizado;
+          notas?: string | null;
+          terminado_el?: string | null;
+          cobrado_el?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['tapizados']['Insert']>;
+      };
+
       configuracion: {
         Row: { clave: string; valor: string };
         Insert: { clave: string; valor: string };
@@ -329,6 +386,7 @@ export type Orden = Database['public']['Tables']['ordenes']['Row'];
 export type OrdenItem = Database['public']['Tables']['orden_items']['Row'];
 export type Pago = Database['public']['Tables']['pagos']['Row'];
 export type Configuracion = Database['public']['Tables']['configuracion']['Row'];
+export type Tapizado = Database['public']['Tables']['tapizados']['Row'];
 export type OrdenVista = Database['public']['Views']['v_ordenes']['Row'];
 
 /** Una orden con todo lo que necesitan el detalle y los tickets. */

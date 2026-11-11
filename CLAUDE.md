@@ -263,6 +263,20 @@ Dos cosas que se rompen fácil sin querer:
   subrayado ni hover, que un texto que parece link confunde igual que uno roto.
   Si aparece otro link a `/clientes/:id`, va por ahí.
 
+**Tapizados** (`/tapizados`, migración `0010_tapizados.sql`) también es de
+admin, pero ahí **sí** es bloqueo de datos: la RLS de `tapizados` usa
+`is_admin()` en las cuatro políticas, porque el operador no la necesita para
+nada. Va por fuera de `ordenes` a propósito: no pasa por el mostrador ni por el
+cobro con `pagos`. El total es la columna generada `precio_final`; en
+alfombras sale de `ancho_m × largo_m × precio_m2`, y `precio_m2` se copia de
+`configuracion.precio_m2_alfombra` al terminarla, para que subir el precio no
+cambie las ya cobradas. `guard_tapizado` rechaza una alfombra terminada sin
+medidas, así que estado y medidas van en el mismo `update`.
+
+**Menú en el celular:** debajo de `lg` la tira de secciones del encabezado se
+reemplaza por un botón "Menú" que despliega la lista (`Layout.tsx`). Una
+sección nueva entra en `NAV` y aparece en los dos.
+
 Si tocás el flujo de una orden, actualizá también
 [`gestion/GUIA-MOSTRADOR.md`](./gestion/GUIA-MOSTRADOR.md): esa guía se imprime
 y queda al lado de la computadora, y describiendo botones que ya no existen

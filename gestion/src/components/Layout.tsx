@@ -1,4 +1,5 @@
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import type { ComponentType, ReactNode } from 'react';
 import { useAuth } from '@/auth/AuthProvider';
 import {
@@ -7,11 +8,14 @@ import {
   IconoArticulos,
   IconoClientes,
   IconoLista,
+  IconoMenu,
   IconoOrdenes,
   IconoRecibida,
   IconoRecibir,
   IconoSalir,
+  IconoTapizado,
   IconoVolver,
+  IconoX,
 } from '@/components/Iconos';
 import { DIAS_SIN_RETIRAR, useResumenPendientes } from '@/hooks/useOrdenes';
 
@@ -30,18 +34,42 @@ const NAV: ItemNav[] = [
   { to: '/clientes', texto: 'Clientes', icono: IconoClientes, soloAdmin: true },
   { to: '/articulos', texto: 'Artículos', icono: IconoArticulos, soloAdmin: true },
   { to: '/analiticas', texto: 'Analíticas', icono: IconoAnalitica, soloAdmin: true },
+  { to: '/tapizados', texto: 'Tapizados', icono: IconoTapizado, soloAdmin: true },
 ];
 
 export function Layout() {
   const { profile, esAdmin, salir } = useAuth();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const contenedor = useRef<HTMLDivElement>(null);
+  const { pathname, search } = useLocation();
 
   const items = NAV.filter((i) => !i.soloAdmin || esAdmin);
+
+  // El menú del celular se cierra al llegar a otra pantalla…
+  useEffect(() => setMenuAbierto(false), [pathname, search]);
+
+  // …y con Escape o tocando fuera de él.
+  useEffect(() => {
+    if (!menuAbierto) return;
+    const alTeclado = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuAbierto(false);
+    };
+    const alTocar = (e: PointerEvent) => {
+      if (!contenedor.current?.contains(e.target as Node)) setMenuAbierto(false);
+    };
+    document.addEventListener('keydown', alTeclado);
+    document.addEventListener('pointerdown', alTocar);
+    return () => {
+      document.removeEventListener('keydown', alTeclado);
+      document.removeEventListener('pointerdown', alTocar);
+    };
+  }, [menuAbierto]);
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas">
       {/* El encabezado y la barra de pendientes viajan juntos y quedan fijos:
           "qué hay para hacer" no se pierde al bajar en una lista larga. */}
-      <div className="sticky top-0 z-30">
+      <div ref={contenedor} className="sticky top-0 z-30">
         <header className="border-b border-brand-900 bg-brand-900 text-white">
           <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center gap-6 px-4">
             <Link to="/" className="flex shrink-0 items-baseline gap-2">
@@ -53,7 +81,21 @@ export function Layout() {
               </span>
             </Link>
 
-            <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
+            {/* Celular y tablet: en vez de una tira que se desliza de costado
+                —donde las secciones de la derecha no se ven—, un botón que
+                abre la lista entera. */}
+            <button
+              type="button"
+              aria-expanded={menuAbierto}
+              aria-controls="menu-movil"
+              onClick={() => setMenuAbierto((v) => !v)}
+              className="ml-auto flex min-h-[2.75rem] items-center gap-2 rounded-sharp border border-white/25 px-3.5 font-display text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:border-white/60 lg:hidden"
+            >
+              {menuAbierto ? <IconoX size={20} /> : <IconoMenu size={20} />}
+              {menuAbierto ? 'Cerrar' : 'Menú'}
+            </button>
+
+            <nav className="hidden flex-1 items-center gap-1 overflow-x-auto lg:flex">
               {items.map(({ to, texto, icono: Icono, end }) => (
                 <NavLink
                   key={to}
@@ -75,8 +117,8 @@ export function Layout() {
               ))}
             </nav>
 
-            <div className="flex shrink-0 items-center gap-3 border-l border-white/15 pl-4">
-              <div className="hidden text-right leading-tight sm:block">
+            <div className="hidden shrink-0 items-center gap-3 border-l border-white/15 pl-4 lg:flex">
+              <div className="text-right leading-tight">
                 <p className="font-display text-sm font-semibold">{profile?.nombre}</p>
                 <p className="text-[11px] uppercase tracking-technical text-aqua-300">
                   {esAdmin ? 'Admin' : 'Operador'}
@@ -93,6 +135,53 @@ export function Layout() {
             </div>
           </div>
         </header>
+
+        {menuAbierto && (
+          <nav
+            id="menu-movil"
+            aria-label="Secciones"
+            className="max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-brand-900 bg-brand-900 text-white lg:hidden"
+          >
+            <ul className="divide-y divide-white/10 border-t border-white/10">
+              {items.map(({ to, texto, icono: Icono, end }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    end={end}
+                    className={({ isActive }) =>
+                      [
+                        'flex min-h-[3.25rem] items-center gap-3 px-4 font-display text-base font-semibold transition-colors',
+                        isActive
+                          ? 'bg-white/10 text-white shadow-[inset_3px_0_0_0_theme(colors.aqua.300)]'
+                          : 'text-brand-100 hover:bg-white/5 hover:text-white',
+                      ].join(' ')
+                    }
+                  >
+                    <Icono size={20} />
+                    {texto}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex items-center justify-between gap-3 border-t border-white/15 px-4 py-3">
+              <div className="leading-tight">
+                <p className="font-display text-sm font-semibold">{profile?.nombre}</p>
+                <p className="text-[11px] uppercase tracking-technical text-aqua-300">
+                  {esAdmin ? 'Admin' : 'Operador'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void salir()}
+                className="flex min-h-[2.75rem] items-center gap-2 rounded-sharp border border-white/25 px-3.5 font-display text-xs font-semibold uppercase tracking-wide text-brand-100 transition-colors hover:border-white/60 hover:text-white"
+              >
+                <IconoSalir size={16} />
+                Salir
+              </button>
+            </div>
+          </nav>
+        )}
 
         <BarraPendientes />
       </div>

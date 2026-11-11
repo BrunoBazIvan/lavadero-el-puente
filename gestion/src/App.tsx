@@ -18,6 +18,7 @@ import Clientes from '@/pages/Clientes';
 import ClienteDetalle from '@/pages/ClienteDetalle';
 import Articulos from '@/pages/Articulos';
 import Analiticas from '@/pages/Analiticas';
+import Tapizados from '@/pages/Tapizados';
 
 /**
  * React Query con un manejo de errores global: cualquier consulta o mutación
@@ -95,6 +96,9 @@ export default function App() {
                   <Route path="clientes/:id" element={<ClienteDetalle />} />
                   <Route path="articulos" element={<Articulos />} />
                   <Route path="analiticas" element={<Analiticas />} />
+                  {/* Tapizados también es de admin, pero acá la RLS sí
+                      bloquea al operador (0010): no la necesita para nada. */}
+                  <Route path="tapizados" element={<Tapizados />} />
                 </Route>
               </Route>
 

@@ -18,6 +18,9 @@ const POR_DEFECTO: Configuracion = {
   ancho_ticket_mm: '80',
   // Ficha de Google Maps del lavadero, para el WhatsApp de "listo". Vacío, no va.
   link_google: '',
+  // Precio por m² de las alfombras (sección Tapizados). Se guarda en cada
+  // alfombra al terminarla, así que cambiarlo no toca las ya cobradas.
+  precio_m2_alfombra: '300',
 };
 
 /** La tabla clave/valor, ya convertida a objeto. */
@@ -44,6 +47,13 @@ export function useDiasEntrega(): number {
   const { data } = useConfiguracion();
   const dias = Number(data?.dias_entrega_default);
   return Number.isFinite(dias) && dias >= 0 ? dias : 1;
+}
+
+/** Precio por m² de alfombra, ya como número usable. */
+export function usePrecioM2Alfombra(): number {
+  const { data } = useConfiguracion();
+  const precio = Number(data?.precio_m2_alfombra);
+  return Number.isFinite(precio) && precio > 0 ? precio : 300;
 }
 
 export function useGuardarConfiguracion() {
