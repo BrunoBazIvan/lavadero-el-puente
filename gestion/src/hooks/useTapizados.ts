@@ -9,7 +9,7 @@ import type { EstadoTapizado, ProductoTapizado, Tapizado } from '@/types/databas
  */
 export function useTapizados() {
   return useQuery({
-    queryKey: ['tapizados'],
+    queryKey: ['tapizados', 'lista'],
     queryFn: async (): Promise<Tapizado[]> => {
       const { data, error } = await supabase
         .from('tapizados')
@@ -17,6 +17,23 @@ export function useTapizados() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data ?? [];
+    },
+  });
+}
+
+/** Un tapizado por su referencia (TP-00001), para la pantalla de detalle. */
+export function useTapizado(ref: string | undefined) {
+  return useQuery({
+    queryKey: ['tapizados', 'ref', ref],
+    enabled: Boolean(ref),
+    queryFn: async (): Promise<Tapizado | null> => {
+      const { data, error } = await supabase
+        .from('tapizados')
+        .select('*')
+        .eq('ref', (ref ?? '').toUpperCase())
+        .maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 }
@@ -107,12 +124,47 @@ export function useCambiarEtapa() {
   });
 }
 
-export function useBorrarTapizado() {
+export function useNotaTapizado() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('tapizados').delete().eq('id', id);
+    mutationFn: async ({ id, notas }: { id: string; notas: string }): Promise<Tapizado> => {
+      const { data, error } = await supabase
+        .from('tapizados')
+        .update({ notas: notas.trim() || null })
+        .eq('id', id)
+        .select()
+        .single();
       if (error) throw error;
+      return data;
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
+  });
+}
+
+/**
+ * Anula un tapizado. No se borra, igual que una orden: queda en la tabla con
+ * el motivo, y es definitivo (`guard_tapizado` no deja tocarlo después).
+ */
+export function useAnularTapizado() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      motivo,
+      devuelto,
+    }: {
+      id: string;
+      motivo: string;
+      /** Solo importa si ya estaba cobrado: queda anotado en las notas. */
+      devuelto: boolean;
+    }): Promise<Tapizado> => {
+      const { data, error } = await supabase.rpc('anular_tapizado', {
+        p_id: id,
+        p_motivo: motivo,
+        p_devuelto: devuelto,
+      });
+      if (error) throw error;
+      return data as Tapizado;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
   });

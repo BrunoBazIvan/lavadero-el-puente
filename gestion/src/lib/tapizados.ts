@@ -1,3 +1,4 @@
+import { moneda } from '@/lib/format';
 import type { EstadoTapizado, ProductoTapizado, Tapizado } from '@/types/database';
 
 /** Lo que se limpia, en el orden en que aparecen los botones. */
@@ -24,20 +25,31 @@ export function nombreProducto(t: Pick<Tapizado, 'producto' | 'producto_otro'>):
   return TEXTO_PRODUCTO[t.producto];
 }
 
-export const ETAPAS: EstadoTapizado[] = ['pendiente', 'terminado', 'cobrado'];
+/** El camino de todo tapizado. Anulado no está: es una salida, no un paso. */
+export type PasoTapizado = Exclude<EstadoTapizado, 'anulado'>;
+export const ETAPAS: PasoTapizado[] = ['pendiente', 'terminado', 'cobrado'];
 
 export const TEXTO_ETAPA: Record<EstadoTapizado, string> = {
   pendiente: 'Pendiente',
   terminado: 'Terminado',
   cobrado: 'Cobrado',
+  anulado: 'Anulado',
 };
 
-/** La etapa a la que se vuelve con "volver atrás". */
-export const ETAPA_ANTERIOR: Record<EstadoTapizado, EstadoTapizado | null> = {
+/** La etapa a la que se vuelve con "volver atrás". Desde anulado, ninguna. */
+export const ETAPA_ANTERIOR: Record<EstadoTapizado, PasoTapizado | null> = {
   pendiente: null,
   terminado: 'pendiente',
   cobrado: 'terminado',
+  anulado: null,
 };
+
+/** Mensaje de WhatsApp para avisar que el trabajo está terminado. */
+export function mensajeTerminado(t: Tapizado, negocio: string | undefined): string {
+  const nombre = t.nombre.trim().split(' ')[0];
+  const casa = negocio ?? 'El Puente';
+  return `Hola ${nombre}, te escribimos de ${casa}: ya terminamos la limpieza (${nombreProducto(t)}). Son ${moneda(Number(t.precio_final))}. ¡Gracias!`;
+}
 
 /**
  * "3,2" o "3.2" → 3.2. En el celular el teclado numérico trae coma o punto

@@ -273,6 +273,14 @@ alfombras sale de `ancho_m × largo_m × precio_m2`, y `precio_m2` se copia de
 cambie las ya cobradas. `guard_tapizado` rechaza una alfombra terminada sin
 medidas, así que estado y medidas van en el mismo `update`.
 
+Los tapizados **se anulan, no se borran** (migración `0011`), con el mismo
+criterio que las órdenes: solo por la RPC `anular_tapizado`, con motivo
+escrito, y es definitivo — `guard_tapizado` rechaza cualquier `update` sobre
+uno anulado. Si estaba cobrado, la nota deja dicho si se devolvió la plata. El
+detalle (`/tapizados/:ref`) copia la estructura de `OrdenDetalle`: línea de
+etapas, bloque azul `ProximoPaso` con una sola acción, y lo de volver atrás
+plegado al final.
+
 **Menú en el celular:** debajo de `lg` la tira de secciones del encabezado se
 reemplaza por un botón "Menú" que despliega la lista (`Layout.tsx`). Una
 sección nueva entra en `NAV` y aparece en los dos.
