@@ -59,12 +59,21 @@ export default function Ordenes() {
   const esOlvidada = (fechaRetiro: string) =>
     (diasDesde(fechaRetiro) ?? 0) > DIAS_SIN_RETIRAR;
 
+  /**
+   * En "Todas" sin búsqueda no van las entregadas: la vista de entrada es lo
+   * que sigue en el lavadero. Las entregadas tienen su filtro, y buscando
+   * aparecen todas, de cualquier fecha (para reimprimir o cobrar un saldo).
+   */
+  const ocultarEntregadas = estado === 'todos' && busquedaDemorada.trim().length < 2;
+
   const ordenes = useMemo(
     () =>
       soloOlvidadas
         ? (todas ?? []).filter((o) => o.estado === 'listo' && esOlvidada(o.fecha_retiro_estimada))
-        : todas,
-    [todas, soloOlvidadas],
+        : ocultarEntregadas
+          ? todas?.filter((o) => o.estado !== 'entregado')
+          : todas,
+    [todas, soloOlvidadas, ocultarEntregadas],
   );
 
   /** Cuántas hay en cada filtro. Solo de los estados abiertos: son los que se miran. */
@@ -80,7 +89,7 @@ export default function Ordenes() {
         detalle={
           soloOlvidadas
             ? `Están prontas hace más de ${DIAS_SIN_RETIRAR} días y nadie las vino a buscar.`
-            : 'Lo de los últimos 7 días y todo lo que todavía no se entregó. Para algo más viejo, buscá por comprobante, nombre o teléfono.'
+            : 'Lo que todavía no se entregó. Las entregadas de esta semana están en su botón; para algo más viejo, buscá por comprobante, nombre o teléfono.'
         }
         acciones={
           <Link to="/" className="btn-primary btn-lg">
@@ -160,14 +169,18 @@ export default function Ordenes() {
                 ? 'No hay ropa sin retirar'
                 : busquedaDemorada
                   ? 'Ninguna orden coincide'
-                  : 'Todavía no hay órdenes'
+                  : ocultarEntregadas && (todas?.length ?? 0) > 0
+                    ? 'No hay ropa pendiente en el lavadero'
+                    : 'Todavía no hay órdenes'
             }
             detalle={
               soloOlvidadas
                 ? 'Todas las órdenes prontas se retiraron dentro del plazo.'
                 : busquedaDemorada
                   ? 'Probá con la referencia del comprobante, el nombre o los últimos números del teléfono.'
-                  : 'Cuando recibas la primera bolsa de ropa, la vas a ver acá.'
+                  : ocultarEntregadas && (todas?.length ?? 0) > 0
+                    ? 'Todo lo de esta semana ya se entregó. Lo ves en el botón Entregadas.'
+                    : 'Cuando recibas la primera bolsa de ropa, la vas a ver acá.'
             }
             accion={
               !soloOlvidadas && (

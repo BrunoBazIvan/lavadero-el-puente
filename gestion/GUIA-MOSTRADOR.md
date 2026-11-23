@@ -158,10 +158,11 @@ en el contador de arriba y que el cliente pueda venir tranquilo.
 En la lista de **Órdenes** se ve el monto de cada una y, abajo del importe, lo
 que quedó debiendo.
 
-La lista no muestra todo el historial: trae **lo de los últimos 7 días y todo
-lo que todavía no se entregó**. Si necesitás una entregada de hace más tiempo,
-no la vas a encontrar scrolleando — buscala por el comprobante, el nombre o el
-teléfono, que eso sí llega a cualquier fecha.
+Al entrar, la lista muestra **solo lo que todavía no se entregó**: la ropa que
+sigue en el lavadero. Las entregadas de esta semana están en el botón
+**Entregadas**. Si necesitás una de hace más tiempo, no la vas a encontrar
+scrolleando: buscala por el comprobante, el nombre o el teléfono, que eso sí
+llega a cualquier fecha.
 
 ### Si perdió el comprobante
 

@@ -1,6 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { EstadoTapizado, ProductoTapizado, Tapizado } from '@/types/database';
+import type {
+  DatosTapizadoRPC,
+  EstadoTapizado,
+  ItemTapizadoRPC,
+  Tapizado,
+} from '@/types/database';
+
+/** Cabecera + artículos ordenados como se cargaron. */
+const SELECT = '*, items:tapizado_items(*)';
+
+function ordenarItems(t: Tapizado): Tapizado {
+  return { ...t, items: [...(t.items ?? [])].sort((a, b) => a.posicion - b.posicion) };
+}
 
 /**
  * Trabajos de tapizado. La lista entera, sin filtrar en la base: son pocos y
@@ -13,10 +25,10 @@ export function useTapizados() {
     queryFn: async (): Promise<Tapizado[]> => {
       const { data, error } = await supabase
         .from('tapizados')
-        .select('*')
+        .select(SELECT)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return ((data ?? []) as unknown as Tapizado[]).map(ordenarItems);
     },
   });
 }
@@ -29,96 +41,50 @@ export function useTapizado(ref: string | undefined) {
     queryFn: async (): Promise<Tapizado | null> => {
       const { data, error } = await supabase
         .from('tapizados')
-        .select('*')
+        .select(SELECT)
         .eq('ref', (ref ?? '').toUpperCase())
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data ? ordenarItems(data as unknown as Tapizado) : null;
     },
-  });
-}
-
-export interface DatosTapizado {
-  nombre: string;
-  edificio: string | null;
-  contacto: string;
-  producto: ProductoTapizado;
-  producto_otro: string | null;
-  precio: number;
-  notas: string | null;
-}
-
-function limpiar(datos: DatosTapizado) {
-  const vacioANull = (v: string | null) => (v && v.trim() ? v.trim() : null);
-  return {
-    nombre: datos.nombre.trim(),
-    edificio: vacioANull(datos.edificio),
-    contacto: datos.contacto.trim(),
-    producto: datos.producto,
-    producto_otro: datos.producto === 'otro' ? vacioANull(datos.producto_otro) : null,
-    precio: datos.precio,
-    notas: vacioANull(datos.notas),
-  };
-}
-
-export function useCrearTapizado() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (datos: DatosTapizado): Promise<Tapizado> => {
-      const { data, error } = await supabase
-        .from('tapizados')
-        .insert(limpiar(datos))
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
-  });
-}
-
-export function useEditarTapizado() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, datos }: { id: string; datos: DatosTapizado }): Promise<Tapizado> => {
-      const { data, error } = await supabase
-        .from('tapizados')
-        .update(limpiar(datos))
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
   });
 }
 
 /**
- * Cambia de etapa. Las medidas de una alfombra viajan en el **mismo** update
- * que el paso a "terminado": `guard_tapizado` rechaza una alfombra terminada
- * sin medidas, así que separadas la primera falla.
+ * Alta (sin `id`) o edición de un tapizado con sus artículos. Va por la RPC
+ * `guardar_tapizado`: cabecera, artículos y total en una sola transacción.
  */
-export function useCambiarEtapa() {
+export function useGuardarTapizado() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
       id,
-      estado,
-      medidas,
+      datos,
+      items,
     }: {
-      id: string;
-      estado: EstadoTapizado;
-      medidas?: { ancho_m: number; largo_m: number; precio_m2: number };
-    }): Promise<Tapizado> => {
-      const { data, error } = await supabase
-        .from('tapizados')
-        .update({ estado, ...(medidas ?? {}) })
-        .eq('id', id)
-        .select()
-        .single();
+      id?: string;
+      datos: DatosTapizadoRPC;
+      items: ItemTapizadoRPC[];
+    }) => {
+      const { data, error } = await supabase.rpc('guardar_tapizado', {
+        p_id: id ?? null,
+        p_datos: datos,
+        p_items: items,
+      });
       if (error) throw error;
-      return data;
+      return data as { id: string; ref: string };
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
+  });
+}
+
+/** Cambia de etapa. Ya no pide medidas: el precio está escrito desde el alta. */
+export function useCambiarEtapa() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, estado }: { id: string; estado: EstadoTapizado }) => {
+      const { error } = await supabase.from('tapizados').update({ estado }).eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
   });
@@ -127,15 +93,12 @@ export function useCambiarEtapa() {
 export function useNotaTapizado() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, notas }: { id: string; notas: string }): Promise<Tapizado> => {
-      const { data, error } = await supabase
+    mutationFn: async ({ id, notas }: { id: string; notas: string }) => {
+      const { error } = await supabase
         .from('tapizados')
         .update({ notas: notas.trim() || null })
-        .eq('id', id)
-        .select()
-        .single();
+        .eq('id', id);
       if (error) throw error;
-      return data;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
   });
@@ -157,14 +120,13 @@ export function useAnularTapizado() {
       motivo: string;
       /** Solo importa si ya estaba cobrado: queda anotado en las notas. */
       devuelto: boolean;
-    }): Promise<Tapizado> => {
-      const { data, error } = await supabase.rpc('anular_tapizado', {
+    }) => {
+      const { error } = await supabase.rpc('anular_tapizado', {
         p_id: id,
         p_motivo: motivo,
         p_devuelto: devuelto,
       });
       if (error) throw error;
-      return data as Tapizado;
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['tapizados'] }),
   });

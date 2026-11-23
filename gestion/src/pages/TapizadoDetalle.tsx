@@ -15,7 +15,7 @@ import {
   IconoWhatsapp,
   IconoX,
 } from '@/components/Iconos';
-import { FormularioMedidas, FormularioTapizado, LineaEtapa } from '@/components/Tapizado';
+import { FormularioTapizado, LineaEtapa } from '@/components/Tapizado';
 import { useToast } from '@/components/Toaster';
 import { useConfiguracion } from '@/hooks/useConfiguracion';
 import {
@@ -40,7 +40,7 @@ import {
   decimal,
   mensajeTerminado,
   metrosCuadrados,
-  nombreProducto,
+  nombreArticulo,
 } from '@/lib/tapizados';
 import type { EstadoTapizado, Tapizado } from '@/types/database';
 
@@ -53,7 +53,6 @@ export default function TapizadoDetalle() {
   const guardarNota = useNotaTapizado();
 
   const [editando, setEditando] = useState(false);
-  const [midiendo, setMidiendo] = useState(false);
   const [anularAbierto, setAnularAbierto] = useState(false);
   const [notaEditando, setNotaEditando] = useState(false);
   const [notaTexto, setNotaTexto] = useState('');
@@ -91,8 +90,6 @@ export default function TapizadoDetalle() {
   }
 
   const anulado = t.estado === 'anulado';
-  const esAlfombra = t.producto === 'alfombra';
-  const conMedidas = t.ancho_m !== null && t.largo_m !== null;
   const esTelefono = telefonoValido(t.contacto);
   const whatsapp = esTelefono
     ? linkWhatsapp(t.contacto, t.estado === 'terminado' ? mensajeTerminado(t, config?.nombre_negocio) : undefined)
@@ -108,11 +105,7 @@ export default function TapizadoDetalle() {
     }
   };
 
-  /** Una alfombra no se termina sin medidas: pasa por su cuadro. */
-  const avanzar = (estado: EstadoTapizado) => {
-    if (estado === 'terminado' && esAlfombra) return setMidiendo(true);
-    void pasarA(estado);
-  };
+  const avanzar = (estado: EstadoTapizado) => void pasarA(estado);
 
   const editarNota = () => {
     setNotaTexto(t.notas ?? '');
@@ -143,7 +136,7 @@ export default function TapizadoDetalle() {
           !anulado && (
             <button type="button" className="btn-secondary" onClick={() => setEditando(true)}>
               <IconoEditar size={18} />
-              Editar datos
+              Editar
             </button>
           )
         }
@@ -200,34 +193,13 @@ export default function TapizadoDetalle() {
                 anulado ? 'text-slate-400 line-through' : 'text-brand-900'
               }`}
             >
-              {moneda(Number(t.precio_final))}
+              {moneda(Number(t.precio))}
             </p>
-
-            {esAlfombra && conMedidas ? (
-              <dl className="mt-4 space-y-2 text-[0.9375rem]">
-                <Dato etiqueta="Medidas">
-                  {decimal(Number(t.ancho_m))} × {decimal(Number(t.largo_m))} m
-                </Dato>
-                <Dato etiqueta="Superficie">
-                  {decimal(metrosCuadrados(Number(t.ancho_m), Number(t.largo_m)))} m²
-                </Dato>
-                <Dato etiqueta="Precio por m²">{moneda(Number(t.precio_m2))}</Dato>
-                <Dato etiqueta="Estimado al cargarla">{moneda(Number(t.precio))}</Dato>
-              </dl>
-            ) : esAlfombra ? (
+            {!anulado && (
               <p className="ayuda">
-                Es el estimado. Al terminarla se cargan las medidas y sale el precio final.
+                Para cambiar un precio o sumar algo, tocá <span className="font-semibold">Editar</span>{' '}
+                arriba.
               </p>
-            ) : null}
-
-            {esAlfombra && conMedidas && t.estado === 'terminado' && (
-              <button
-                type="button"
-                className="btn-ghost mt-3 w-full"
-                onClick={() => setMidiendo(true)}
-              >
-                Corregir las medidas
-              </button>
             )}
           </section>
 
@@ -263,11 +235,34 @@ export default function TapizadoDetalle() {
             <div className="panel-cabezal">
               <h2 className="eyebrow">El trabajo</h2>
             </div>
+            <ul className="divide-y divide-brand-100 border-b border-brand-100">
+              {t.items.map((i) => {
+                const medida = i.ancho_m !== null && i.largo_m !== null && i.precio_m2 !== null;
+                return (
+                  <li key={i.id} className="flex items-start justify-between gap-3 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="font-display font-semibold text-ink">{nombreArticulo(i)}</p>
+                      {i.cantidad > 1 && (
+                        <p className="tabular text-sm text-slate-500">
+                          {moneda(Number(i.precio_unitario))} cada uno
+                        </p>
+                      )}
+                      {medida && (
+                        <p className="tabular text-sm text-slate-500">
+                          {decimal(Number(i.ancho_m))} × {decimal(Number(i.largo_m))} m ={' '}
+                          {decimal(metrosCuadrados(Number(i.ancho_m), Number(i.largo_m)))} m² a{' '}
+                          {moneda(Number(i.precio_m2))}
+                        </p>
+                      )}
+                    </div>
+                    <p className="tabular shrink-0 font-display font-semibold text-ink">
+                      {moneda(i.cantidad * Number(i.precio_unitario))}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
             <dl className="px-4 py-3 text-[0.9375rem]">
-              <div className="flex justify-between gap-3 py-1">
-                <dt className="text-slate-600">Qué es</dt>
-                <dd className="text-right font-semibold text-ink">{nombreProducto(t)}</dd>
-              </div>
               {t.edificio && (
                 <div className="flex justify-between gap-3 py-1">
                   <dt className="text-slate-600">Dónde</dt>
@@ -341,7 +336,7 @@ export default function TapizadoDetalle() {
                 <p className="mb-3 text-sm text-slate-600">
                   {t.estado === 'cobrado'
                     ? 'Si se marcó cobrado y todavía no pagó, volvelo a terminado.'
-                    : 'Si se marcó terminado sin estarlo, volvelo a pendiente. Las medidas quedan guardadas.'}
+                    : 'Si se marcó terminado sin estarlo, volvelo a pendiente.'}
                 </p>
                 <button
                   type="button"
@@ -366,16 +361,6 @@ export default function TapizadoDetalle() {
             onGuardado={() => setEditando(false)}
           />
         )}
-      </Modal>
-
-      <Modal
-        abierto={midiendo}
-        onCerrar={() => setMidiendo(false)}
-        titulo="¿Cuánto mide la alfombra?"
-        detalle="Con las medidas sale el precio final."
-        ancho="sm"
-      >
-        {midiendo && <FormularioMedidas tapizado={t} onListo={() => setMidiendo(false)} />}
       </Modal>
 
       {anularAbierto && <ModalAnular tapizado={t} onCerrar={() => setAnularAbierto(false)} />}
@@ -405,27 +390,24 @@ function ProximoPaso({
         <IconoCheck size={22} className="shrink-0 text-ok" />
         <p className="text-[1.0625rem] text-ink">
           <span className="font-display font-bold">Trabajo cerrado.</span> Se cobró el{' '}
-          {fecha(t.cobrado_el)}: {moneda(Number(t.precio_final))}.
+          {fecha(t.cobrado_el)}: {moneda(Number(t.precio))}.
         </p>
       </div>
     );
   }
 
-  const esAlfombra = t.producto === 'alfombra';
   const contenido =
     t.estado === 'pendiente'
       ? {
           pregunta: '¿Ya lo terminaron?',
-          detalle: esAlfombra
-            ? 'Al marcarla terminada te va a pedir el ancho y el largo: con eso sale el precio.'
-            : `Al terminarlo queda para cobrar: ${moneda(Number(t.precio_final))}.`,
+          detalle: `Al terminarlo queda para cobrar: ${moneda(Number(t.precio))}.`,
           accion: 'Lo terminamos',
           Icono: IconoCheck,
           destino: 'terminado' as EstadoTapizado,
         }
       : {
           pregunta: '¿Ya pagó?',
-          detalle: `Está terminado. Hay que cobrar ${moneda(Number(t.precio_final))}.`,
+          detalle: `Está terminado. Hay que cobrar ${moneda(Number(t.precio))}.`,
           accion: 'Ya pagó',
           Icono: IconoDinero,
           destino: 'cobrado' as EstadoTapizado,
@@ -526,7 +508,7 @@ function ModalAnular({ tapizado: t, onCerrar }: { tapizado: Tapizado; onCerrar: 
             />
             <span className="flex-1 text-[0.9375rem] text-ink">Sí, se la devolví</span>
             <span className="tabular font-semibold text-ink">
-              {moneda(Number(t.precio_final))}
+              {moneda(Number(t.precio))}
             </span>
           </label>
           <p className="ayuda">Queda anotado en las notas, para que el arqueo cierre.</p>
