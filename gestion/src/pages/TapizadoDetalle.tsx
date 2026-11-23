@@ -335,7 +335,7 @@ export default function TapizadoDetalle() {
               <div className="border-t border-brand-100 px-4 py-4">
                 <p className="mb-3 text-sm text-slate-600">
                   {t.estado === 'cobrado'
-                    ? 'Si se marcó cobrado y todavía no pagó, volvelo a terminado.'
+                    ? 'Si se marcó cobrado y todavía no pagó, volvelo a por cobrar.'
                     : 'Si se marcó terminado sin estarlo, volvelo a pendiente.'}
                 </p>
                 <button

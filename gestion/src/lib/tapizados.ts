@@ -46,7 +46,7 @@ export const ETAPAS: PasoTapizado[] = ['pendiente', 'terminado', 'cobrado'];
 
 export const TEXTO_ETAPA: Record<EstadoTapizado, string> = {
   pendiente: 'Pendiente',
-  terminado: 'Terminado',
+  terminado: 'Por cobrar',
   cobrado: 'Cobrado',
   anulado: 'Anulado',
 };
