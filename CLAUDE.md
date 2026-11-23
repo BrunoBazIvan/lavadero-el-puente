@@ -267,11 +267,19 @@ Dos cosas que se rompen fácil sin querer:
 admin, pero ahí **sí** es bloqueo de datos: la RLS de `tapizados` usa
 `is_admin()` en las cuatro políticas, porque el operador no la necesita para
 nada. Va por fuera de `ordenes` a propósito: no pasa por el mostrador ni por el
-cobro con `pagos`. El total es la columna generada `precio_final`; en
-alfombras sale de `ancho_m × largo_m × precio_m2`, y `precio_m2` se copia de
-`configuracion.precio_m2_alfombra` al terminarla, para que subir el precio no
-cambie las ya cobradas. `guard_tapizado` rechaza una alfombra terminada sin
-medidas, así que estado y medidas van en el mismo `update`.
+cobro con `pagos`.
+
+Un tapizado tiene **varios artículos** (`tapizado_items`, migración `0012`):
+un sillón y cuatro sillas del mismo cliente son un trabajo y un cobro.
+`tapizados.precio` es el total (`cantidad × precio_unitario` sumado), y lo
+mantiene la RPC **`guardar_tapizado`**, que guarda la cabecera, reemplaza los
+artículos enteros y recalcula el total en una sola transacción. Alta y edición
+van siempre por ahí; un `update` directo a `precio` lo deja desfasado de sus
+artículos. Las medidas de alfombra son **opcionales**, por pedido de la dueña:
+el precio que vale es el escrito, y ancho × largo ×
+`configuracion.precio_m2_alfombra` es una calculadora del formulario. Si se
+usa, el renglón guarda las tres medidas (`precio_m2` incluido), para que subir
+el precio del m² no cambie lo ya cotizado.
 
 Los tapizados **se anulan, no se borran** (migración `0011`), con el mismo
 criterio que las órdenes: solo por la RPC `anular_tapizado`, con motivo

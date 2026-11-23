@@ -1,5 +1,10 @@
 import { moneda } from '@/lib/format';
-import type { EstadoTapizado, ProductoTapizado, Tapizado } from '@/types/database';
+import type {
+  EstadoTapizado,
+  ProductoTapizado,
+  Tapizado,
+  TapizadoItem,
+} from '@/types/database';
 
 /** Lo que se limpia, en el orden en que aparecen los botones. */
 export const PRODUCTOS: { valor: ProductoTapizado; texto: string }[] = [
@@ -20,9 +25,19 @@ const TEXTO_PRODUCTO = Object.fromEntries(PRODUCTOS.map((p) => [p.valor, p.texto
 >;
 
 /** "Sillón 2 cuerpos", o lo que se escribió si es "Otro". */
-export function nombreProducto(t: Pick<Tapizado, 'producto' | 'producto_otro'>): string {
-  if (t.producto === 'otro') return t.producto_otro?.trim() || 'Otro';
-  return TEXTO_PRODUCTO[t.producto];
+export function nombreProducto(i: Pick<TapizadoItem, 'producto' | 'producto_otro'>): string {
+  if (i.producto === 'otro') return i.producto_otro?.trim() || 'Otro';
+  return TEXTO_PRODUCTO[i.producto];
+}
+
+/** "4 × Silla", o solo el nombre si es uno. */
+export function nombreArticulo(i: Pick<TapizadoItem, 'producto' | 'producto_otro' | 'cantidad'>): string {
+  return i.cantidad > 1 ? `${i.cantidad} × ${nombreProducto(i)}` : nombreProducto(i);
+}
+
+/** Todo el trabajo en una línea: "Sillón 3 cuerpos + 4 × Silla". */
+export function resumenArticulos(t: Pick<Tapizado, 'items'>): string {
+  return t.items.map(nombreArticulo).join(' + ') || 'Sin artículos';
 }
 
 /** El camino de todo tapizado. Anulado no está: es una salida, no un paso. */
@@ -48,7 +63,7 @@ export const ETAPA_ANTERIOR: Record<EstadoTapizado, PasoTapizado | null> = {
 export function mensajeTerminado(t: Tapizado, negocio: string | undefined): string {
   const nombre = t.nombre.trim().split(' ')[0];
   const casa = negocio ?? 'El Puente';
-  return `Hola ${nombre}, te escribimos de ${casa}: ya terminamos la limpieza (${nombreProducto(t)}). Son ${moneda(Number(t.precio_final))}. ¡Gracias!`;
+  return `Hola ${nombre}, te escribimos de ${casa}: ya terminamos la limpieza (${resumenArticulos(t)}). Son ${moneda(Number(t.precio))}. ¡Gracias!`;
 }
 
 /**
@@ -68,8 +83,9 @@ export function metrosCuadrados(ancho: number, largo: number): number {
 }
 
 /**
- * Precio de una alfombra. Mismo cálculo que la columna `precio_final`
- * (migración 0010): ancho × largo × $/m², redondeado al peso.
+ * Precio de una alfombra por medidas: ancho × largo × $/m², redondeado al
+ * peso. Es la calculadora opcional del formulario; el precio que vale es el
+ * que queda escrito en el artículo.
  */
 export function precioAlfombra(ancho: number, largo: number, precioM2: number): number {
   const a = Math.round(ancho * 100) / 100;

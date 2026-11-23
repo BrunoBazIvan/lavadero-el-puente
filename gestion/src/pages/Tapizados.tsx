@@ -4,13 +4,13 @@ import { EncabezadoPagina } from '@/components/Layout';
 import { Modal } from '@/components/Modal';
 import { BloqueCargando, EstadoError, EstadoVacio } from '@/components/Estados';
 import { IconoBuscar, IconoCheck, IconoDinero, IconoMas } from '@/components/Iconos';
-import { ChipEtapa, FormularioMedidas, FormularioTapizado } from '@/components/Tapizado';
+import { ChipEtapa, FormularioTapizado } from '@/components/Tapizado';
 import { useToast } from '@/components/Toaster';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useCambiarEtapa, useTapizados } from '@/hooks/useTapizados';
 import { fecha, moneda } from '@/lib/format';
 import { mensajeDeError } from '@/lib/supabase';
-import { ETAPAS, TEXTO_ETAPA, nombreProducto } from '@/lib/tapizados';
+import { ETAPAS, TEXTO_ETAPA, resumenArticulos } from '@/lib/tapizados';
 import type { EstadoTapizado, Tapizado } from '@/types/database';
 
 /** "Todos" son los vigentes: los anulados tienen su propio filtro, como un archivo. */
@@ -19,7 +19,6 @@ const FILTROS: Filtro[] = ['todos', ...ETAPAS, 'anulado'];
 
 export default function Tapizados() {
   const [altaAbierta, setAltaAbierta] = useState(false);
-  const [aTerminar, setATerminar] = useState<Tapizado | null>(null);
   const [busqueda, setBusqueda] = useState('');
 
   // El filtro vive en la URL, como en Órdenes: F5 o "atrás" no lo pierden.
@@ -52,7 +51,7 @@ export default function Tapizados() {
     () =>
       (todos ?? [])
         .filter((t) => t.estado === 'terminado')
-        .reduce((suma, t) => suma + Number(t.precio_final), 0),
+        .reduce((suma, t) => suma + Number(t.precio), 0),
     [todos],
   );
 
@@ -61,7 +60,7 @@ export default function Tapizados() {
     return (todos ?? []).filter((t) => {
       if (filtro === 'todos' ? t.estado === 'anulado' : t.estado !== filtro) return false;
       if (!texto) return true;
-      return [t.ref, t.nombre, t.edificio, t.contacto, nombreProducto(t)]
+      return [t.ref, t.nombre, t.edificio, t.contacto, resumenArticulos(t)]
         .filter(Boolean)
         .some((campo) => String(campo).toLowerCase().includes(texto));
     });
@@ -170,7 +169,7 @@ export default function Tapizados() {
         {visibles.length > 0 && (
           <ul className="divide-y divide-brand-100">
             {visibles.map((t) => (
-              <FilaTapizado key={t.id} tapizado={t} onTerminarAlfombra={() => setATerminar(t)} />
+              <FilaTapizado key={t.id} tapizado={t} />
             ))}
           </ul>
         )}
@@ -186,18 +185,6 @@ export default function Tapizados() {
           onCancelar={() => setAltaAbierta(false)}
           onGuardado={() => setAltaAbierta(false)}
         />
-      </Modal>
-
-      <Modal
-        abierto={aTerminar !== null}
-        onCerrar={() => setATerminar(null)}
-        titulo="¿Cuánto mide la alfombra?"
-        detalle="Con las medidas sale el precio final."
-        ancho="sm"
-      >
-        {aTerminar && (
-          <FormularioMedidas tapizado={aTerminar} onListo={() => setATerminar(null)} />
-        )}
       </Modal>
     </>
   );
@@ -229,17 +216,9 @@ function Dato({
  * es el atajo al paso que sigue, para no tener que entrar a cada uno. En el
  * celular se apila; desde `md` se arma en columnas.
  */
-function FilaTapizado({
-  tapizado: t,
-  onTerminarAlfombra,
-}: {
-  tapizado: Tapizado;
-  onTerminarAlfombra: () => void;
-}) {
+function FilaTapizado({ tapizado: t }: { tapizado: Tapizado }) {
   const toast = useToast();
   const cambiar = useCambiarEtapa();
-  const esAlfombra = t.producto === 'alfombra';
-  const conMedidas = t.ancho_m !== null && t.largo_m !== null;
   const anulado = t.estado === 'anulado';
 
   const avanzar = async (estado: EstadoTapizado, aviso: string) => {
@@ -271,7 +250,7 @@ function FilaTapizado({
         </div>
 
         <div className="min-w-0">
-          <p className="font-display font-semibold text-brand-900">{nombreProducto(t)}</p>
+          <p className="font-display font-semibold text-brand-900">{resumenArticulos(t)}</p>
           <p className="text-sm text-slate-500">Cargado el {fecha(t.created_at)}</p>
         </div>
 
@@ -281,11 +260,8 @@ function FilaTapizado({
               anulado ? 'text-slate-400 line-through' : 'text-brand-900'
             }`}
           >
-            {moneda(Number(t.precio_final))}
+            {moneda(Number(t.precio))}
           </p>
-          {esAlfombra && !conMedidas && !anulado && (
-            <p className="text-sm text-slate-500">estimado, falta medir</p>
-          )}
         </div>
       </Link>
 
@@ -295,9 +271,7 @@ function FilaTapizado({
             type="button"
             className="btn-secondary flex-1 md:flex-none"
             disabled={cambiar.isPending}
-            onClick={() =>
-              esAlfombra ? onTerminarAlfombra() : void avanzar('terminado', `${t.ref} terminado.`)
-            }
+            onClick={() => void avanzar('terminado', `${t.ref} terminado.`)}
           >
             <IconoCheck size={18} />
             Lo terminamos

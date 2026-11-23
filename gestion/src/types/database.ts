@@ -202,8 +202,9 @@ export interface Database {
       };
 
       /**
-       * Migraciones 0010 y 0011. Solo admin. `precio_final` es columna
-       * generada. Se anula solo por la RPC `anular_tapizado`.
+       * Migraciones 0010, 0011 y 0012. Solo admin. `precio` es el total de
+       * sus artículos (`tapizado_items`) y lo mantiene la RPC
+       * `guardar_tapizado`. Se anula solo por la RPC `anular_tapizado`.
        */
       tapizados: {
         Row: {
@@ -212,13 +213,7 @@ export interface Database {
           nombre: string;
           edificio: string | null;
           contacto: string;
-          producto: ProductoTapizado;
-          producto_otro: string | null;
           precio: number;
-          ancho_m: number | null;
-          largo_m: number | null;
-          precio_m2: number | null;
-          precio_final: number;
           estado: EstadoTapizado;
           notas: string | null;
           terminado_el: string | null;
@@ -236,12 +231,7 @@ export interface Database {
           nombre: string;
           edificio?: string | null;
           contacto: string;
-          producto: ProductoTapizado;
-          producto_otro?: string | null;
           precio?: number;
-          ancho_m?: number | null;
-          largo_m?: number | null;
-          precio_m2?: number | null;
           estado?: EstadoTapizado;
           notas?: string | null;
           terminado_el?: string | null;
@@ -251,6 +241,35 @@ export interface Database {
           created_by?: string | null;
         };
         Update: Partial<Database['public']['Tables']['tapizados']['Insert']>;
+      };
+
+      /** Migración 0012. Las medidas van las tres o ninguna (calculadora de alfombra). */
+      tapizado_items: {
+        Row: {
+          id: string;
+          tapizado_id: string;
+          posicion: number;
+          producto: ProductoTapizado;
+          producto_otro: string | null;
+          cantidad: number;
+          precio_unitario: number;
+          ancho_m: number | null;
+          largo_m: number | null;
+          precio_m2: number | null;
+        };
+        Insert: {
+          id?: string;
+          tapizado_id: string;
+          posicion?: number;
+          producto: ProductoTapizado;
+          producto_otro?: string | null;
+          cantidad?: number;
+          precio_unitario?: number;
+          ancho_m?: number | null;
+          largo_m?: number | null;
+          precio_m2?: number | null;
+        };
+        Update: Partial<Database['public']['Tables']['tapizado_items']['Insert']>;
       };
 
       configuracion: {
@@ -344,6 +363,11 @@ export interface Database {
         Args: { p_id: string; p_motivo: string; p_devuelto?: boolean };
         Returns: Database['public']['Tables']['tapizados']['Row'];
       };
+      /** Alta (p_id null) o edición de un tapizado con sus artículos, atómico (0012). */
+      guardar_tapizado: {
+        Args: { p_id: string | null; p_datos: DatosTapizadoRPC; p_items: ItemTapizadoRPC[] };
+        Returns: Database['public']['Tables']['tapizados']['Row'];
+      };
     };
 
     Enums: {
@@ -397,7 +421,22 @@ export type Orden = Database['public']['Tables']['ordenes']['Row'];
 export type OrdenItem = Database['public']['Tables']['orden_items']['Row'];
 export type Pago = Database['public']['Tables']['pagos']['Row'];
 export type Configuracion = Database['public']['Tables']['configuracion']['Row'];
-export type Tapizado = Database['public']['Tables']['tapizados']['Row'];
+export type TapizadoItem = Database['public']['Tables']['tapizado_items']['Row'];
+/** Un tapizado con sus artículos, como lo traen la lista y el detalle. */
+export type Tapizado = Database['public']['Tables']['tapizados']['Row'] & {
+  items: TapizadoItem[];
+};
+
+/** Cabecera que recibe `guardar_tapizado`. */
+export interface DatosTapizadoRPC {
+  nombre: string;
+  edificio: string | null;
+  contacto: string;
+  notas: string | null;
+}
+
+/** Un artículo como lo recibe `guardar_tapizado`. */
+export type ItemTapizadoRPC = Omit<TapizadoItem, 'id' | 'tapizado_id' | 'posicion'>;
 export type OrdenVista = Database['public']['Views']['v_ordenes']['Row'];
 
 /** Una orden con todo lo que necesitan el detalle y los tickets. */

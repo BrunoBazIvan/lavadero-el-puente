@@ -3,15 +3,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Spinner } from '@/components/Estados';
-import { IconoAnular, IconoCheck, IconoDinero, IconoTapizado } from '@/components/Iconos';
+import {
+  IconoAnular,
+  IconoCheck,
+  IconoDinero,
+  IconoMas,
+  IconoMenos,
+  IconoTapizado,
+  IconoX,
+} from '@/components/Iconos';
 import { useToast } from '@/components/Toaster';
 import { usePrecioM2Alfombra } from '@/hooks/useConfiguracion';
-import {
-  useCambiarEtapa,
-  useCrearTapizado,
-  useEditarTapizado,
-  type DatosTapizado,
-} from '@/hooks/useTapizados';
+import { useGuardarTapizado } from '@/hooks/useTapizados';
 import { moneda } from '@/lib/format';
 import {
   ETAPAS,
@@ -20,9 +23,15 @@ import {
   decimal,
   leerDecimal,
   metrosCuadrados,
+  nombreProducto,
   precioAlfombra,
 } from '@/lib/tapizados';
-import type { EstadoTapizado, ProductoTapizado, Tapizado } from '@/types/database';
+import type {
+  EstadoTapizado,
+  ItemTapizadoRPC,
+  ProductoTapizado,
+  Tapizado,
+} from '@/types/database';
 import type { ComponentType } from 'react';
 
 type Icono = ComponentType<{ size?: number; className?: string }>;
@@ -122,137 +131,91 @@ export function LineaEtapa({ estado }: { estado: EstadoTapizado }) {
   );
 }
 
-/* ── Medidas de alfombra ──────────────────────────────────────────────────── */
+/* ── Artículos ────────────────────────────────────────────────────────────── */
 
-/** Pide ancho y largo, muestra la cuenta y marca la alfombra terminada. */
-export function FormularioMedidas({
-  tapizado,
-  onListo,
-}: {
-  tapizado: Tapizado;
-  onListo: () => void;
-}) {
-  const toast = useToast();
-  const cambiar = useCambiarEtapa();
-  const precioM2 = usePrecioM2Alfombra();
+/** Un renglón mientras se edita: todo texto, como lo tipean. */
+interface Renglon {
+  clave: number;
+  producto: ProductoTapizado;
+  producto_otro: string;
+  cantidad: number;
+  precio: string;
+  /** Si se abrió la calculadora de alfombra. */
+  medir: boolean;
+  ancho: string;
+  largo: string;
+  /** El $/m² con que se midió. Uno ya guardado conserva el suyo. */
+  precio_m2: number | null;
+}
 
-  const [ancho, setAncho] = useState(tapizado.ancho_m ? decimal(Number(tapizado.ancho_m)) : '');
-  const [largo, setLargo] = useState(tapizado.largo_m ? decimal(Number(tapizado.largo_m)) : '');
-  const [intentado, setIntentado] = useState(false);
+let proximaClave = 1;
 
-  const a = leerDecimal(ancho);
-  const l = leerDecimal(largo);
-  // Tope de 9.999 m: es lo que entra en `numeric(6,2)`.
-  const anchoOk = a !== null && a > 0 && a < 10_000;
-  const largoOk = l !== null && l > 0 && l < 10_000;
-  const medidas = anchoOk && largoOk ? { a: a as number, l: l as number } : null;
+/** "1.500" o "$ 1500" → 1500. En pesos el punto es de miles, no decimal. */
+function leerPesos(texto: string): number | null {
+  const limpio = texto.replace(/[$\s.]/g, '').replace(',', '.');
+  if (limpio === '') return null;
+  const n = Number(limpio);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
 
-  const enviar = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIntentado(true);
-    if (!medidas) return;
-    try {
-      await cambiar.mutateAsync({
-        id: tapizado.id,
-        estado: 'terminado',
-        medidas: { ancho_m: medidas.a, largo_m: medidas.l, precio_m2: precioM2 },
-      });
-      toast.ok(
-        `${tapizado.ref} terminado: ${moneda(precioAlfombra(medidas.a, medidas.l, precioM2))}.`,
-      );
-      onListo();
-    } catch {
-      // Ya lo avisó el manejador global.
-    }
+/** Tope de 9.999 m: es lo que entra en `numeric(6,2)`. */
+function medidaValida(n: number | null): n is number {
+  return n !== null && n > 0 && n < 10_000;
+}
+
+/** Ancho y largo leídos, o null si falta alguno. */
+function medidasDe(r: Renglon): { a: number; l: number } | null {
+  const a = leerDecimal(r.ancho);
+  const l = leerDecimal(r.largo);
+  return medidaValida(a) && medidaValida(l) ? { a, l } : null;
+}
+
+/** Lo que está mal en un renglón, o null si está bien. */
+function problemaDe(r: Renglon): string | null {
+  if (r.producto === 'otro' && !r.producto_otro.trim()) return 'Escribí qué es.';
+  if (r.medir && !medidasDe(r)) return 'Poné el ancho y el largo en metros, por ejemplo 2,5.';
+  if (leerPesos(r.precio) === null) return 'Poné el precio, sin $ ni puntos.';
+  return null;
+}
+
+function renglonDesdeItem(i: Tapizado['items'][number]): Renglon {
+  const medida = i.ancho_m !== null && i.largo_m !== null && i.precio_m2 !== null;
+  return {
+    clave: proximaClave++,
+    producto: i.producto,
+    producto_otro: i.producto_otro ?? '',
+    cantidad: i.cantidad,
+    precio: String(Number(i.precio_unitario)),
+    medir: medida,
+    ancho: medida ? decimal(Number(i.ancho_m)) : '',
+    largo: medida ? decimal(Number(i.largo_m)) : '',
+    precio_m2: medida ? Number(i.precio_m2) : null,
   };
+}
 
-  return (
-    <form onSubmit={(e) => void enviar(e)} noValidate>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="label" htmlFor="ancho">
-            Ancho (metros)
-          </label>
-          <input
-            id="ancho"
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="2,00"
-            className={`field tabular text-right ${intentado && !anchoOk ? 'field-error' : ''}`}
-            value={ancho}
-            onChange={(e) => setAncho(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="largo">
-            Largo (metros)
-          </label>
-          <input
-            id="largo"
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="3,20"
-            className={`field tabular text-right ${intentado && !largoOk ? 'field-error' : ''}`}
-            value={largo}
-            onChange={(e) => setLargo(e.target.value)}
-          />
-        </div>
-      </div>
-      {intentado && !medidas && (
-        <p className="error-text">Poné el ancho y el largo en metros, por ejemplo 2,5.</p>
-      )}
-
-      <div className="mt-5 border border-brand-200 bg-brand-50 px-4 py-3">
-        {medidas ? (
-          <>
-            <p className="tabular text-[0.9375rem] text-slate-700">
-              {decimal(medidas.a)} × {decimal(medidas.l)} ={' '}
-              {decimal(metrosCuadrados(medidas.a, medidas.l))} m² × {moneda(precioM2)}
-            </p>
-            <p className="tabular mt-1 font-display text-3xl font-bold text-brand-900">
-              {moneda(precioAlfombra(medidas.a, medidas.l, precioM2))}
-            </p>
-          </>
-        ) : (
-          <p className="text-[0.9375rem] text-slate-600">
-            Se cobra a {moneda(precioM2)} el metro cuadrado.
-          </p>
-        )}
-      </div>
-
-      <div className="mt-6 flex items-center justify-end gap-2">
-        <button type="button" className="btn-secondary" onClick={onListo}>
-          Cancelar
-        </button>
-        <button type="submit" className="btn-ok" disabled={cambiar.isPending}>
-          {cambiar.isPending ? <Spinner size={16} /> : <IconoCheck size={18} />}
-          Terminada
-        </button>
-      </div>
-    </form>
-  );
+function aItem(r: Renglon): ItemTapizadoRPC {
+  const m = r.medir ? medidasDe(r) : null;
+  return {
+    producto: r.producto,
+    producto_otro: r.producto === 'otro' ? r.producto_otro.trim() : null,
+    cantidad: r.cantidad,
+    precio_unitario: leerPesos(r.precio) ?? 0,
+    ancho_m: m ? Math.round(m.a * 100) / 100 : null,
+    largo_m: m ? Math.round(m.l * 100) / 100 : null,
+    precio_m2: m ? r.precio_m2 : null,
+  };
 }
 
 /* ── Alta y edición ───────────────────────────────────────────────────────── */
 
-const esquema = z
-  .object({
-    nombre: z.string().trim().min(2, 'Escribí el nombre del cliente.'),
-    edificio: z.string(),
-    contacto: z.string().trim().min(3, 'Poné un teléfono o cómo ubicarlo.'),
-    producto: z.string().min(1, 'Elegí qué es.'),
-    producto_otro: z.string(),
-    precio: z.coerce
-      .number({ invalid_type_error: 'Poné un número, sin $ ni puntos.' })
-      .min(0, 'No puede ser negativo.'),
-    notas: z.string(),
-  })
-  .refine((v) => v.producto !== 'otro' || v.producto_otro.trim().length > 0, {
-    path: ['producto_otro'],
-    message: 'Escribí qué es.',
-  });
+const esquema = z.object({
+  nombre: z.string().trim().min(2, 'Escribí el nombre del cliente.'),
+  edificio: z.string(),
+  contacto: z.string().trim().min(3, 'Poné un teléfono o cómo ubicarlo.'),
+  notas: z.string(),
+});
 
-type FormTapizado = z.input<typeof esquema>;
+type FormTapizado = z.infer<typeof esquema>;
 
 export function FormularioTapizado({
   tapizado,
@@ -260,64 +223,113 @@ export function FormularioTapizado({
   onCancelar,
 }: {
   tapizado?: Tapizado;
-  onGuardado: (t: Tapizado) => void;
+  onGuardado: () => void;
   onCancelar: () => void;
 }) {
   const toast = useToast();
-  const crear = useCrearTapizado();
-  const editar = useEditarTapizado();
+  const guardar = useGuardarTapizado();
   const precioM2 = usePrecioM2Alfombra();
+
+  const [renglones, setRenglones] = useState<Renglon[]>(
+    () => tapizado?.items.map(renglonDesdeItem) ?? [],
+  );
+  const [intentado, setIntentado] = useState(false);
 
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormTapizado>({
     resolver: zodResolver(esquema),
     defaultValues: {
       nombre: tapizado?.nombre ?? '',
       edificio: tapizado?.edificio ?? '',
       contacto: tapizado?.contacto ?? '',
-      producto: tapizado?.producto ?? '',
-      producto_otro: tapizado?.producto_otro ?? '',
-      precio: tapizado ? Number(tapizado.precio) : ('' as unknown as number),
       notas: tapizado?.notas ?? '',
     },
   });
 
-  const producto = watch('producto');
-  const alfombraMedida =
-    tapizado?.producto === 'alfombra' && tapizado.ancho_m !== null && producto === 'alfombra';
+  const cambiar = (clave: number, cambios: Partial<Renglon>) =>
+    setRenglones((rs) =>
+      rs.map((r) => {
+        if (r.clave !== clave) return r;
+        const nuevo = { ...r, ...cambios };
+        // Con la calculadora abierta, el precio sale de las medidas.
+        if (nuevo.medir) {
+          const m = medidasDe(nuevo);
+          if (m) nuevo.precio = String(precioAlfombra(m.a, m.l, nuevo.precio_m2 ?? precioM2));
+        }
+        return nuevo;
+      }),
+    );
+
+  const quitar = (clave: number) => setRenglones((rs) => rs.filter((r) => r.clave !== clave));
+
+  /**
+   * Tocar un producto lo suma. Si ya está en la lista, le sube la cantidad:
+   * cuatro sillas son "Silla × 4", no cuatro renglones. Alfombras y "Otro"
+   * van siempre aparte, porque cada una tiene su medida o su nombre.
+   */
+  const agregar = (producto: ProductoTapizado) =>
+    setRenglones((rs) => {
+      const repetible = producto !== 'alfombra' && producto !== 'otro';
+      const existente = repetible ? rs.find((r) => r.producto === producto) : undefined;
+      if (existente) {
+        return rs.map((r) =>
+          r.clave === existente.clave ? { ...r, cantidad: Math.min(r.cantidad + 1, 999) } : r,
+        );
+      }
+      return [
+        ...rs,
+        {
+          clave: proximaClave++,
+          producto,
+          producto_otro: '',
+          cantidad: 1,
+          precio: '',
+          medir: false,
+          ancho: '',
+          largo: '',
+          precio_m2: null,
+        },
+      ];
+    });
+
+  const total = renglones.reduce(
+    (suma, r) => suma + r.cantidad * (leerPesos(r.precio) ?? 0),
+    0,
+  );
+  const hayProblemas = renglones.length === 0 || renglones.some((r) => problemaDe(r) !== null);
 
   const enviar = handleSubmit(async (v) => {
-    const datos: DatosTapizado = {
-      nombre: String(v.nombre),
-      edificio: String(v.edificio),
-      contacto: String(v.contacto),
-      producto: v.producto as ProductoTapizado,
-      producto_otro: String(v.producto_otro),
-      precio: Number(v.precio),
-      notas: String(v.notas),
-    };
+    setIntentado(true);
+    if (hayProblemas) return;
     try {
-      if (tapizado) {
-        const t = await editar.mutateAsync({ id: tapizado.id, datos });
-        toast.ok('Cambios guardados.');
-        onGuardado(t);
-      } else {
-        const t = await crear.mutateAsync(datos);
-        toast.ok(`${t.ref} cargado.`);
-        onGuardado(t);
-      }
+      const t = await guardar.mutateAsync({
+        id: tapizado?.id,
+        datos: {
+          nombre: v.nombre.trim(),
+          edificio: v.edificio.trim() || null,
+          contacto: v.contacto.trim(),
+          notas: v.notas.trim() || null,
+        },
+        items: renglones.map(aItem),
+      });
+      toast.ok(tapizado ? 'Cambios guardados.' : `${t.ref} cargado.`);
+      onGuardado();
     } catch {
       // El toast lo muestra el manejador global de React Query.
     }
   });
 
   return (
-    <form onSubmit={enviar} noValidate>
+    <form
+      onSubmit={(e) => {
+        setIntentado(true);
+        void enviar(e);
+      }}
+      noValidate
+    >
       <div className="space-y-5">
         <div>
           <label className="label" htmlFor="nombre">
@@ -360,72 +372,59 @@ export function FormularioTapizado({
         </div>
 
         <fieldset>
-          <legend className="label">¿Qué es?</legend>
-          <input type="hidden" {...register('producto')} />
+          <legend className="label">¿Qué hay que limpiar?</legend>
+          <p className="ayuda mb-2 mt-0">
+            Tocá cada cosa. Si son varias iguales, tocala otra vez o cambiá la cantidad.
+          </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {PRODUCTOS.map((p) => {
-              const activo = producto === p.valor;
+              const cuantos = renglones
+                .filter((r) => r.producto === p.valor)
+                .reduce((s, r) => s + r.cantidad, 0);
               return (
                 <button
                   key={p.valor}
                   type="button"
-                  aria-pressed={activo}
-                  onClick={() =>
-                    setValue('producto', p.valor, { shouldValidate: Boolean(errors.producto) })
-                  }
-                  className={`min-h-[2.75rem] rounded-sharp border px-3 py-2 text-left font-display text-[0.9375rem] font-semibold transition-colors ${
-                    activo
-                      ? 'border-brand-800 bg-brand-800 text-white'
+                  onClick={() => agregar(p.valor)}
+                  className={`flex min-h-[2.75rem] items-center justify-between gap-2 rounded-sharp border px-3 py-2 text-left font-display text-[0.9375rem] font-semibold transition-colors ${
+                    cuantos > 0
+                      ? 'border-brand-800 bg-brand-800 text-white hover:bg-brand-900'
                       : 'border-brand-300 bg-white text-brand-800 hover:bg-brand-50'
                   }`}
                 >
-                  {p.texto}
+                  <span>{p.texto}</span>
+                  {cuantos > 0 && <span className="tabular text-sm">× {cuantos}</span>}
                 </button>
               );
             })}
           </div>
-          {errors.producto && <p className="error-text">{errors.producto.message}</p>}
 
-          {producto === 'otro' && (
-            <div className="mt-3">
-              <label className="label" htmlFor="producto_otro">
-                ¿Qué es exactamente?
-              </label>
-              <input
-                id="producto_otro"
-                autoComplete="off"
-                className={`field ${errors.producto_otro ? 'field-error' : ''}`}
-                placeholder="Puff, cabecera, almohadones…"
-                {...register('producto_otro')}
-              />
-              {errors.producto_otro && (
-                <p className="error-text">{errors.producto_otro.message}</p>
-              )}
-            </div>
+          {renglones.length === 0 ? (
+            intentado && <p className="error-text">Tocá al menos una cosa para limpiar.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-brand-200 border border-brand-200">
+              {renglones.map((r) => (
+                <FilaArticulo
+                  key={r.clave}
+                  renglon={r}
+                  precioM2={r.precio_m2 ?? precioM2}
+                  intentado={intentado}
+                  onCambiar={(c) => cambiar(r.clave, c)}
+                  onQuitar={() => quitar(r.clave)}
+                  onMedir={() => cambiar(r.clave, { medir: true, precio_m2: precioM2 })}
+                />
+              ))}
+              <li className="flex items-baseline justify-between gap-3 bg-brand-50 px-4 py-3">
+                <span className="font-display text-sm font-bold uppercase tracking-technical text-brand-700">
+                  Total
+                </span>
+                <span className="tabular font-display text-2xl font-bold text-brand-900">
+                  {moneda(total)}
+                </span>
+              </li>
+            </ul>
           )}
         </fieldset>
-
-        <div>
-          <label className="label" htmlFor="precio">
-            {producto === 'alfombra' ? 'Precio estimado' : 'Precio'}
-          </label>
-          <input
-            id="precio"
-            inputMode="numeric"
-            autoComplete="off"
-            className={`field tabular ${errors.precio ? 'field-error' : ''}`}
-            placeholder="0"
-            {...register('precio')}
-          />
-          {errors.precio && <p className="error-text">{errors.precio.message}</p>}
-          {producto === 'alfombra' && (
-            <p className="ayuda">
-              {alfombraMedida
-                ? 'Ya tiene medidas: el precio final sale de ellas, no de este número.'
-                : `Al terminarla se cargan las medidas y el precio pasa a ser ancho × largo × ${moneda(precioM2)}.`}
-            </p>
-          )}
-        </div>
 
         <div>
           <label className="label" htmlFor="notas">
@@ -445,11 +444,190 @@ export function FormularioTapizado({
         <button type="button" className="btn-secondary" onClick={onCancelar}>
           Cancelar
         </button>
-        <button type="submit" className="btn-primary" disabled={isSubmitting}>
-          {isSubmitting && <Spinner size={16} />}
+        <button type="submit" className="btn-primary" disabled={guardar.isPending}>
+          {guardar.isPending && <Spinner size={16} />}
           {tapizado ? 'Guardar cambios' : 'Cargar'}
         </button>
       </div>
     </form>
+  );
+}
+
+/**
+ * Un artículo del trabajo: cantidad, precio y, si es alfombra, la
+ * calculadora por medidas — opcional, solo si querés que la cuenta la haga
+ * el sistema.
+ */
+function FilaArticulo({
+  renglon: r,
+  precioM2,
+  intentado,
+  onCambiar,
+  onQuitar,
+  onMedir,
+}: {
+  renglon: Renglon;
+  precioM2: number;
+  intentado: boolean;
+  onCambiar: (cambios: Partial<Renglon>) => void;
+  onQuitar: () => void;
+  onMedir: () => void;
+}) {
+  const id = `art-${r.clave}`;
+  const problema = intentado ? problemaDe(r) : null;
+  const medidas = medidasDe(r);
+  const precio = leerPesos(r.precio);
+  const nombre = r.producto === 'otro' ? r.producto_otro.trim() || 'Otro' : nombreProducto(r);
+
+  return (
+    <li className="px-4 py-3">
+      <div className="flex items-start justify-between gap-3">
+        {r.producto === 'otro' ? (
+          <div className="flex-1">
+            <label className="label" htmlFor={`${id}-otro`}>
+              ¿Qué es?
+            </label>
+            <input
+              id={`${id}-otro`}
+              autoComplete="off"
+              className={`field ${intentado && !r.producto_otro.trim() ? 'field-error' : ''}`}
+              placeholder="Puff, cabecera, almohadones…"
+              value={r.producto_otro}
+              onChange={(e) => onCambiar({ producto_otro: e.target.value })}
+            />
+          </div>
+        ) : (
+          <p className="pt-2 font-display text-[1.0625rem] font-bold text-ink">{nombre}</p>
+        )}
+        <button type="button" className="btn-ghost shrink-0 px-3 text-sm" onClick={onQuitar}>
+          <IconoX size={16} />
+          Quitar
+        </button>
+      </div>
+
+      <div className="mt-2 grid grid-cols-[auto_1fr] items-end gap-3">
+        <div>
+          <span className="label">Cantidad</span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => onCambiar({ cantidad: Math.max(1, r.cantidad - 1) })}
+              disabled={r.cantidad <= 1}
+              aria-label={`Uno menos de ${nombre}`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sharp border border-brand-300 bg-white text-brand-800 transition-colors hover:bg-brand-50 disabled:opacity-40"
+            >
+              <IconoMenos size={20} />
+            </button>
+            <input
+              type="number"
+              min="1"
+              max="999"
+              value={r.cantidad}
+              onChange={(e) =>
+                onCambiar({ cantidad: Math.min(999, Math.max(1, Number(e.target.value) || 1)) })
+              }
+              aria-label={`Cantidad de ${nombre}`}
+              className="field tabular h-11 w-16 px-1 text-center text-lg font-bold"
+            />
+            <button
+              type="button"
+              onClick={() => onCambiar({ cantidad: Math.min(999, r.cantidad + 1) })}
+              aria-label={`Uno más de ${nombre}`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sharp border border-brand-300 bg-white text-brand-800 transition-colors hover:bg-brand-50"
+            >
+              <IconoMas size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="label" htmlFor={`${id}-precio`}>
+            {r.cantidad > 1 ? 'Precio de cada uno' : 'Precio'}
+          </label>
+          <input
+            id={`${id}-precio`}
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="0"
+            readOnly={r.medir}
+            className={`field tabular text-right ${r.medir ? 'bg-brand-50' : ''} ${
+              intentado && precio === null && !r.medir ? 'field-error' : ''
+            }`}
+            value={r.precio}
+            onChange={(e) => onCambiar({ precio: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {r.cantidad > 1 && precio !== null && (
+        <p className="tabular mt-1 text-right text-sm text-slate-600">
+          {r.cantidad} × {moneda(precio)} = {moneda(r.cantidad * precio)}
+        </p>
+      )}
+
+      {r.producto === 'alfombra' &&
+        (r.medir ? (
+          <div className="mt-3 border border-brand-200 bg-brand-50 px-3 py-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="label" htmlFor={`${id}-ancho`}>
+                  Ancho (metros)
+                </label>
+                <input
+                  id={`${id}-ancho`}
+                  inputMode="decimal"
+                  autoComplete="off"
+                  placeholder="2,00"
+                  className={`field tabular text-right ${
+                    intentado && !medidaValida(leerDecimal(r.ancho)) ? 'field-error' : ''
+                  }`}
+                  value={r.ancho}
+                  onChange={(e) => onCambiar({ ancho: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor={`${id}-largo`}>
+                  Largo (metros)
+                </label>
+                <input
+                  id={`${id}-largo`}
+                  inputMode="decimal"
+                  autoComplete="off"
+                  placeholder="3,20"
+                  className={`field tabular text-right ${
+                    intentado && !medidaValida(leerDecimal(r.largo)) ? 'field-error' : ''
+                  }`}
+                  value={r.largo}
+                  onChange={(e) => onCambiar({ largo: e.target.value })}
+                />
+              </div>
+            </div>
+            <p className="tabular mt-2 text-[0.9375rem] text-slate-700">
+              {medidas
+                ? `${decimal(medidas.a)} × ${decimal(medidas.l)} = ${decimal(
+                    metrosCuadrados(medidas.a, medidas.l),
+                  )} m² × ${moneda(precioM2)} = ${moneda(
+                    precioAlfombra(medidas.a, medidas.l, precioM2),
+                  )}`
+                : `Se cobra a ${moneda(precioM2)} el metro cuadrado.`}
+            </p>
+            <button
+              type="button"
+              className="btn-ghost mt-2 px-3 text-sm"
+              onClick={() => onCambiar({ medir: false, ancho: '', largo: '', precio_m2: null })}
+            >
+              <IconoX size={16} />
+              Sacar las medidas y escribir el precio a mano
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="btn-ghost mt-2 px-3 text-sm" onClick={onMedir}>
+            <IconoMas size={16} />
+            Calcular el precio por medidas ({moneda(precioM2)} el m²)
+          </button>
+        ))}
+
+      {problema && <p className="error-text">{problema}</p>}
+    </li>
   );
 }

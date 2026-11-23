@@ -20,7 +20,7 @@ const POR_DEFECTO: Configuracion = {
   link_google: '',
   // Precio por m² de las alfombras (sección Tapizados). Se guarda en cada
   // alfombra al terminarla, así que cambiarlo no toca las ya cobradas.
-  precio_m2_alfombra: '300',
+  precio_m2_alfombra: '400',
 };
 
 /** La tabla clave/valor, ya convertida a objeto. */
@@ -53,7 +53,7 @@ export function useDiasEntrega(): number {
 export function usePrecioM2Alfombra(): number {
   const { data } = useConfiguracion();
   const precio = Number(data?.precio_m2_alfombra);
-  return Number.isFinite(precio) && precio > 0 ? precio : 300;
+  return Number.isFinite(precio) && precio > 0 ? precio : 400;
 }
 
 export function useGuardarConfiguracion() {
