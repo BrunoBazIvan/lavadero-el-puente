@@ -1,10 +1,14 @@
+import Link from 'next/link';
 import { business, waMessages } from '@/lib/config';
 import WhatsAppButton from './WhatsAppButton';
 import { ArrowRight } from './icons';
 
+/** Link de texto dentro del párrafo: mismo trazo que el teléfono de LocationMap. */
+const linkTexto =
+  'text-brand-700 underline decoration-aqua-300 decoration-1 underline-offset-4 transition-colors hover:decoration-aqua-500';
+
 /** Hero: H1 único de la página + CTA primario a WhatsApp. */
 export default function Hero() {
-  const cobertura = 'Maldonado y Punta del Este';
   const valor = business.pickupDelivery
     ? 'Pasamos a buscar y entregamos a domicilio, a coordinar.'
     : 'Coordinás directo con el lavadero, sin intermediarios.';
@@ -34,7 +38,17 @@ export default function Hero() {
           </h1>
 
           <p className="lead mt-7 max-w-xl">
-            Damos servicio en {cobertura}, a familias y empresas. {valor}
+            {/* Enlaces contextuales a las páginas de zona: la home es la página
+                más fuerte del sitio y les pasa relevancia (plan SEO, nov. 2026). */}
+            Damos servicio a familias y empresas de Maldonado. También somos tu{' '}
+            <Link href="/lavanderia-punta-del-este/" className={linkTexto}>
+              lavadero en Punta del Este
+            </Link>{' '}
+            y llegamos a{' '}
+            <Link href="/lavanderia-la-barra-manantiales-jose-ignacio/" className={linkTexto}>
+              La Barra, Manantiales y José Ignacio
+            </Link>
+            . {valor}
           </p>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">

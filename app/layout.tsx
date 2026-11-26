@@ -25,9 +25,9 @@ const body = Lato({
   display: 'swap',
 });
 
-const title = 'Lavadero El Puente | Lavandería Industrial en Maldonado';
+const title = 'Lavadero de ropa en Maldonado y Punta del Este | El Puente';
 const description =
-  'Lavadero industrial en Maldonado y Punta del Este: acolchados, cortinas, alfombras y ropa blanca para hoteles. Escribinos por WhatsApp.';
+  'Lavadero de ropa en Maldonado con retiro y entrega a domicilio hasta José Ignacio. Ropa, acolchados, cortinas y ropa blanca de hoteles. Más de 20 años.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(business.domain),

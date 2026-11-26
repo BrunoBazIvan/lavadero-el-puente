@@ -49,9 +49,9 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-industrial-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Lavandería industrial',
-    metaTitle: 'Lavandería para Hoteles y Empresas | Maldonado',
+    metaTitle: 'Lavadero industrial para hoteles y empresas | Maldonado',
     metaDescription:
-      'Lavandería industrial para hoteles, apart y restaurantes de Maldonado y Punta del Este. Volumen alto en temporada y facturación a empresa.',
+      'Lavadero industrial en Maldonado para hoteles, apart y restaurantes de Punta del Este. Ropa blanca en volumen todo el año y facturación a empresa.',
     primaryKeyword: 'lavandería industrial Maldonado',
     h1: 'Lavandería industrial en Maldonado y Punta del Este',
     intro:
@@ -108,9 +108,9 @@ export const landingPages: LandingPage[] = [
     slug: 'limpieza-de-acolchados-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Limpieza de acolchados',
-    metaTitle: 'Limpieza de acolchados en Maldonado | El Puente',
+    metaTitle: 'Lavado de acolchados y frazadas en Maldonado | El Puente',
     metaDescription:
-      'Lavado profesional de acolchados, frazadas y edredones en Maldonado. Cuidamos cada tipo de tela. Con retiro y entrega a domicilio por WhatsApp.',
+      'Lavado de acolchados y frazadas en Maldonado, también de plumón. Cuidamos cada tipo de tela y retiramos a domicilio. Coordiná por WhatsApp.',
     primaryKeyword: 'limpieza de acolchados Maldonado',
     h1: 'Limpieza de acolchados y frazadas en Maldonado',
     intro:
@@ -463,9 +463,9 @@ export const landingPages: LandingPage[] = [
     slug: 'retiro-y-entrega-a-domicilio-maldonado',
     kind: 'servicio',
     breadcrumbLabel: 'Retiro y entrega',
-    metaTitle: 'Retiro y entrega a domicilio | Lavadero Maldonado',
+    metaTitle: 'Lavadero a domicilio en Maldonado | Retiro y entrega',
     metaDescription:
-      'Lavadero con retiro y entrega a domicilio en Maldonado, Punta del Este, La Barra, Manantiales y José Ignacio. Coordiná todo por WhatsApp.',
+      'Lavadero de ropa a domicilio: retiramos y entregamos en Maldonado, Punta del Este, La Barra, Manantiales y José Ignacio. Coordiná por WhatsApp.',
     primaryKeyword: 'retiro y entrega a domicilio Maldonado',
     h1: 'Retiro y entrega a domicilio en Maldonado y la costa',
     intro:
@@ -512,11 +512,11 @@ export const landingPages: LandingPage[] = [
     slug: 'lavanderia-punta-del-este',
     kind: 'zona',
     breadcrumbLabel: 'Punta del Este',
-    metaTitle: 'Lavandería en Punta del Este | Retiro a Domicilio',
+    metaTitle: 'Lavadero en Punta del Este | Retiro y entrega a domicilio',
     metaDescription:
-      'Lavadero en Punta del Este con retiro y entrega a domicilio, todo el año. Ropa, acolchados, cortinas y ropa blanca. Escribinos por WhatsApp.',
-    primaryKeyword: 'lavandería Punta del Este',
-    h1: 'Lavandería en Punta del Este',
+      'Lavadero de ropa en Punta del Este con retiro y entrega a domicilio todo el año: ropa, acolchados, cortinas y ropa blanca. Escribinos por WhatsApp.',
+    primaryKeyword: 'lavadero Punta del Este',
+    h1: 'Lavadero y lavandería en Punta del Este',
     intro:
       'Trabajamos en Punta del Este los doce meses del año. Ropa, acolchados, cortinas, alfombras y ropa blanca, con retiro y entrega a domicilio para que no pierdas tiempo en traslados.',
     sections: [
