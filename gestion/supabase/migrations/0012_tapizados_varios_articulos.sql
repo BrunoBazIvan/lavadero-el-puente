@@ -119,7 +119,18 @@ create trigger trg_guard_tapizado_item
 --   El precio del renglón es el `precio_final` de antes, así que una alfombra
 --   medida conserva lo que se le cobró.
 --   Sin el guard de artículos: los anulados también tienen que pasar.
+--
+--   Va dentro de un `if`: este paso borra las columnas viejas que lee, así
+--   que en una segunda corrida ya no están y el archivo entero se caía con
+--   `column t.producto does not exist`. Si ya se pasó, se saltea.
 -- -----------------------------------------------------------------------------
+
+do $$
+begin
+if exists (
+  select 1 from information_schema.columns
+   where table_schema = 'public' and table_name = 'tapizados' and column_name = 'producto'
+) then
 
 alter table public.tapizado_items disable trigger trg_guard_tapizado_item;
 
@@ -153,6 +164,9 @@ alter table public.tapizados
   drop column if exists ancho_m,
   drop column if exists largo_m,
   drop column if exists precio_m2;
+
+end if;
+end $$;
 
 comment on table public.tapizados is
   'Trabajos de limpieza de tapizados. Solo admin. `precio` es el total de sus `tapizado_items`; lo mantiene `guardar_tapizado`.';
@@ -275,3 +289,8 @@ end $$;
 
 revoke all on function public.guardar_tapizado(uuid, jsonb, jsonb) from public, anon;
 grant execute on function public.guardar_tapizado(uuid, jsonb, jsonb) to authenticated;
+
+-- PostgREST guarda el esquema en caché: sin esto, la app puede seguir
+-- pidiendo `tapizado_items` y `guardar_tapizado` y recibir "Could not find
+-- … in the schema cache" hasta que se recargue sola.
+notify pgrst, 'reload schema';
