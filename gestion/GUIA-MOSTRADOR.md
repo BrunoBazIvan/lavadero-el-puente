@@ -66,7 +66,8 @@ ahí mismo, sin salir de la pantalla. Con nombre y teléfono alcanza.
 
 ### 3 · Servicio
 
-Elegí uno: **Lavado y secado**, **Con plancha** o **Solo secado**.
+Elegí uno: **Lavado y secado**, **Con plancha**, **Solo secado** o
+**Desmanche**.
 
 Si además se retira y se entrega a domicilio, tocá **Envío**.
 

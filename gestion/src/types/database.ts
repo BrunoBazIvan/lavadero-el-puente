@@ -16,7 +16,7 @@ export type RolUsuario = 'admin' | 'operador';
 export type TipoCliente = 'particular' | 'empresa';
 export type EstadoPago = 'pendiente' | 'parcial' | 'pagado';
 /** El retiro y entrega no es un servicio aparte: va en `ordenes.envio`. */
-export type ServicioOrden = 'lavado_secado' | 'con_plancha' | 'solo_secado';
+export type ServicioOrden = 'lavado_secado' | 'con_plancha' | 'solo_secado' | 'desmanche';
 export type EstadoTapizado = 'pendiente' | 'terminado' | 'cobrado' | 'anulado';
 export type ProductoTapizado =
   | 'sillon_1'
@@ -400,6 +400,7 @@ export const NOMBRE_SERVICIO: Record<ServicioOrden, string> = {
   lavado_secado: 'Lavado y secado',
   con_plancha: 'Con plancha',
   solo_secado: 'Solo secado',
+  desmanche: 'Desmanche',
 };
 
 /** El orden es el de uso en el mostrador: el efectivo primero. */
