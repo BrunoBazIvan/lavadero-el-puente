@@ -260,7 +260,7 @@ export default function OrdenNueva() {
         </Paso>
 
         <Paso numero={3} titulo="¿Qué le hacemos?" completo>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             {(Object.keys(NOMBRE_SERVICIO) as ServicioOrden[]).map((s) => (
               <button
                 key={s}
